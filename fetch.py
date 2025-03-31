@@ -68,9 +68,24 @@ def fetch_data(
 
 
 if __name__ == "__main__":
+    # logger.info(
+    #     fetch_data(
+    #         type="news",
+    #         query="하나카드",
+    #     )
+    # )
+
     logger.info(
         fetch_data(
-            query="하나카드",
-            type="news",
+            type="datalab",
+            startDate="2025-02-01",
+            endDate="2025-02-28",
+            timeUnit="date",
+            keywordGroups=[
+                {
+                    "groupName": "하나카드",
+                    "keywords": ["원더카드", "제이드카드", "트래블로그"],
+                },
+            ],
         )
     )
