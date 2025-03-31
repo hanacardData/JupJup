@@ -5,42 +5,49 @@ import requests
 from dotenv import load_dotenv
 
 from logger import init_logger
-from models.request import SearchRequest
-from models.response import AbstractResponse, BlogResponse, CafeResponse, NewsResponse
+from models.request import AbstractRequest, SearchRequest, SearchTrendRequest
+from models.response import (
+    AbstractResponse,
+    BlogResponse,
+    CafeResponse,
+    NewsResponse,
+    TrendsResponse,
+)
 
 load_dotenv()
 TYPE_URL_MAPPER: dict[str, str] = {
     "blog": "https://openapi.naver.com/v1/search/blog.json",
     "news": "https://openapi.naver.com/v1/search/news.json",
     "cafe": "https://openapi.naver.com/v1/search/cafearticle.json",
+    "datalab": "https://openapi.naver.com/v1/datalab/search",
+}
+TYPE_REQUEST_MAPPER: dict[str, AbstractRequest] = {
+    "blog": SearchRequest,
+    "news": SearchRequest,
+    "cafe": SearchRequest,
+    "datalab": SearchTrendRequest,
 }
 TYPE_RESPONSE_MAPPER: dict[str, AbstractResponse] = {
     "blog": BlogResponse,
     "news": NewsResponse,
     "cafe": CafeResponse,
+    "datalab": TrendsResponse,
 }
 logger = init_logger()
 
 
 def fetch_data(
-    query: str,
-    type: Literal["blog", "news", "cafe"],
-    display: int | None = None,
-    start: int | None = None,
-    sort: str = "date",
+    type: Literal["blog", "news", "cafe", "datalab"],
+    **kwargs,
 ) -> AbstractResponse | None:
     """
     blog, news, cafe 스크랩 코드. type이 스크랩 종류고 query가 검색어.
     """
     url = TYPE_URL_MAPPER[type]
+    request_wrapper = TYPE_REQUEST_MAPPER[type]
     response_wrapper = TYPE_RESPONSE_MAPPER[type]
     try:
-        request_data = SearchRequest(
-            query=query,
-            display=display,
-            start=start,
-            sort=sort,
-        )
+        request_data = request_wrapper(**kwargs)
         response = requests.get(
             url=url,
             params=request_data.model_dump(),
