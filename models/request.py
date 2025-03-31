@@ -6,12 +6,6 @@ class AbstractRequest(BaseModel):
 
 
 class SearchRequest(AbstractRequest):
-    """blog, news, cafe API request
-    blog: https://developers.naver.com/docs/serviceapi/search/blog/blog.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0
-    news: https://developers.naver.com/docs/serviceapi/search/news/news.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0
-    cafe: https://developers.naver.com/docs/serviceapi/search/cafearticle/cafearticle.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0
-    """
-
     query: str = Field(..., description="검색어")
     display: int | None = Field(
         10,
@@ -37,10 +31,6 @@ class KeywordGroup(BaseModel):
 
 
 class SearchTrendRequest(AbstractRequest):
-    """데이터랩 API 요청
-    https://developers.naver.com/docs/serviceapi/datalab/search/search.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0.
-    """
-
     startDate: str = Field(..., description="yyyy-mm-dd 형식, 2016-01-01 이후")
     endDate: str = Field(..., description="yyyy-mm-dd 형식")
     timeUnit: str = Field(

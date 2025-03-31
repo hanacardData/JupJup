@@ -28,3 +28,9 @@ scrapNPS
 pip install -r requirements.txt
 python fetch.py # Working on
 ```
+
+4. 참고
+blog: https://developers.naver.com/docs/serviceapi/search/blog/blog.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0
+news: https://developers.naver.com/docs/serviceapi/search/news/news.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0
+cafe: https://developers.naver.com/docs/serviceapi/search/cafearticle/cafearticle.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0
+https://developers.naver.com/docs/serviceapi/datalab/search/search.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0.
