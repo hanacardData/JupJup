@@ -68,12 +68,12 @@ def fetch_data(
 
 
 if __name__ == "__main__":
-    # logger.info(
-    #     fetch_data(
-    #         type="news",
-    #         query="하나카드",
-    #     )
-    # )
+    logger.info(
+        fetch_data(
+            type="news",
+            query="하나카드",
+        )
+    )
 
     logger.info(
         fetch_data(
