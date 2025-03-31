@@ -1,7 +1,11 @@
 from pydantic import BaseModel, Field
 
 
-class SearchRequest(BaseModel):
+class AbstractRequest(BaseModel):
+    pass
+
+
+class SearchRequest(AbstractRequest):
     """blog, news, cafe API request
     blog: https://developers.naver.com/docs/serviceapi/search/blog/blog.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0
     news: https://developers.naver.com/docs/serviceapi/search/news/news.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0
@@ -32,7 +36,7 @@ class KeywordGroup(BaseModel):
     )
 
 
-class SearchTrendRequest(BaseModel):
+class SearchTrendRequest(AbstractRequest):
     """데이터랩 API 요청
     https://developers.naver.com/docs/serviceapi/datalab/search/search.md#%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0.
     """

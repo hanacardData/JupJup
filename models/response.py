@@ -72,3 +72,31 @@ class CafeResponse(AbstractResponse):
     start: int = Field(..., title="검색 시작 위치")
     display: int = Field(..., title="표시 개수")
     items: list[CafeItem] = Field(..., title="검색 결과 목록")
+
+
+class TrendData(BaseModel):
+    period: str = Field(..., title="구간 시작 날짜", description="yyyy-mm-dd 형식")
+    ratio: float = Field(
+        ...,
+        title="검색량 상대적 비율",
+        description="가장 큰 값을 100으로 설정한 상댓값",
+    )
+
+
+class TrendResult(BaseModel):
+    title: str = Field(..., title="주제어")
+    keywords: list[str] = Field(..., title="주제어에 해당하는 검색어 목록")
+    data: list[TrendData] = Field(..., title="검색 데이터 목록")
+
+
+class TrendsResponse(BaseModel):
+    startDate: str = Field(
+        ..., title="조회 기간 시작 날짜", description="yyyy-mm-dd 형식"
+    )
+    endDate: str = Field(
+        ..., title="조회 기간 종료 날짜", description="yyyy-mm-dd 형식"
+    )
+    timeUnit: str = Field(
+        ..., title="구간 단위", description="date, week, month 중 하나"
+    )
+    results: list[TrendResult] = Field(..., title="검색 결과 목록")
