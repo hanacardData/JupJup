@@ -55,7 +55,9 @@ def fetch_data(
         if type == "datalab":
             headers.update({"Content-Type": "application/json"})
             response = requests.post(
-                url, headers=headers, json=request_data.model_dump(exclude_none=True)
+                url=url,
+                headers=headers,
+                json=request_data.model_dump(exclude_none=True),
             )
         else:
             response = requests.get(
