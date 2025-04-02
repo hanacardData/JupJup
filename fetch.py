@@ -46,16 +46,23 @@ def fetch_data(
     url = TYPE_URL_MAPPER[type]
     request_wrapper = TYPE_REQUEST_MAPPER[type]
     response_wrapper = TYPE_RESPONSE_MAPPER[type]
+    headers: dict[str, str] = {
+        "X-Naver-Client-Id": os.environ["client_id"],
+        "X-Naver-Client-Secret": os.environ["client_secret"],
+    }
     try:
         request_data = request_wrapper(**kwargs)
-        response = requests.get(
-            url=url,
-            params=request_data.model_dump(),
-            headers={
-                "X-Naver-Client-Id": os.environ["client_id"],
-                "X-Naver-Client-Secret": os.environ["client_secret"],
-            },
-        )
+        if type == "datalab":
+            headers.update({"Content-Type": "application/json"})
+            response = requests.post(
+                url, headers=headers, json=request_data.model_dump(exclude_none=True)
+            )
+        else:
+            response = requests.get(
+                url=url,
+                params=request_data.model_dump(),
+                headers=headers,
+            )
         response.raise_for_status()
         return response_wrapper(**response.json())
     except requests.exceptions.RequestException as e:
