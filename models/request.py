@@ -17,7 +17,7 @@ class SearchRequest(AbstractRequest):
         1, ge=1, le=1000, description="검색 시작 위치 (기본값: 1, 최댓값: 1000)"
     )
     sort: str | None = Field(
-        "date",
+        "sim",
         pattern="^(sim|date)$",
         description="검색 결과 정렬 방법 (sim: 정확도순, date: 날짜순)",
     )
