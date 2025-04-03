@@ -4,11 +4,12 @@ import os
 from fetch import fetch_data
 from queries import COMPETITORS
 
-sources: list[str] = ["blog", "news", "cafe"]
+SOURCES: list[str] = ["blog", "news", "cafe"]
+
 
 if __name__ == "__main__":
     os.makedirs("data", exist_ok=True)
-    for source in sources:
+    for source in SOURCES:
         _file_path = os.path.join("data", f"{source}.json")
         if os.path.exists(_file_path):
             with open(_file_path, "r", encoding="utf-8") as f:
