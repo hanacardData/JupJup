@@ -1,11 +1,26 @@
-from pydantic import BaseModel, Field
+import re
+
+from pydantic import BaseModel, Field, field_serializer
+
+
+def remove_html_tags(text: str) -> str:
+    return re.sub(r"<.*?>", "", text) if text else text
 
 
 class AbstractResponse(BaseModel):
-    pass
+    def to_items(self) -> list[dict[str, str]]:
+        if not hasattr(self, "items"):
+            raise ValueError("items not exists.")
+        return [item.model_dump() for item in self.items]
 
 
-class BlogItem(BaseModel):
+class BaseItem(BaseModel):
+    @field_serializer("title", "description", check_fields=False)
+    def remove_html(self, value: str) -> str:
+        return remove_html_tags(value)
+
+
+class BlogItem(BaseItem):
     title: str = Field(
         ...,
         title="포스트 제목",
@@ -30,7 +45,7 @@ class BlogResponse(AbstractResponse):
     items: list[BlogItem] = Field(..., title="검색 결과 목록")
 
 
-class NewsItem(BaseModel):
+class NewsItem(BaseItem):
     title: str = Field(
         ..., title="뉴스 제목", description="검색어와 일치하는 부분은 <b> 태그로 감싸짐"
     )
@@ -50,7 +65,7 @@ class NewsResponse(AbstractResponse):
     items: list[NewsItem] = Field(..., title="검색 결과 목록")
 
 
-class CafeItem(BaseModel):
+class CafeItem(BaseItem):
     title: str = Field(
         ...,
         title="게시글 제목",
