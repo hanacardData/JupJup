@@ -1,8 +1,6 @@
-import os
 from typing import Literal
 
 import requests
-from dotenv import load_dotenv
 
 from logger import init_logger
 from models.request import AbstractRequest, SearchRequest, SearchTrendRequest
@@ -13,8 +11,8 @@ from models.response import (
     NewsResponse,
     TrendsResponse,
 )
+from secret import CLIENT_ID, CLIENT_SECRET
 
-load_dotenv()
 TYPE_URL_MAPPER: dict[str, str] = {
     "blog": "https://openapi.naver.com/v1/search/blog.json",
     "news": "https://openapi.naver.com/v1/search/news.json",
@@ -47,8 +45,8 @@ def fetch_data(
     request_wrapper = TYPE_REQUEST_MAPPER[type]
     response_wrapper = TYPE_RESPONSE_MAPPER[type]
     headers: dict[str, str] = {
-        "X-Naver-Client-Id": os.environ["client_id"],
-        "X-Naver-Client-Secret": os.environ["client_secret"],
+        "X-Naver-Client-Id": CLIENT_ID,
+        "X-Naver-Client-Secret": CLIENT_SECRET,
     }
     try:
         request_data = request_wrapper(**kwargs)
