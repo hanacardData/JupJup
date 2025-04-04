@@ -13,6 +13,11 @@ class AbstractResponse(BaseModel):
             raise ValueError("items not exists.")
         return [item.model_dump() for item in self.items]
 
+    def to_results(self) -> list[dict[str, str]]:
+        if not hasattr(self, "results"):
+            raise ValueError("results not exists.")
+        return [result.model_dump() for result in self.results]
+
 
 class BaseItem(BaseModel):
     @field_serializer("title", "description", check_fields=False)
@@ -104,7 +109,7 @@ class TrendResult(BaseModel):
     data: list[TrendData] = Field(..., title="검색 데이터 목록")
 
 
-class TrendsResponse(BaseModel):
+class TrendsResponse(AbstractResponse):
     startDate: str = Field(
         ..., title="조회 기간 시작 날짜", description="yyyy-mm-dd 형식"
     )
