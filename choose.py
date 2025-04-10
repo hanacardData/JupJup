@@ -1,21 +1,20 @@
-"""
-원하는 데이터 한개만 뽑기
-"""
-
 import json
-import os
 
 import pandas as pd
 from openai import OpenAI
 
+from refine import refine_data
 from secret import OPENAI_API_KEY
-from variables import PROMPT, SAVE_PATH, TEXT_INPUT
+from variables import DATA_PATH, PROMPT, TEXT_INPUT
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 def select_post() -> dict[str, str]:
-    data = pd.read_csv(os.path.join(SAVE_PATH, "data.csv"), encoding="utf-8")
+    """원하는 데이터 한개만 뽑기."""
+    data = pd.read_csv(DATA_PATH, encoding="utf-8")
+    data = refine_data(data)
+
     content = json.dumps(
         data[["title", "link"]].to_dict(orient="records"), ensure_ascii=False
     )
@@ -24,7 +23,9 @@ def select_post() -> dict[str, str]:
         instructions=PROMPT,
         input=TEXT_INPUT.format(content=content),
     )
-    return data.loc[data["link"] == response.output_text].to_dict(orient="records")[0]
+    selected_link = response.output_text.strip()
+    data.loc[data["link"] == selected_link, "is_posted"] = 1
+    return data.loc[data["link"] == selected_link].to_dict(orient="records")[0]
 
 
 if __name__ == "__main__":

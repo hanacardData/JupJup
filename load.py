@@ -1,41 +1,11 @@
-"""
-queries는 groupname: keywords 로 구성되도록 작성
-참고: groupname은 키워드로 입력하지 않는 그룹명임
-TODO: 키워드 추가 필요
-"""
-
 import os
 from time import sleep
 
 import pandas as pd
 
 from fetch import fetch_data
+from refine import SOURCES_REFINE_MAP
 from variables import DATA_PATH, QUERIES, SAVE_PATH, SOURCES
-
-
-def _refine_blog_data(data: pd.DataFrame) -> pd.DataFrame:
-    return data[
-        ["title", "link", "description", "postdate", "source", "is_posted"]
-    ].rename({"postdate": "post_date"}, axis=1)
-
-
-def _refine_news_data(data: pd.DataFrame) -> pd.DataFrame:
-    return data[
-        ["title", "link", "description", "pubDate", "source", "is_posted"]
-    ].rename({"pubDate": "post_date"}, axis=1)
-
-
-def _refine_cafe_data(data: pd.DataFrame) -> pd.DataFrame:
-    return data[["title", "link", "description", "source", "is_posted"]].assign(
-        postDate="",
-    )
-
-
-SOURCES_REFINE_MAP = {
-    "blog": _refine_blog_data,
-    "news": _refine_news_data,
-    "cafe": _refine_cafe_data,
-}
 
 
 def _read_csv(file_path: str) -> pd.DataFrame:
@@ -44,21 +14,20 @@ def _read_csv(file_path: str) -> pd.DataFrame:
     return pd.DataFrame()
 
 
-def collect_load_data(queries: dict[str, list[str]]) -> None:
+def collect_load_data(queries: list[str]) -> None:
     os.makedirs(SAVE_PATH, exist_ok=True)
     _df_list: list[pd.DataFrame] = [_read_csv(DATA_PATH)]
     for source in SOURCES:
         _file_path = os.path.join(SAVE_PATH, f"_{source}.csv")
         items: list[dict[str, str]] = []
-        for _, keywords in queries.items():
-            for keyword in keywords:
-                _data = fetch_data(
-                    type=source,
-                    query=keyword,
-                )
-                sleep(0.5)
-                _items = _data.to_items()
-                items.extend(_items)
+        for keyword in queries:
+            _data = fetch_data(
+                type=source,
+                query=keyword,
+            )
+            sleep(0.1)
+            _items = _data.to_items()
+            items.extend(_items)
 
         _data_source = _read_csv(_file_path)
         _data_source = pd.concat(
