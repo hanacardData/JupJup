@@ -22,7 +22,8 @@ _card_products: list[str] = [
 
 _regions: list[str] = [
     "",
-    "일본 오사카",
+    "일본",
+    "오사카",
     "도쿄",
     "교토",
     "후쿠오카",
