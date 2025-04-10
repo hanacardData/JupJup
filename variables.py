@@ -1,3 +1,5 @@
+"""검색어, 프롬프트, 메세지들 모음."""
+
 import itertools
 import os
 import re

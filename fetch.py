@@ -2,7 +2,7 @@ from typing import Literal
 
 import requests
 
-from logger import init_logger
+from logger import logger
 from models.request import SearchRequest, SearchTrendRequest
 from models.response import (
     AbstractResponse,
@@ -24,7 +24,6 @@ TYPE_RESPONSE_MAPPER: dict[str, AbstractResponse] = {
     "cafe": CafeResponse,
 }
 DATALAB_URL = "https://openapi.naver.com/v1/datalab/search"
-logger = init_logger()
 
 
 def fetch_data(
@@ -75,6 +74,7 @@ def fetch_trend_data(
     gender: str | None = None,
     ages: list[str] | None = None,
 ) -> TrendsResponse | None:
+    """데이터랩 스크랩 코드. 검색어 트렌드 분석용."""
     headers: dict[str, str] = {
         "X-Naver-Client-Id": CLIENT_ID,
         "X-Naver-Client-Secret": CLIENT_SECRET,
