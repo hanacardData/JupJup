@@ -1,4 +1,7 @@
-"""데이터 정제하는 코드들 모음."""
+"""
+데이터 정제하는 코드들 모음.
+FIXME: 물결님 헤엎-!
+"""
 
 from typing import Literal
 
