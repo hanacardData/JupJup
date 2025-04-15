@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from fetch import fetch_data
 from logger import logger
-from refine import SOURCES_REFINE_MAP
+from select_column import SOURCES_SELECT_MAP
 from variables import DATA_PATH, QUERIES, SAVE_PATH, SOURCES
 
 
@@ -20,7 +20,7 @@ def collect_load_data(queries: list[str]) -> None:
     """데이터를 수집하고 저장."""
     os.makedirs(SAVE_PATH, exist_ok=True)
     _df_list: list[pd.DataFrame] = [_read_csv(DATA_PATH)]
-    for source in tqdm(SOURCES, desc="Souce"):
+    for source in tqdm(SOURCES, desc="Source"):
         _file_path = os.path.join(SAVE_PATH, f"_{source}.csv")
 
         items: list[dict[str, str]] = []
@@ -28,6 +28,7 @@ def collect_load_data(queries: list[str]) -> None:
             _data = fetch_data(
                 type=source,
                 query=keyword,
+                sort="date" if source == "cafe" else "sim",
             )
             sleep(0.1)
             if _data is None:
@@ -41,7 +42,7 @@ def collect_load_data(queries: list[str]) -> None:
             ignore_index=True,
         ).drop_duplicates(subset=["link"])
         _data_source.to_csv(_file_path, index=False, encoding="utf-8")
-        _df_list.append(SOURCES_REFINE_MAP[source](_data_source))
+        _df_list.append(SOURCES_SELECT_MAP[source](_data_source))
 
     data = pd.concat(_df_list, ignore_index=True).sort_values(
         by="is_posted", ascending=False
