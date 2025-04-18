@@ -4,7 +4,7 @@ import itertools
 import os
 import re
 
-SOURCES: list[str] = ["blog", "news", "cafe"]
+SOURCES: list[str] = ["blog", "cafe"]
 DATALAB_SOURCE: str = "datalab"
 SAVE_PATH = "data"
 DATA_PATH = os.path.join(SAVE_PATH, "data.csv")
@@ -51,7 +51,8 @@ _regions: list[str] = [
     "바르셀로나",
     "영국",
     "런던",
-    "체코 프라하",
+    "체코",
+    "프라하",
     "헝가리",
     "부다페스트",
     "스위스",
