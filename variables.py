@@ -4,7 +4,7 @@ import itertools
 import os
 import re
 
-SOURCES: list[str] = ["blog", "news", "cafe"]
+SOURCES: list[str] = ["blog", "cafe"]
 DATALAB_SOURCE: str = "datalab"
 SAVE_PATH = "data"
 DATA_PATH = os.path.join(SAVE_PATH, "data.csv")
