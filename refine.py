@@ -74,8 +74,8 @@ class FeedbackScorer:
     
 def refine_data(data: pd.DataFrame) -> pd.DataFrame:
     scorer = FeedbackScorer(
-        main_keywords=["먹통", "오류", "에러", "안됨", "짜증", "느려", "느림"],
-        sub_keywords=["하나은행", "하나카드", "사용하시는", "사용하는"],
+        main_keywords=["먹통", "트래블로그", "트레블로그", "하나카드", "오류", "에러", "안됨", "짜증", "느려", "느림"],
+        sub_keywords=["하나은행", "하나머니", '원더카드', '제이드카드', '원더 카드', '제이드 카드'],
     )
 
     _data = data[data["is_posted"] == 0].copy()
@@ -97,7 +97,9 @@ def refine_data(data: pd.DataFrame) -> pd.DataFrame:
     data_cafe = data_cafe[data_cafe["total_score"] >= 4]
 
     # 병합하여 반환
-    return pd.concat([data_blog, data_cafe], ignore_index=True)
+    result = pd.concat([data_blog, data_cafe], ignore_index=True)
+    result["post_date"] = result["post_date"].astype("Int64").astype(str)
+    return result
 
 if __name__ == "__main__":
     data = pd.read_csv("data/data.csv", encoding="utf-8")
