@@ -1,10 +1,11 @@
 import requests
 
-from access_token import get_token
+from access_token import token_manager
+
 
 bot_id = 9881957
 channel_id = "8895b3b4-1cff-cec7-b7bc-a6df449d3638"
-token = get_token()
+token = token_manager.get_token()
 message_payload = {
     "content": {"type": "text", "text": "안녕하세요! 물결 봇 테스트입니다."}
 }

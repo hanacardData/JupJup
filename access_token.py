@@ -12,39 +12,55 @@ from secret import (
 )
 
 
-def get_token() -> str:
-    """Works API에 접근하기 위한 JWT 토큰을 생성해서 인증하기 위한 Access token 받아오는 함수."""
-    iat = int(time.time())
-    exp = iat + 3600  # 1시간 후 만료
-    payload = {
-        "iss": WORKS_CLIENT_ID,
-        "sub": SERVICE_ACCOUNT,
-        "iat": iat,
-        "exp": exp,
-    }
+class WorksTokenManager:
+    def __init__(self):
+        self._access_token = None
+        self._token_expiry = 0 # unix timestamp
 
-    with open(PRIVATE_KEY_PATH, "r") as key_file:
-        private_key = serialization.load_pem_private_key(
-            key_file.read().encode(), password=None
-        )
+    def get_token(self) -> str:
+        now = int(time.time())
+        if self._access_token and now < self._token_expiry - 60:
+            return self._access_token
 
-    encoded_jwt = jwt.encode(payload, private_key, algorithm="RS256")
+        exp = now + 3600
+        payload = {
+            "iss": WORKS_CLIENT_ID,
+            "sub": SERVICE_ACCOUNT,
+            "iat": now,
+            "exp": exp,
+        }
 
-    token_url = "https://auth.worksmobile.com/oauth2/v2.0/token"
-    headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
-    data = {
-        "assertion": encoded_jwt,
-        "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        "client_id": WORKS_CLIENT_ID,
-        "client_secret": WORKS_CLIENT_SECRET,
-        "scope": "bot bot.message bot.read",
-    }
+        with open(PRIVATE_KEY_PATH, "r") as key_file:
+            private_key = serialization.load_pem_private_key(
+                key_file.read().encode(), password=None
+            )
 
-    response = requests.post(token_url, headers=headers, data=data)
-    if response.status_code == 200:
-        token_data: dict[str, str] = response.json()
-        print("✅ Access Token:", token_data["access_token"])
-        return token_data["access_token"]
-    else:
-        print("❌ Failed to get token:", response.status_code)
-        print(response.text)
+        encoded_jwt = jwt.encode(payload, private_key, algorithm="RS256")
+
+        token_url = "https://auth.worksmobile.com/oauth2/v2.0/token"
+        headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
+        data = {
+            "assertion": encoded_jwt,
+            "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "client_id": WORKS_CLIENT_ID,
+            "client_secret": WORKS_CLIENT_SECRET,
+            "scope": "bot bot.message bot.read",
+        }
+        response = requests.post(token_url, headers=headers, data=data)
+        if response.status_code == 200:
+            token_data: dict[str, str] = response.json()
+            self._access_token = token_data["access_token"]
+            self._token_expiry = exp
+            print("✅ Access Token:", self._access_token)
+            return self._access_token
+        else:
+            print("❌ Failed to get token:", response.status_code)
+            print(response.text)
+            raise Exception("Token request failed")
+
+
+token_manager = WorksTokenManager()
+
+if __name__ == "__main__":
+    token_manager = WorksTokenManager()
+    token = token_manager.get_token()
