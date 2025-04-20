@@ -12,7 +12,7 @@ from secret import (
 )
 
 
-class WorksTokenManager:
+class TokenManager:
     def __init__(self):
         self._access_token = None
         self._token_expiry = 0 # unix timestamp
@@ -59,8 +59,8 @@ class WorksTokenManager:
             raise Exception("Token request failed")
 
 
-token_manager = WorksTokenManager()
+token_manager = TokenManager()
 
 if __name__ == "__main__":
-    token_manager = WorksTokenManager()
+    token_manager = TokenManager()
     token = token_manager.get_token()
