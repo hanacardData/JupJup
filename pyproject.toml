@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "scrapcompetitor"
+version = "0.0.1"
+description = ""
+authors = ["RektPunk <rektpunk@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pandas = "^2.2.3"
+openai = "^1.75.0"
+dotenv = "^0.9.9"
+pydantic = "^2.11.3"
+pyjwt = "^2.10.1"
+cryptography = "^44.0.2"
+requests = "^2.32.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
