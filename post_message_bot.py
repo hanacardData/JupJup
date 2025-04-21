@@ -10,10 +10,19 @@ def post_message() -> None:
     token = token_manager.get_token()
     message = select_post()
     message_payload = {
-        "content": {"type": "text", "text": message} # FIXME: message 형식 변경
-    }
+        "content": {
+            "type": "link",
+            "contentText": f"{message['title']}:{message['description']}",
+            "linkText": "링크",
+            "link": message["link"],
+        }
+    } # FIXME: 메세지 형식 바꾸기
 
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     for channel_id in channel_ids:
         url = f"https://www.worksapis.com/v1.0/bots/{bot_id}/channels/{channel_id}/messages"
         requests.post(url, headers=headers, json=message_payload)
+
+
+if __name__ == "__main__":
+    post_message()
