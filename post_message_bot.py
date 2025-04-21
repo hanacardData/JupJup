@@ -14,8 +14,12 @@ def post_message() -> None:
     message_payload = {
         "content": {
             "type": "link",
-            "contentText": f"{message['title']}:{message['description']}",  # FIXME: 메세지 형식 바꾸기
-            "linkText": "링크",
+            "contentText": (
+                "안녕하세요! 줍줍이입니다 🤗 \n제가 줍줍한 이슈를 공유드릴게요!\n\n"
+                f"📌 제목: {message['title']}\n"
+                f"📝 내용: {message['description']}\n"
+            ),
+            "linkText": "자세히 보기",
             "link": message["link"],
         }
     }
