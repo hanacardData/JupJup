@@ -4,89 +4,15 @@ import itertools
 import os
 import re
 
+from keywords import CARD_PRODUCTS, ISSUE_KEYWORDS, REGIONS
+
 SOURCES: list[str] = ["blog", "cafe"]
 DATALAB_SOURCE: str = "datalab"
 SAVE_PATH = "data"
 DATA_PATH = os.path.join(SAVE_PATH, "data.csv")
 
-_card_products: list[str] = [
-    "하나카드",
-    "하나머니",
-    "하나페이",
-    "하나1Q",
-    "원더카드",
-    "하나원더",
-    "제이드카드",
-    "트래블로그",
-]
 
-_regions: list[str] = [
-    "",
-    "일본",
-    "오사카",
-    "도쿄",
-    "교토",
-    "후쿠오카",
-    "삿포로",
-    "오키나와",
-    "나고야",
-    "베트남",
-    "다낭",
-    "호치민",
-    "하노이",
-    "나트랑",
-    "푸꾸옥",
-    "태국",
-    "방콕",
-    "파타야",
-    "푸켓",
-    "푸껫",
-    "치앙마이",
-    "유럽",
-    "프랑스",
-    "파리",
-    "이탈리아",
-    "로마",
-    "스페인",
-    "바르셀로나",
-    "영국",
-    "런던",
-    "체코",
-    "프라하",
-    "헝가리",
-    "부다페스트",
-    "스위스",
-    "인터라켄",
-    "취리히",
-    "루체른",
-    "인도네시아",
-    "발리",
-    "싱가포르",
-]
-
-_issue_keywords: list[str] = [
-    "카드 도용",
-    "OTP 오류",
-    "인증 실패",
-    "결제 오류",
-    "결제 지연",
-    "결제 문제",
-    "결제 거절",
-    "승인 오류",
-    "앱 먹통",
-    "접속 불가",
-    "로그인 오류",
-    "해킹",
-    "정보 유출",
-    "안됨",
-    "불편",
-    "불친절",
-    "고객센터 연결 안됨",
-    "이용 제한",
-    "원화 출금",
-    "해외 결제",
-]
-combinations = list(itertools.product(_card_products, _regions, _issue_keywords))
+combinations = list(itertools.product(CARD_PRODUCTS, REGIONS, ISSUE_KEYWORDS))
 QUERIES: list[str] = [
     re.sub(r"\s+", " ", f"{combination[0]} {combination[1]} {combination[2]}")
     for combination in combinations
