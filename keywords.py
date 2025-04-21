@@ -1,4 +1,7 @@
-"""검색어 등애 사용되는 키워드 모음"""
+"""검색어에 사용되는 키워드 모음"""
+
+import itertools
+import re
 
 CARD_PRODUCTS: list[str] = [
     "하나카드",
@@ -86,3 +89,26 @@ REGIONS: list[str] = [
     "발리",
     "싱가포르",
 ]
+
+combinations = list(itertools.product(CARD_PRODUCTS, REGIONS, ISSUE_KEYWORDS))
+QUERIES: list[str] = [
+    re.sub(r"\s+", " ", f"{combination[0]} {combination[1]} {combination[2]}")
+    for combination in combinations
+]
+
+DATALAB_QUERIES: dict[str, list[str]] = {
+    "하나카드": [
+        "하나카드",
+        "하나1Q",
+        "원더카드",
+        "제이드카드",
+        "트래블로그",
+    ],
+    "롯데카드": ["롯데카드"],
+    "비씨카드": ["비씨카드"],
+    "삼성카드": ["삼성카드"],
+    "신한카드": ["신한카드", "쏠트래블"],
+    "우리카드": ["우리카드"],
+    "현대카드": ["현대카드"],
+    "KB국민카드": ["KB국민카드"],
+}
