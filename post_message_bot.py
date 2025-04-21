@@ -12,11 +12,11 @@ def post_message() -> None:
     message_payload = {
         "content": {
             "type": "link",
-            "contentText": f"{message['title']}:{message['description']}",
+            "contentText": f"{message['title']}:{message['description']}",  # FIXME: 메세지 형식 바꾸기
             "linkText": "링크",
             "link": message["link"],
         }
-    } # FIXME: 메세지 형식 바꾸기
+    }
 
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     for channel_id in channel_ids:
