@@ -7,7 +7,8 @@ from tqdm import tqdm
 from fetch import fetch_data
 from logger import logger
 from select_column import SOURCES_SELECT_MAP
-from variables import DATA_PATH, QUERIES, SAVE_PATH, SOURCES
+from variables import DATA_PATH, SAVE_PATH, SOURCES
+from keywords import QUERIES
 
 
 def _read_csv(file_path: str) -> pd.DataFrame:
