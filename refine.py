@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pandas as pd
 
@@ -90,26 +90,20 @@ def refine_data(data: pd.DataFrame) -> pd.DataFrame:
         negative_keywords=NEGATIVE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
     _data = data[data["is_posted"] == 0]
-    today = datetime.today()
-    date_criteria = int((today - timedelta(days=7)).strftime("%Y%m%d"))
 
     # 블로그 필터링
-    data_blog = _data[
-        (_data["source"] == "blog")
-        & (~_data["description"].str.contains("도용", na=False))
-        & (_data["post_date"] >= date_criteria)
-    ]
+    data_blog = _data[_data["source"] == "blog"]
     data_blog = scorer.apply_scores(data_blog)
-    data_blog = data_blog[data_blog["total_score"] >= 4]
+    data_blog = data_blog.sort_values(
+        ["post_date", "total_score"], ascending=[False, False]
+    ).iloc[:50]
 
     # 카페 필터링
-    data_cafe = _data[
-        (_data["source"] == "cafe")
-        & (~_data["description"].str.contains("도용", na=False))
-        & (_data["post_date"] >= date_criteria)
-    ].copy()
+    data_cafe = _data[_data["source"] == "cafe"]
     data_cafe = scorer.apply_scores(data_cafe)
-    data_cafe = data_cafe[data_cafe["total_score"] >= 4]
+    data_cafe = data_blog.sort_values(
+        ["post_date", "total_score"], ascending=[False, False]
+    ).iloc[:50]
 
     # 병합하여 반환
     result = pd.concat([data_blog, data_cafe], ignore_index=True)
