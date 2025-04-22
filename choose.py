@@ -32,5 +32,6 @@ def select_post() -> dict[str, str]:
     data.to_csv(DATA_PATH, index=False, encoding="utf-8")
     return data.loc[data["link"] == selected_link].to_dict(orient="records")[0]
 
+
 if __name__ == "__main__":
     print(select_post())
