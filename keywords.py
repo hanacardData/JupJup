@@ -1,33 +1,27 @@
-"""검색어 등애 사용되는 키워드 모음"""
+"""검색어에 사용되는 키워드 모음"""
+
+import itertools
+import re
 
 CARD_PRODUCTS: list[str] = [
     "하나카드",
-    "하나은행",
     "하나머니",
     "하나페이",
     "하나1Q",
     "원더카드",
-    "원더 카드",
-    "하나원더",
     "제이드카드",
-    "제이드 카드",
     "트래블로그",
 ]
 
 ISSUE_KEYWORDS: list[str] = [
-    "카드 도용",
-    "OTP 오류",
     "인증 실패",
     "결제 오류",
     "결제 지연",
     "결제 문제",
-    "결제 거절",
     "승인 오류",
-    "앱 먹통",
+    "먹통",
     "접속 불가",
     "로그인 오류",
-    "해킹",
-    "정보 유출",
     "안됨",
     "불편",
     "불친절",
@@ -39,15 +33,17 @@ ISSUE_KEYWORDS: list[str] = [
 
 NEGATIVE_KEYWORDS: list[str] = [
     "먹통",
-    "트래블로그",
-    "트레블로그",
-    "하나카드",
     "오류",
     "에러",
     "안됨",
     "짜증",
     "느려",
     "느림",
+    "불편",
+    "불만",
+    "불친절",
+    "불만족",
+    "거절",
 ]
 
 REGIONS: list[str] = [
@@ -93,3 +89,26 @@ REGIONS: list[str] = [
     "발리",
     "싱가포르",
 ]
+
+combinations = list(itertools.product(CARD_PRODUCTS, REGIONS, ISSUE_KEYWORDS))
+QUERIES: list[str] = [
+    re.sub(r"\s+", " ", f"{combination[0]} {combination[1]} {combination[2]}")
+    for combination in combinations
+]
+
+DATALAB_QUERIES: dict[str, list[str]] = {
+    "하나카드": [
+        "하나카드",
+        "하나1Q",
+        "원더카드",
+        "제이드카드",
+        "트래블로그",
+    ],
+    "롯데카드": ["롯데카드"],
+    "비씨카드": ["비씨카드"],
+    "삼성카드": ["삼성카드"],
+    "신한카드": ["신한카드", "쏠트래블"],
+    "우리카드": ["우리카드"],
+    "현대카드": ["현대카드"],
+    "KB국민카드": ["KB국민카드"],
+}

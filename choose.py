@@ -3,6 +3,7 @@ import json
 import pandas as pd
 from openai import OpenAI
 
+from keywords import CARD_PRODUCTS
 from refine import refine_data
 from secret import OPENAI_API_KEY
 from variables import DATA_PATH, PROMPT, TEXT_INPUT
@@ -21,12 +22,16 @@ def select_post() -> dict[str, str]:
     response = client.responses.create(
         model="gpt-4o",
         instructions=PROMPT,
-        input=TEXT_INPUT.format(content=content),
+        input=TEXT_INPUT.format(
+            card_products=", ".join(CARD_PRODUCTS),
+            content=content,
+        ),
     )
     selected_link = response.output_text.strip()
     data.loc[data["link"] == selected_link, "is_posted"] = 1
+    # data.to_csv(DATA_PATH, index=False, encoding="utf-8") # TODO: 실제 배포엔 data 저장 process 필요
     return data.loc[data["link"] == selected_link].to_dict(orient="records")[0]
 
 
 if __name__ == "__main__":
-    select_post()
+    print(select_post())

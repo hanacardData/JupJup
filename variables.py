@@ -1,39 +1,11 @@
-"""검색어, 프롬프트, 메세지들 모음."""
+"""프롬프트, 메세지들 모음."""
 
-import itertools
 import os
-import re
-
-from keywords import CARD_PRODUCTS, ISSUE_KEYWORDS, REGIONS
 
 SOURCES: list[str] = ["blog", "cafe"]
 DATALAB_SOURCE: str = "datalab"
 SAVE_PATH = "data"
 DATA_PATH = os.path.join(SAVE_PATH, "data.csv")
-
-
-combinations = list(itertools.product(CARD_PRODUCTS, REGIONS, ISSUE_KEYWORDS))
-QUERIES: list[str] = [
-    re.sub(r"\s+", " ", f"{combination[0]} {combination[1]} {combination[2]}")
-    for combination in combinations
-]
-
-DATALAB_QUERIES: dict[str, list[str]] = {
-    "하나카드": [
-        "하나카드",
-        "하나1Q",
-        "원더카드",
-        "제이드카드",
-        "트래블로그",
-    ],
-    "롯데카드": ["롯데카드"],
-    "비씨카드": ["비씨카드"],
-    "삼성카드": ["삼성카드"],
-    "신한카드": ["신한카드", "쏠트래블"],
-    "우리카드": ["우리카드"],
-    "현대카드": ["현대카드"],
-    "KB국민카드": ["KB국민카드"],
-}
 
 PROMPT: str = """
 당신은 고객의 소리에 집중하는 하나카드의 데이터 수집가입니다.
@@ -42,12 +14,13 @@ PROMPT: str = """
 """
 
 TEXT_INPUT: str = """
-다음은 최근 수집된 카드 회사의 키워드로 검색된 기사, 블로그, 뉴스들의 목록입니다.
+다음은 최근 수집된 카드 회사의 키워드로 검색된 카페, 블로그의 글 목록입니다.
 이 중에서 하나카드 입장에서 마케팅, 브랜딩, 고객 유치, 수익 창출 등의 관점에서 가장 흥미로운 기사 하나만 선택해 주세요.
 반드시 한가지의 기사만 선택해야 하며, 선택 기준은 다음의 우선순위에 의해 선정되어야 합니다:
-1. 이용 불편 사항 혹은 불만 사항 (결제 오류나 거절, 앱 먹통 등)
-2. 경쟁사 대비 차별점, 만족한 점
-3. 주목도 높은 이벤트나 경품 제공
+1. 하나카드({card_products})에 직접적으로 연관된 내용
+2. 이용 불편 사항 혹은 불만 사항 (결제 오류나 거절, 앱 먹통 등)
+3. 경쟁사 대비 차별점, 만족한 점
+4. 주목도 높은 이벤트나 경품 제공
 
 ### 입력값:
 {content}
