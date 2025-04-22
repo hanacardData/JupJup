@@ -1,7 +1,7 @@
 import requests
 
-from access_token import token_manager
-from choose import select_post
+from bot.access_token import token_manager
+from bot.choose import select_post
 
 
 def post_message() -> None:

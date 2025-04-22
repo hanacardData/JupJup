@@ -4,11 +4,11 @@ from time import sleep
 import pandas as pd
 from tqdm import tqdm
 
-from fetch import fetch_data
+from data_collect.fetch import fetch_data
+from data_collect.keywords import QUERIES
+from data_collect.select_column import SOURCES_SELECT_MAP
 from logger import logger
-from select_column import SOURCES_SELECT_MAP
 from variables import DATA_PATH, SAVE_PATH, SOURCES
-from keywords import QUERIES
 
 
 def _read_csv(file_path: str) -> pd.DataFrame:
