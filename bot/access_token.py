@@ -15,7 +15,7 @@ from secret import (
 class TokenManager:
     def __init__(self):
         self._access_token = None
-        self._token_expiry = 0 # unix timestamp
+        self._token_expiry = 0  # unix timestamp
 
     def get_token(self) -> str:
         now = int(time.time())

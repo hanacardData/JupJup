@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from keywords import CARD_PRODUCTS, NEGATIVE_KEYWORDS
+from data_collect.keywords import CARD_PRODUCTS, NEGATIVE_KEYWORDS
 
 
 class FeedbackScorer:
