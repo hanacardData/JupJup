@@ -1,10 +1,10 @@
-from load import collect_load_data
-from refine import refine_data
-from post_message_bot import post_message
-from variables import DATA_PATH
-from keywords import QUERIES
-
 import pandas as pd
+
+from bot.post_message_bot import post_message
+from data_collect.keywords import QUERIES
+from data_collect.load import collect_load_data
+from data_collect.refine import refine_data
+from variables import DATA_PATH
 
 
 def run_all():
@@ -20,7 +20,6 @@ def run_all():
 
     post_message()
     print("Sent Message")
-
 
 
 if __name__ == "__main__":

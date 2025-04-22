@@ -2,15 +2,15 @@ from typing import Literal
 
 import requests
 
-from logger import logger
-from models.request import SearchRequest, SearchTrendRequest
-from models.response import (
+from data_collect.models.request import SearchRequest, SearchTrendRequest
+from data_collect.models.response import (
     AbstractResponse,
     BlogResponse,
     CafeResponse,
     NewsResponse,
     TrendsResponse,
 )
+from logger import logger
 from secret import CLIENT_ID, CLIENT_SECRET
 
 TYPE_URL_MAPPER: dict[str, str] = {
