@@ -1,6 +1,5 @@
 from load import collect_load_data
 from refine import refine_data
-from choose import select_post
 from post_message_bot import post_message
 from variables import DATA_PATH
 from keywords import QUERIES
