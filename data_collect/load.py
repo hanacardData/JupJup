@@ -47,10 +47,13 @@ def collect_load_data(queries: list[str]) -> None:
         _data_source.to_csv(_file_path, index=False, encoding="utf-8")
         _df_list.append(SOURCES_SELECT_MAP[source](_data_source))
 
+    # is_posted 기준으로 내림차순으로 정렬한 뒤
     data = pd.concat(_df_list, ignore_index=True).sort_values(
         by="is_posted", ascending=False
     )
-    data_deduplicated = data.drop_duplicates(subset="link", keep="first")
+    data_deduplicated = data.drop_duplicates(
+        subset="link", keep="first"
+    )  # link 기준으로 중복 제거, is_posted가 1인 경우 우선적으로 남김
     data_deduplicated.to_csv(DATA_PATH, index=False, encoding="utf-8")
 
 
