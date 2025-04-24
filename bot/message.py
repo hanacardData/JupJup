@@ -13,12 +13,12 @@ from variables import DATA_PATH
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-def extract_urls(text: str) -> list[str]:
+def _extract_urls(text: str) -> list[str]:
     urls = re.findall(r"https?://[^\s]+", text)
     return urls
 
 
-class FeedbackScorer:
+class _FeedbackScorer:
     def __init__(
         self,
         issue_keywords: list[str],
@@ -98,7 +98,7 @@ class FeedbackScorer:
 
 
 def _refine_data(data: pd.DataFrame) -> pd.DataFrame:
-    scorer = FeedbackScorer(
+    scorer = _FeedbackScorer(
         issue_keywords=ISSUE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
     _data = data[data["is_posted"] == 0]
@@ -134,7 +134,7 @@ def get_message(data: pd.DataFrame) -> str:
         ),
     )
     result = response.output_text.strip()
-    urls = extract_urls(result)
+    urls = _extract_urls(result)
 
     if len(urls) == 0:
         print("No URLs found in the message.")
