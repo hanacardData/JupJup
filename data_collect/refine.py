@@ -101,9 +101,7 @@ def refine_data(data: pd.DataFrame) -> pd.DataFrame:
     # 카페 필터링
     data_cafe = _data[_data["source"] == "cafe"]
     data_cafe = scorer.apply_scores(data_cafe)
-    data_cafe = data_blog.sort_values(
-        ["post_date", "total_score"], ascending=[False, False]
-    ).iloc[:50]
+    data_cafe = data_cafe.sort_values("total_score", ascending=False).iloc[:50]
 
     # 병합하여 반환
     result = pd.concat([data_blog, data_cafe], ignore_index=True)
