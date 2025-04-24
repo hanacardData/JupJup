@@ -12,7 +12,7 @@ from variables import DATA_PATH
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-def select_post() -> dict[str, str]:
+def select_post() -> str:
     """원하는 데이터 한개만 뽑기."""
     data = pd.read_csv(DATA_PATH, encoding="utf-8")
     data = refine_data(data)
@@ -28,10 +28,7 @@ def select_post() -> dict[str, str]:
             content=content,
         ),
     )
-    selected_link = response.output_text.strip()
-    data.loc[data["link"] == selected_link, "is_posted"] = 1
-    data.to_csv(DATA_PATH, index=False, encoding="utf-8")
-    return data.loc[data["link"] == selected_link].to_dict(orient="records")[0]
+    return response.output_text.strip()
 
 
 if __name__ == "__main__":
