@@ -28,6 +28,7 @@ def select_post() -> str:
             content=content,
         ),
     )
+    # FIXME: 이미 post 된 글 태그하는 로직 추가하기
     return response.output_text.strip()
 
 
