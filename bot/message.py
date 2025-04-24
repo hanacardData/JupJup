@@ -33,6 +33,14 @@ def get_message(data: pd.DataFrame) -> str:
         ),
     )
     result = response.output_text.strip()
-    data.loc[data["link"].isin(extract_urls(result)), "is_posted"] = 1
+    urls = extract_urls(result)
+
+    if len(urls) == 0:
+        print("No URLs found in the message.")
+    else:
+        if len(urls) != 3:
+            print("Not expected number of URLs found in the message.")
+        data.loc[data["link"].isin(urls), "is_posted"] = 1
+
     data.to_csv(DATA_PATH, index=False, encoding="utf-8")
     return result
