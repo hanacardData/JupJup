@@ -109,8 +109,3 @@ def refine_data(data: pd.DataFrame) -> pd.DataFrame:
     result = pd.concat([data_blog, data_cafe], ignore_index=True)
     result = result.assign(post_date=result["post_date"].astype("Int64").astype(str))
     return result
-
-
-if __name__ == "__main__":
-    data = pd.read_csv("data/data.csv", encoding="utf-8")
-    refined_data = refine_data(data)

@@ -33,9 +33,7 @@ def fetch_data(
     start: int = 1,
     sort: str = "sim",
 ) -> AbstractResponse | None:
-    """
-    blog, news, cafe 스크랩 코드. type이 스크랩 종류고 query가 검색어.
-    """
+    """blog, news, cafe 스크랩 코드. type이 스크랩 종류고 query가 검색어."""
     url = TYPE_URL_MAPPER[type]
     response_wrapper = TYPE_RESPONSE_MAPPER[type]
     headers: dict[str, str] = {
