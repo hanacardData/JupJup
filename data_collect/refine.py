@@ -104,6 +104,4 @@ def refine_data(data: pd.DataFrame) -> pd.DataFrame:
     data_cafe = data_cafe.sort_values("total_score", ascending=False).iloc[:50]
 
     # 병합하여 반환
-    result = pd.concat([data_blog, data_cafe], ignore_index=True)
-    result = result.assign(post_date=result["post_date"].astype("Int64").astype(str))
-    return result
+    return pd.concat([data_blog, data_cafe], ignore_index=True)
