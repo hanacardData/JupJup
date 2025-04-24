@@ -47,8 +47,10 @@ def collect_load_data(queries: list[str]) -> None:
         _data_source.to_csv(_file_path, index=False, encoding="utf-8")
         _df_list.append(SOURCES_SELECT_MAP[source](_data_source))
 
-    data = pd.concat(_df_list, ignore_index=True)
-    data_deduplicated = data.drop_duplicates(subset="link")
+    data = pd.concat(_df_list, ignore_index=True).sort_values(
+        by="is_posted", ascending=False
+    )
+    data_deduplicated = data.drop_duplicates(subset="link", keep="first")
     data_deduplicated.to_csv(DATA_PATH, index=False, encoding="utf-8")
 
 
