@@ -1,4 +1,5 @@
 import json
+import re
 
 import pandas as pd
 from openai import OpenAI
@@ -12,13 +13,16 @@ from variables import DATA_PATH
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-def select_post() -> str:
-    """원하는 데이터 한개만 뽑기."""
-    data = pd.read_csv(DATA_PATH, encoding="utf-8")
-    data = refine_data(data)
+def extract_urls(text: str) -> list[str]:
+    urls = re.findall(r"https?://[^\s]+", text)
+    return urls
 
+
+def get_message(data: pd.DataFrame) -> str:
+    refined_data = refine_data(data)
     content = json.dumps(
-        data[["title", "link"]].to_dict(orient="records"), ensure_ascii=False
+        refined_data[["title", "link", "description"]].to_dict(orient="records"),
+        ensure_ascii=False,
     )
     response = client.responses.create(
         model="gpt-4o",
@@ -28,9 +32,7 @@ def select_post() -> str:
             content=content,
         ),
     )
-    # FIXME: 이미 post 된 글 태그하는 로직 추가하기
-    return response.output_text.strip()
-
-
-if __name__ == "__main__":
-    print(select_post())
+    result = response.output_text.strip()
+    data.loc[data["link"].isin(extract_urls(result)), "is_posted"] = 1
+    data.to_csv(DATA_PATH, index=False, encoding="utf-8")
+    return result
