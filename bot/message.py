@@ -134,6 +134,10 @@ def get_message(data: pd.DataFrame) -> str:
         ),
     )
     result = response.output_text.strip()
+    message = (
+        f"안녕하세요! 줍줍이입니다 🤗 \n제가 줍줍한 이슈를 공유드릴게요!\n\n수집한 총 {len(data)}개의 문서를 분석한 결과입니다!\n\n"
+        + result
+    )
     urls = _extract_urls(result)
 
     if len(urls) == 0:
@@ -144,4 +148,4 @@ def get_message(data: pd.DataFrame) -> str:
         data.loc[data["link"].isin(urls), "is_posted"] = 1
 
     data.to_csv(DATA_PATH, index=False, encoding="utf-8")
-    return result
+    return message
