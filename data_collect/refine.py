@@ -3,18 +3,18 @@ from datetime import datetime
 
 import pandas as pd
 
-from data_collect.keywords import CARD_PRODUCTS, NEGATIVE_KEYWORDS
+from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
 
 
 class FeedbackScorer:
     def __init__(
         self,
-        negative_keywords: list[str],
+        issue_keywords: list[str],
         product_keywords: list[str],
     ):
-        self.negative_keywords = negative_keywords
+        self.issue_keywords = issue_keywords
         self.product_keywords = product_keywords
-        self.all_keywords = negative_keywords + product_keywords
+        self.all_keywords = issue_keywords + product_keywords
 
     # scoring 기준 1: 날짜가 최신일수록 높은 스코어
     def calc_date_score(self, days: int) -> int:
@@ -22,7 +22,7 @@ class FeedbackScorer:
 
     # scoring 기준 2: 핵심 키워드가 포함될수록 높은 스코어
     def calc_keyword_score(self, text: str) -> int:
-        if any(kw in text for kw in self.negative_keywords):
+        if any(kw in text for kw in self.issue_keywords):
             return 2
         elif any(kw in text for kw in self.product_keywords):
             return 1
@@ -30,7 +30,7 @@ class FeedbackScorer:
 
     # scoring 기준 3: 글의 길이 대비 부정 단어 카운트가 높을수록 높은 스코어
     def count_negative_keywords(self, text: str) -> int:
-        return sum(text.count(kw) for kw in self.negative_keywords)
+        return sum(text.count(kw) for kw in self.issue_keywords)
 
     def assign_percentile_score(self, series: pd.Series) -> pd.Series:
         q90 = series.quantile(0.9)
@@ -87,7 +87,7 @@ class FeedbackScorer:
 
 def refine_data(data: pd.DataFrame) -> pd.DataFrame:
     scorer = FeedbackScorer(
-        negative_keywords=NEGATIVE_KEYWORDS, product_keywords=CARD_PRODUCTS
+        issue_keywords=ISSUE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
     _data = data[data["is_posted"] == 0]
 
