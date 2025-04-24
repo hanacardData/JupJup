@@ -14,6 +14,8 @@ CARD_PRODUCTS: list[str] = [
 ]
 
 ISSUE_KEYWORDS: list[str] = [
+    "오류",
+    "에러",
     "인증 실패",
     "결제 오류",
     "결제 지연",
@@ -24,27 +26,22 @@ ISSUE_KEYWORDS: list[str] = [
     "로그인 오류",
     "안됨",
     "불편",
+    "불만",
     "불친절",
     "고객센터 연결 안됨",
     "이용 제한",
     "원화 출금",
     "해외 결제",
-]
-
-NEGATIVE_KEYWORDS: list[str] = [
-    "먹통",
-    "오류",
-    "에러",
-    "안됨",
     "짜증",
     "느려",
     "느림",
-    "불편",
-    "불만",
-    "불친절",
-    "불만족",
     "거절",
+    "사용후기",
+    "대박",
+    "혜택",
+    "이벤트",
 ]
+
 
 REGIONS: list[str] = [
     "",
@@ -90,9 +87,9 @@ REGIONS: list[str] = [
     "싱가포르",
 ]
 
-combinations = list(itertools.product(CARD_PRODUCTS, REGIONS, ISSUE_KEYWORDS))
+combinations = list(itertools.product(CARD_PRODUCTS, ISSUE_KEYWORDS))
 QUERIES: list[str] = [
-    re.sub(r"\s+", " ", f"{combination[0]} {combination[1]} {combination[2]}")
+    re.sub(r"\s+", " ", f"{combination[0]} {combination[1]}").strip()
     for combination in combinations
 ]
 

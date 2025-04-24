@@ -1,20 +1,32 @@
+import json
 import re
 from datetime import datetime
 
 import pandas as pd
+from openai import OpenAI
 
-from data_collect.keywords import CARD_PRODUCTS, NEGATIVE_KEYWORDS
+from bot.prompt import PROMPT, TEXT_INPUT
+from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
+from secret import OPENAI_API_KEY
+from variables import DATA_PATH
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-class FeedbackScorer:
+def _extract_urls(text: str) -> list[str]:
+    urls = re.findall(r"https?://[^\s]+", text)
+    return urls
+
+
+class _FeedbackScorer:
     def __init__(
         self,
-        negative_keywords: list[str],
+        issue_keywords: list[str],
         product_keywords: list[str],
     ):
-        self.negative_keywords = negative_keywords
+        self.issue_keywords = issue_keywords
         self.product_keywords = product_keywords
-        self.all_keywords = negative_keywords + product_keywords
+        self.all_keywords = issue_keywords + product_keywords
 
     # scoring 기준 1: 날짜가 최신일수록 높은 스코어
     def calc_date_score(self, days: int) -> int:
@@ -22,7 +34,7 @@ class FeedbackScorer:
 
     # scoring 기준 2: 핵심 키워드가 포함될수록 높은 스코어
     def calc_keyword_score(self, text: str) -> int:
-        if any(kw in text for kw in self.negative_keywords):
+        if any(kw in text for kw in self.issue_keywords):
             return 2
         elif any(kw in text for kw in self.product_keywords):
             return 1
@@ -30,7 +42,7 @@ class FeedbackScorer:
 
     # scoring 기준 3: 글의 길이 대비 부정 단어 카운트가 높을수록 높은 스코어
     def count_negative_keywords(self, text: str) -> int:
-        return sum(text.count(kw) for kw in self.negative_keywords)
+        return sum(text.count(kw) for kw in self.issue_keywords)
 
     def assign_percentile_score(self, series: pd.Series) -> pd.Series:
         q90 = series.quantile(0.9)
@@ -85,9 +97,9 @@ class FeedbackScorer:
         return df
 
 
-def refine_data(data: pd.DataFrame) -> pd.DataFrame:
-    scorer = FeedbackScorer(
-        negative_keywords=NEGATIVE_KEYWORDS, product_keywords=CARD_PRODUCTS
+def _refine_data(data: pd.DataFrame) -> pd.DataFrame:
+    scorer = _FeedbackScorer(
+        issue_keywords=ISSUE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
     _data = data[data["is_posted"] == 0]
 
@@ -101,16 +113,39 @@ def refine_data(data: pd.DataFrame) -> pd.DataFrame:
     # 카페 필터링
     data_cafe = _data[_data["source"] == "cafe"]
     data_cafe = scorer.apply_scores(data_cafe)
-    data_cafe = data_blog.sort_values(
-        ["post_date", "total_score"], ascending=[False, False]
-    ).iloc[:50]
+    data_cafe = data_cafe.sort_values("total_score", ascending=False).iloc[:50]
 
     # 병합하여 반환
-    result = pd.concat([data_blog, data_cafe], ignore_index=True)
-    result = result.assign(post_date=result["post_date"].astype("Int64").astype(str))
-    return result
+    return pd.concat([data_blog, data_cafe], ignore_index=True)
 
 
-if __name__ == "__main__":
-    data = pd.read_csv("data/data.csv", encoding="utf-8")
-    refined_data = refine_data(data)
+def get_message(data: pd.DataFrame) -> str:
+    refined_data = _refine_data(data)
+    content = json.dumps(
+        refined_data[["title", "link", "description"]].to_dict(orient="records"),
+        ensure_ascii=False,
+    )
+    response = client.responses.create(
+        model="gpt-4o",
+        instructions=PROMPT,
+        input=TEXT_INPUT.format(
+            card_products=", ".join(CARD_PRODUCTS),
+            content=content,
+        ),
+    )
+    result = response.output_text.strip()
+    message = (
+        f"안녕하세요! 줍줍이입니다 🤗 \n제가 줍줍한 이슈를 공유드릴게요!\n\n수집한 총 {len(data)}개의 문서를 분석한 결과입니다!\n\n"
+        + result
+    )
+    urls = _extract_urls(result)
+
+    if len(urls) == 0:
+        print("No URLs found in the message.")
+    else:
+        if len(urls) != 3:
+            print("Not expected number of URLs found in the message.")
+        data.loc[data["link"].isin(urls), "is_posted"] = 1
+
+    data.to_csv(DATA_PATH, index=False, encoding="utf-8")
+    return message
