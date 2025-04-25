@@ -38,7 +38,7 @@ def _verify_signature(body: str, received_signature: str) -> bool:
 
 @app.route("/", methods=["POST"])
 def callback():
-    raw_body = request.get_data(as_text=True)  # 원본 본문 (str)
+    raw_body = request.get_data(as_text=True)
     headers_signature = request.headers.get("X-WORKS-Signature")
     if not _verify_signature(raw_body, headers_signature):
         return jsonify({"error": "Invalid signature"}), 403
@@ -52,7 +52,7 @@ def callback():
         return jsonify({"status": "ok"})
 
     if _type != "message":
-        return jsonify({"error": "Invalid type"}), 404
+        return jsonify({"status": "ok"})
 
     channel_id = json_data["source"].get("channelId", None)
     if channel_id is None:
@@ -64,7 +64,7 @@ def callback():
 
     text = json_data["content"]["text"]
     if not text.startswith("/줍줍"):
-        return jsonify({"error": "Invalid command type"}), 404
+        return jsonify({"status": "ok"})
 
     if text == "/줍줍help":
         post_message_to_channel(jupjup_help_reply, channel_id)
