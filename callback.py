@@ -79,6 +79,7 @@ def callback():
         result = response.output_text.strip()
         post_message_to_channel(result, channel_id)
         return jsonify({"status": "ok"})
+    # TODO: 줍줍 메뉴 추천 기능 추가
     else:
         reply = "😅 알 수 없는 명령어입니다. '/줍줍help'로 도움말을 확인하세요."
         post_message_to_channel(reply, channel_id)
