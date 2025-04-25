@@ -73,7 +73,7 @@ def callback():
         question = text.replace("/줍줍qa", "").strip()
         response = client.responses.create(
             model="gpt-4o",
-            instructions="당신은 줍줍이라는 하나카드 회사의 챗봇입니다. 질문에 대한 답변을 간결하고 위트있게 요체로 답변합니다.",
+            instructions="당신은 줍줍이라는 하나카드 회사의 챗봇입니다. 질문에 대한 답변을 간결하고 위트있게 존댓말로 답변합니다.",
             input=question,
         )
         result = response.output_text.strip()
