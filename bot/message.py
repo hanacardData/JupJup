@@ -135,7 +135,7 @@ def get_message(data: pd.DataFrame) -> str:
     )
     result = response.output_text.strip()
     message = (
-        f"안녕하세요! 줍줍이입니다 🤗 \n제가 줍줍한 이슈를 공유드릴게요!\n\n수집한 총 {len(data)}개의 문서를 분석한 결과입니다!\n\n"
+        f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서를 분석한 결과입니다!\n"
         + result
     )
     urls = _extract_urls(result)
@@ -143,7 +143,7 @@ def get_message(data: pd.DataFrame) -> str:
     if len(urls) == 0:
         print("No URLs found in the message.")
     else:
-        if len(urls) != 3:
+        if len(urls) != 2:
             print("Not expected number of URLs found in the message.")
         data.loc[data["link"].isin(urls), "is_posted"] = 1
 
