@@ -13,6 +13,7 @@ def post_message(data: pd.DataFrame, is_test: bool = False) -> None:
     )
     channel_ids: list[str] = [
         "bf209668-eca1-250c-88e6-bb224bf9071a",
+        "bb16f67c-327d-68e3-2e03-4215e67f8eb2",
     ]  # 채널 ID; 추가할것
     token = token_manager.get_token()
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
