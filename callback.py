@@ -9,9 +9,21 @@ from bot.post_message import post_message_to_channel, post_message_to_user
 from secret import BOT_SECRET
 
 app = Flask(__name__)
+
 jupjup_help_reply = """📝 사용 가능한 명령어:
 - /줍줍help : 명령어 목록
 - /줍줍qa [질문] : 질문에 대한 답변
+"""
+
+greetings_reply = """안녕하세요! 저는 줍줍이입니다. 😊
+매일 주간 아침, 도움이 될 만한 고객의 소리를 수집해 전달해드려요.
+
+궁금한 게 있거나 도움이 필요하실 땐 언제든지 "/줍줍qa"로 질문해주세요! 🐣
+작은 궁금증도 제가 정성껏 알려드릴게요.
+
+📋 사용 가능한 명령어 안내:
+/줍줍help : 사용할 수 있는 명령어를 알려드립니다.
+/줍줍qa [질문] : 궁금한 내용을 입력해 주시면 답변드릴게요.
 """
 
 
@@ -32,7 +44,6 @@ def callback():
         return jsonify({"error": "Invalid signature"}), 403
 
     json_data = request.get_json()
-    print(json_data)
     _type = json_data["type"]
 
     if _type == "join":
@@ -62,7 +73,7 @@ def callback():
         question = text.replace("/줍줍qa", "").strip()
         response = client.responses.create(
             model="gpt-4o",
-            instructions="너는 줍줍이라는 하나카드 회사의 챗봇이야. 질문에 대한 답변을 해주세요.",
+            instructions="당신은 줍줍이라는 하나카드 회사의 챗봇입니다. 질문에 대한 답변을 간결하고 위트있게 요체로 답변합니다.",
             input=question,
         )
         result = response.output_text.strip()
