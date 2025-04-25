@@ -1,6 +1,6 @@
 import pandas as pd
 
-from bot.post_message import post_message
+from bot.post_message import post_issue_message
 from data_collect.keywords import QUERIES
 from data_collect.load import collect_load_data
 from variables import DATA_PATH
@@ -13,7 +13,7 @@ def run_all():
     print("Collection Completed.")
 
     df = pd.read_csv(DATA_PATH, encoding="utf-8")
-    post_message(data=df, is_test=False)  # test 시에는 True로 변경
+    post_issue_message(data=df, is_test=False)  # test 시에는 True로 변경
     print("Sent Message")
 
 
