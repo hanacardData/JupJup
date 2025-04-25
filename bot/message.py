@@ -119,7 +119,7 @@ def _refine_data(data: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([data_blog, data_cafe], ignore_index=True)
 
 
-def get_message(data: pd.DataFrame) -> str:
+def get_issue_message(data: pd.DataFrame) -> str:
     refined_data = _refine_data(data)
     content = json.dumps(
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
