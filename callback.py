@@ -48,7 +48,7 @@ def callback():
 
     if _type == "join":
         channel_id = json_data["source"]["channelId"]
-        post_message_to_channel("안녕하세요. 저는 줍줍이 입니다.", channel_id)
+        post_message_to_channel(greetings_reply, channel_id)
         return jsonify({"status": "ok"})
 
     if _type != "message":
