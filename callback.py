@@ -41,7 +41,7 @@ def callback():
         return jsonify({"status": "ok"})
 
     if _type != "message":
-        return
+        return jsonify({"error": "Invalid type"}), 404
 
     channel_id = json_data["source"].get("channelId", None)
     if channel_id is None:
@@ -53,7 +53,7 @@ def callback():
 
     text = json_data["content"]["text"]
     if not text.startswith("/줍줍"):
-        return
+        return jsonify({"error": "Invalid command type"}), 404
 
     if text == "/줍줍help":
         post_message_to_channel(jupjup_help_reply, channel_id)
