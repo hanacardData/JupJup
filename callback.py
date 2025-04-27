@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 
+import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
 
 from bot.message import async_client
@@ -94,6 +95,4 @@ async def callback(request: Request, x_works_signature: str = Header(None)):
 
 
 if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("yourfile:app", host="0.0.0.0", port=5000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=5000, reload=True)
