@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 
 import pandas as pd
-from openai import OpenAI
+from openai import AsyncOpenAI, OpenAI
 
 from bot.prompt import PROMPT, TEXT_INPUT
 from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
@@ -11,6 +11,7 @@ from secret import OPENAI_API_KEY
 from variables import DATA_PATH
 
 client = OpenAI(api_key=OPENAI_API_KEY)
+async_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
 def _extract_urls(text: str) -> list[str]:
