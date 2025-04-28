@@ -5,8 +5,8 @@ import hmac
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
 
-from bot.message import async_client
-from bot.post_message import post_message_to_channel, post_message_to_user
+from bot.issue import async_client
+from bot.post_message import async_post_message_to_channel, async_post_message_to_user
 from secret import BOT_SECRET
 
 app = FastAPI()
@@ -56,7 +56,7 @@ async def callback(request: Request, x_works_signature: str = Header(None)):
 
     if event_type == "join":
         channel_id = data["source"]["channelId"]
-        post_message_to_channel(GREETINGS_REPLY, channel_id)
+        await async_post_message_to_channel(GREETINGS_REPLY, channel_id)
         return {"status": "ok"}
 
     if event_type != "message":
@@ -69,7 +69,7 @@ async def callback(request: Request, x_works_signature: str = Header(None)):
     user_id = source.get("userId")
 
     if channel_id is None and user_id:
-        post_message_to_user(PRIVATE_REPLY, user_id)
+        await async_post_message_to_user(PRIVATE_REPLY, user_id)
         return {"status": "ok"}
 
     text = content.get("text", "")
@@ -78,7 +78,7 @@ async def callback(request: Request, x_works_signature: str = Header(None)):
         return {"status": "ok"}
 
     if text == "/줍줍help":
-        post_message_to_channel(JUPJUP_HELP_REPLY, channel_id)
+        await async_post_message_to_channel(JUPJUP_HELP_REPLY, channel_id)
     elif text.startswith("/줍줍qa"):
         question = text.replace("/줍줍qa", "").strip()
         response = await async_client.responses.create(
@@ -87,9 +87,9 @@ async def callback(request: Request, x_works_signature: str = Header(None)):
             input=question,
         )
         result = response.output_text.strip()
-        post_message_to_channel(result, channel_id)
+        await async_post_message_to_channel(result, channel_id)
     else:
-        post_message_to_channel(UNKNOWN_COMMAND_REPLY, channel_id)
+        await async_post_message_to_channel(UNKNOWN_COMMAND_REPLY, channel_id)
 
     return {"status": "ok"}
 

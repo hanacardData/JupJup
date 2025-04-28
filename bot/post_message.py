@@ -1,10 +1,15 @@
-import pandas as pd
+import httpx
 import requests
+from retry import retry
 
 from bot.access_token import token_manager
-from bot.message import get_issue_message
+from logger import logger
 
 BOT_ID = 9881957
+CHANNEL_POST_URL = (
+    "https://www.worksapis.com/v1.0/bots/9881957/channels/{channel_id}/messages"
+)
+USER_POST_URL = "https://www.worksapis.com/v1.0/bots/9881957/users/{user_id}/messages"
 
 
 def _set_headers() -> dict[str, str]:
@@ -12,45 +17,82 @@ def _set_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
 
-def post_message_to_channel(message: str, channel_id: str) -> None:
-    message_payload = {
+def _set_messge_payload(message: str) -> dict[str, dict[str, str]]:
+    return {
         "content": {
             "type": "text",
             "text": message,
         }
     }
+
+
+@retry(
+    tries=3,
+    delay=1,
+    backoff=2,
+    exceptions=(requests.RequestException, requests.HTTPError),
+)
+def post_message_to_channel(
+    message: str, channel_id: str, retries: int = 3, delay: float = 1.0
+) -> None:
+    message_payload = _set_messge_payload(message)
     headers = _set_headers()
-    url = f"https://www.worksapis.com/v1.0/bots/{BOT_ID}/channels/{channel_id}/messages"
-    requests.post(url, headers=headers, json=message_payload)
-
-
-def post_message_to_user(message: str, user_id: str) -> None:
-    message_payload = {
-        "content": {
-            "type": "text",
-            "text": message,
-        }
-    }
-    headers = _set_headers()
-    url = f"https://www.worksapis.com/v1.0/bots/{BOT_ID}/users/{user_id}/messages"
-    requests.post(url, headers=headers, json=message_payload)
-
-
-def post_issue_message(data: pd.DataFrame, is_test: bool = False) -> None:
-    test_channel_id = "8895b3b4-1cff-cec7-b7bc-a6df449d3638"  # 테스트용 채널 ID
-    channel_ids: list[str] = [
-        "bf209668-eca1-250c-88e6-bb224bf9071a",  # 데이터 사업부
-        "bb16f67c-327d-68e3-2e03-4215e67f8eb2",  # 물결님 동기
-    ]  # 채널 ID; 추가할것
-
+    url = CHANNEL_POST_URL.format(channel_id=channel_id)
     try:
-        message = get_issue_message(data)
-        if is_test:
-            post_message_to_channel(message, test_channel_id)
+        response = requests.post(url, headers=headers, json=message_payload)
+        response.raise_for_status()
+        return
+    except (requests.RequestException, requests.HTTPError) as e:
+        logger.error(e)
+        raise
+
+
+@retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
+async def async_post_message_to_channel(message: str, channel_id: str) -> None:
+    message_payload = _set_messge_payload(message)
+    headers = _set_headers()
+    url = CHANNEL_POST_URL.format(channel_id=channel_id)
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=message_payload)
+            response.raise_for_status()
             return
+        except (httpx.RequestError, httpx.HTTPStatusError) as e:
+            logger.error(e)
+            raise
 
-        for channel_id in channel_ids:
-            post_message_to_channel(message, channel_id)
 
-    except Exception as e:
-        post_message_to_channel(str(e), test_channel_id)
+@retry(
+    tries=3,
+    delay=1,
+    backoff=2,
+    exceptions=(requests.RequestException, requests.HTTPError),
+)
+def post_message_to_user(message: str, user_id: str) -> None:
+    message_payload = _set_messge_payload(message)
+    headers = _set_headers()
+    url = USER_POST_URL.format(user_id=user_id)
+    try:
+        response = requests.post(url, headers=headers, json=message_payload)
+        response.raise_for_status()
+        return
+    except (requests.RequestException, requests.HTTPError) as e:
+        logger.error(e)
+        raise
+
+
+@retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
+async def async_post_message_to_user(
+    message: str, user_id: str, retries: int = 3, delay: float = 1.0
+) -> None:
+    message_payload = _set_messge_payload(message)
+    headers = _set_headers()
+    url = USER_POST_URL.format(user_id=user_id)
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=message_payload)
+            response.raise_for_status()
+            return
+        except (httpx.RequestError, httpx.HTTPStatusError) as e:
+            logger.error(e)
+            raise
