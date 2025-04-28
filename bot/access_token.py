@@ -52,10 +52,10 @@ class TokenManager:
             token_data: dict[str, str] = response.json()
             self._access_token = token_data["access_token"]
             self._token_expiry = exp
-            logger.info("Access Token:", self._access_token)
+            logger.info(f"Access Token: {self._access_token}")
             return self._access_token
         else:
-            logger.error("Failed to get token:", response.status_code)
+            logger.error(f"Failed to get token: {response.status_code}")
             logger.error(response.text)
             raise Exception("Token request failed")
 

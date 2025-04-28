@@ -32,9 +32,7 @@ def _set_messge_payload(message: str) -> dict[str, dict[str, str]]:
     backoff=2,
     exceptions=(requests.RequestException, requests.HTTPError),
 )
-def post_message_to_channel(
-    message: str, channel_id: str, retries: int = 3, delay: float = 1.0
-) -> None:
+def post_message_to_channel(message: str, channel_id: str) -> None:
     message_payload = _set_messge_payload(message)
     headers = _set_headers()
     url = CHANNEL_POST_URL.format(channel_id=channel_id)
@@ -82,9 +80,7 @@ def post_message_to_user(message: str, user_id: str) -> None:
 
 
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
-async def async_post_message_to_user(
-    message: str, user_id: str, retries: int = 3, delay: float = 1.0
-) -> None:
+async def async_post_message_to_user(message: str, user_id: str) -> None:
     message_payload = _set_messge_payload(message)
     headers = _set_headers()
     url = USER_POST_URL.format(user_id=user_id)

@@ -14,8 +14,8 @@ app = FastAPI()
 
 # 답변 텍스트
 JUPJUP_HELP_REPLY = """📝 사용 가능한 명령어 안내:
-- /줍줍help : 사용할 수 있는 명령어를 알려드립니다.
-- /줍줍qa [질문] : 궁금한 내용을 입력해 주시면 답변드릴게요.
+- /줍줍도움 : 사용할 수 있는 명령어를 알려드립니다.
+- /줍줍질문 [질문] : 궁금한 내용을 입력해 주시면 답변드릴게요.
 - /줍줍메뉴 [타입] : 메뉴를 추천해드려요! 타입 옵션: 아침, 점심, 저녁, 회식소, 회식대, 룸, 지하연결
 """
 
@@ -31,7 +31,7 @@ GREETINGS_REPLY = f"""안녕하세요! 저는 줍줍이입니다. 😊
 
 PRIVATE_REPLY = "안녕하세요. 저는 줍줍이 입니다. 현재는 1:1은 서비스 하고 있지 않습니다. 단체방을 이용해주세요!"
 UNKNOWN_COMMAND_REPLY = (
-    "😅 알 수 없는 명령어입니다. '/줍줍help'로 도움말을 확인하세요.",
+    "😅 알 수 없는 명령어입니다. '/줍줍도움'으로 도움말을 확인하세요."
 )
 
 
@@ -78,22 +78,18 @@ async def callback(request: Request, x_works_signature: str = Header(None)):
     if not text.startswith("/줍줍"):
         return {"status": "ok"}
 
-    if text == "/줍줍help":
+    if text == "/줍줍도움":
         await async_post_message_to_channel(JUPJUP_HELP_REPLY, channel_id)
-    elif text.startswith("/줍줍qa"):
-        question = text.replace("/줍줍qa", "").strip()
+    elif text.startswith("/줍줍질문"):
+        question = text.replace("/줍줍질문", "").strip()
         result = await async_openai_response(
             prompt="당신은 줍줍이라는 하나카드 회사의 챗봇입니다. 질문에 대한 답변을 간결하고 위트있게 존댓말로 답변합니다.",
             input=question,
         )
         await async_post_message_to_channel(result, channel_id)
     elif text.startswith("/줍줍메뉴"):
-        when = text.replace("/줍줍메뉴", "").strip()
-        selected_menu = await select_random_menu(when)
-        result = await async_openai_response(
-            prompt="당신은 줍줍이라는 하나카드 회사의 챗봇입니다. 식당을 정리해서 답변합니다.",
-            input=str(selected_menu),
-        )
+        target = text.replace("/줍줍메뉴", "").strip()
+        result = await select_random_menu(target)
         await async_post_message_to_channel(result, channel_id)
     else:
         await async_post_message_to_channel(UNKNOWN_COMMAND_REPLY, channel_id)
