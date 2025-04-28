@@ -61,6 +61,7 @@ def callback():
             "안녕하세요. 저는 줍줍이 입니다. 현재는 1:1은 서비스 하고 있지 않습니다. 단체방을 이용해주세요!",
             user_id,
         )
+        return jsonify({"status": "ok"})
 
     text = json_data["content"]["text"]
     if not text.startswith("/줍줍"):
