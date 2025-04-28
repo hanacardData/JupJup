@@ -1,0 +1,42 @@
+from openai import APIConnectionError, AsyncOpenAI, OpenAI
+from retry import retry
+
+from logger import logger
+from secret import OPENAI_API_KEY
+
+client = OpenAI(api_key=OPENAI_API_KEY)
+async_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+
+
+@retry(tries=3, delay=1, backoff=2, exceptions=APIConnectionError)
+def openai_response(
+    prompt: str,
+    input: str,
+) -> str:
+    try:
+        response = client.responses.create(
+            model="gpt-4o",
+            instructions=prompt,
+            input=input,
+        )
+        return response.output_text.strip()
+    except APIConnectionError as e:
+        logger.error(e)
+        raise
+
+
+@retry(tries=3, delay=1, backoff=2, exceptions=APIConnectionError)
+async def async_openai_response(
+    prompt: str,
+    input: str,
+) -> str:
+    try:
+        response = await async_client.responses.create(
+            model="gpt-4o",
+            instructions=prompt,
+            input=input,
+        )
+        return response.output_text.strip()
+    except APIConnectionError as e:
+        logger.error(e)
+        raise
