@@ -5,7 +5,8 @@ import hmac
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
 
-from bot.issue import async_client
+from bot.menu import select_random_menu
+from bot.openai import async_openai_response
 from bot.post_message import async_post_message_to_channel, async_post_message_to_user
 from secret import BOT_SECRET
 
@@ -15,6 +16,7 @@ app = FastAPI()
 JUPJUP_HELP_REPLY = """📝 사용 가능한 명령어 안내:
 - /줍줍help : 사용할 수 있는 명령어를 알려드립니다.
 - /줍줍qa [질문] : 궁금한 내용을 입력해 주시면 답변드릴게요.
+- /줍줍메뉴 [타입] : 메뉴를 추천해드려요! 타입 옵션: 아침, 점심, 저녁, 회식소, 회식대, 룸, 지하연결
 """
 
 GREETINGS_REPLY = f"""안녕하세요! 저는 줍줍이입니다. 😊
@@ -80,12 +82,18 @@ async def callback(request: Request, x_works_signature: str = Header(None)):
         await async_post_message_to_channel(JUPJUP_HELP_REPLY, channel_id)
     elif text.startswith("/줍줍qa"):
         question = text.replace("/줍줍qa", "").strip()
-        response = await async_client.responses.create(
-            model="gpt-4o",
-            instructions="당신은 줍줍이라는 하나카드 회사의 챗봇입니다. 질문에 대한 답변을 간결하고 위트있게 존댓말로 답변합니다.",
+        result = await async_openai_response(
+            prompt="당신은 줍줍이라는 하나카드 회사의 챗봇입니다. 질문에 대한 답변을 간결하고 위트있게 존댓말로 답변합니다.",
             input=question,
         )
-        result = response.output_text.strip()
+        await async_post_message_to_channel(result, channel_id)
+    elif text.startswith("/줍줍메뉴"):
+        when = text.replace("/줍줍메뉴", "").strip()
+        selected_menu = await select_random_menu(when)
+        result = await async_openai_response(
+            prompt="당신은 줍줍이라는 하나카드 회사의 챗봇입니다. 식당을 정리해서 답변합니다.",
+            input=str(selected_menu),
+        )
         await async_post_message_to_channel(result, channel_id)
     else:
         await async_post_message_to_channel(UNKNOWN_COMMAND_REPLY, channel_id)

@@ -3,17 +3,13 @@ import re
 from datetime import datetime
 
 import pandas as pd
-from openai import AsyncOpenAI, OpenAI
 
+from bot.openai import openai_response
 from bot.post_message import post_message_to_channel
 from bot.prompt import PROMPT, TEXT_INPUT
 from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
 from logger import logger
-from secret import OPENAI_API_KEY
 from variables import DATA_PATH
-
-client = OpenAI(api_key=OPENAI_API_KEY)
-async_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
 def _extract_urls(text: str) -> list[str]:
@@ -128,15 +124,13 @@ def get_issue_message(data: pd.DataFrame) -> str:
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
         ensure_ascii=False,
     )
-    response = client.responses.create(
-        model="gpt-4o",
-        instructions=PROMPT,
+    result = openai_response(
+        prompt=PROMPT,
         input=TEXT_INPUT.format(
             card_products=", ".join(CARD_PRODUCTS),
             content=content,
         ),
     )
-    result = response.output_text.strip()
     message = (
         f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서를 분석한 결과입니다!\n"
         + result
