@@ -3,14 +3,13 @@ import re
 from datetime import datetime
 
 import pandas as pd
-from openai import OpenAI
 
+from bot.openai import openai_response
+from bot.post_message import post_message_to_channel
 from bot.prompt import PROMPT, TEXT_INPUT
 from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
-from secret import OPENAI_API_KEY
+from logger import logger
 from variables import DATA_PATH
-
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 def _extract_urls(text: str) -> list[str]:
@@ -125,15 +124,13 @@ def get_issue_message(data: pd.DataFrame) -> str:
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
         ensure_ascii=False,
     )
-    response = client.responses.create(
-        model="gpt-4o",
-        instructions=PROMPT,
+    result = openai_response(
+        prompt=PROMPT,
         input=TEXT_INPUT.format(
             card_products=", ".join(CARD_PRODUCTS),
             content=content,
         ),
     )
-    result = response.output_text.strip()
     message = (
         f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서를 분석한 결과입니다!\n"
         + result
@@ -141,11 +138,31 @@ def get_issue_message(data: pd.DataFrame) -> str:
     urls = _extract_urls(result)
 
     if len(urls) == 0:
-        print("No URLs found in the message.")
+        logger.warning("No URLs found in the message.")
     else:
         if len(urls) != 2:
-            print("Not expected number of URLs found in the message.")
+            logger.warning("Not expected number of URLs found in the message.")
         data.loc[data["link"].isin(urls), "is_posted"] = 1
 
     data.to_csv(DATA_PATH, index=False, encoding="utf-8")
     return message
+
+
+def post_issue_message(data: pd.DataFrame, is_test: bool = False) -> None:
+    test_channel_id = "8895b3b4-1cff-cec7-b7bc-a6df449d3638"  # 테스트용 채널 ID
+    channel_ids: list[str] = [
+        "bf209668-eca1-250c-88e6-bb224bf9071a",  # 데이터 사업부
+        "bb16f67c-327d-68e3-2e03-4215e67f8eb2",  # 물결님 동기
+    ]  # 채널 ID; 추가할것
+
+    try:
+        message = get_issue_message(data)
+        if is_test:
+            post_message_to_channel(message, test_channel_id)
+            return
+
+        for channel_id in channel_ids:
+            post_message_to_channel(message, channel_id)
+
+    except Exception as e:
+        post_message_to_channel(str(e), test_channel_id)
