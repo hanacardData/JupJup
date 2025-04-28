@@ -1,6 +1,6 @@
 import pandas as pd
 
-from bot.post_message import post_issue_message
+from bot.issue import post_issue_message
 from data_collect.keywords import QUERIES
 from data_collect.load import collect_load_data
 from variables import DATA_PATH
