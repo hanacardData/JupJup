@@ -8,6 +8,7 @@ from openai import AsyncOpenAI, OpenAI
 from bot.post_message import post_message_to_channel
 from bot.prompt import PROMPT, TEXT_INPUT
 from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
+from logger import logger
 from secret import OPENAI_API_KEY
 from variables import DATA_PATH
 
@@ -143,10 +144,10 @@ def get_issue_message(data: pd.DataFrame) -> str:
     urls = _extract_urls(result)
 
     if len(urls) == 0:
-        print("No URLs found in the message.")
+        logger.warning("No URLs found in the message.")
     else:
         if len(urls) != 2:
-            print("Not expected number of URLs found in the message.")
+            logger.warning("Not expected number of URLs found in the message.")
         data.loc[data["link"].isin(urls), "is_posted"] = 1
 
     data.to_csv(DATA_PATH, index=False, encoding="utf-8")
