@@ -10,11 +10,13 @@ if not exist %LOGDIR% (
 set LOGFILE=%LOGDIR%\log_%date:~0,4%%date:~5,2%%date:~8,2%.log
 
 echo [%date% %time%] ==== Started ==== >> %LOGFILE%
-cd /d "C:\Users\user\Desktop\main\trend_analysis"
+cd /d "C:\Users\user\project\ScrapCompetitor"
+conda activate jupjup
+echo [%date% %time%] ==== Conda setted ==== >> %LOGFILE%
 git checkout main
 git pull origin main
 echo [%date% %time%] ==== Git setted ==== >> %LOGFILE%
-"C:\Users\user\AppData\Local\Programs\Python\Python312\python.exe" batch_runner.py >> %LOGFILE% 2>&1
+python batch_runner.py >> %LOGFILE% 2>&1
 set RETURN_CODE=%errorlevel%
 if %RETURN_CODE% neq 0 (
     echo [%date% %time%] !!! Failed with errorlevel %RETURN_CODE% !!! >> %LOGFILE%
