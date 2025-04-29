@@ -11,8 +11,10 @@ set LOGFILE=%LOGDIR%\log_%date:~0,4%%date:~5,2%%date:~8,2%.log
 
 echo [%date% %time%] ==== Started ==== >> %LOGFILE%
 cd /d "C:\Users\user\Desktop\main\trend_analysis"
+conda activate jupjup
+pip install -r requirements.txt
 git checkout main
-git pull origin main
+git pull origin mainpi
 "C:\Users\user\AppData\Local\Programs\Python\Python312\python.exe" batch_runner.py >> %LOGFILE% 2>&1
 set RETURN_CODE=%errorlevel%
 if %RETURN_CODE% neq 0 (
