@@ -14,7 +14,7 @@ async def select_random_menu_based_on_weather() -> str:
     selected_data = (
         menu_df.sample(
             min(15, len(menu_df))
-        )  # 전체에서 5개만 샘플링 (아주 많으면 조절)
+        )  # 전체에서 15개만 샘플링 (아주 많으면 조절)
         .reset_index(drop=True)[["상호", "메뉴", "위치", "전화번호", "가격대"]]
         .to_dict(orient="records")
     )
