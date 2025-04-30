@@ -6,8 +6,8 @@ import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
 from uvicorn.config import LOGGING_CONFIG
 
-from bot.menu import select_random_menu
-from bot.openai import async_openai_response
+from bot.menu import select_random_menu_based_on_weather
+from bot.openai_client import async_openai_response
 from bot.post_message import async_post_message_to_channel, async_post_message_to_user
 from secret import BOT_SECRET
 
@@ -17,14 +17,14 @@ app = FastAPI()
 JUPJUP_HELP_REPLY = """📝 사용 가능한 명령어 안내:
 - /줍줍도움 : 사용할 수 있는 명령어를 알려드립니다.
 - /줍줍질문 [질문] : 궁금한 내용을 입력해 주시면 답변드릴게요.
-- /줍줍메뉴 [타입] : 메뉴를 추천해드려요! 타입 옵션: 아침, 점심, 저녁, 회식소, 회식대, 룸, 지하연결
+- /줍줍메뉴 : 뭐 드실지 고민이신가요? 메뉴를 추천해드려요!
 """
 
 GREETINGS_REPLY = f"""안녕하세요! 저는 줍줍이입니다. 😊
 매일 주간 아침, 도움이 될 만한 고객의 소리를 수집해 전달해드려요.
-뉴스레터를 받길 원하시면 대화방의 채널ID를 데이터사업부 김물결 주임 혹은 문상준 대리에게 보내주세요!
+ 뉴스레터를 받길 원하시면 대화방의 채널ID를 데이터사업부 김물결 주임 혹은 문상준 대리에게 보내주세요!
 
-궁금한 게 있거나 도움이 필요하실 땐 언제든지 "/줍줍질문 [질문]"으로 질문해주세요! 🐣
+-궁금한 게 있거나 도움이 필요하실 땐 언제든지 "/줍줍질문 [질문]"으로 질문해주세요! 🐣
 작은 궁금증도 제가 정성껏 알려드릴게요.
 
 {JUPJUP_HELP_REPLY}
@@ -89,8 +89,7 @@ async def callback(request: Request, x_works_signature: str = Header(None)):
         )
         await async_post_message_to_channel(result, channel_id)
     elif text.startswith("/줍줍메뉴"):
-        target = text.replace("/줍줍메뉴", "").strip()
-        result = await select_random_menu(target)
+        result = await select_random_menu_based_on_weather()
         await async_post_message_to_channel(result, channel_id)
     else:
         await async_post_message_to_channel(UNKNOWN_COMMAND_REPLY, channel_id)
