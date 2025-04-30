@@ -1,17 +1,11 @@
-import os
+from functools import lru_cache
 
 import httpx
-import pandas as pd
-from dotenv import load_dotenv
 
-# .env 파일 불러오기
-load_dotenv()
-
-OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
-
-menu_df = pd.read_csv("data/menu.csv")
+from secret import OPENWEATHER_API_KEY
 
 
+@lru_cache(maxsize=10)
 async def get_weather_info() -> str:
     url = "http://api.openweathermap.org/data/2.5/weather"
     params = {
