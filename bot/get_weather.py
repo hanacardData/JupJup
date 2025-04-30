@@ -16,9 +16,6 @@ async def get_weather_info() -> str:
     url = f"http://api.openweathermap.org/data/2.5/weather?q=SEOUL&appid={OPENWEATHER_API_KEY}&lang=kr&units=metric"
     response = requests.get(url)
     data = response.json()
-    # 디버긱ㅇ
-    print(response.status_code)
-    print(data)
 
     weather_description = data["weather"][0]["description"]  # 예: "흐림", "비", "맑음"
 
