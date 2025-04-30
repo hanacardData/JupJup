@@ -1,20 +1,19 @@
 setlocal
 
 @echo off
-set LOGDIR=C:\Users\user\Desktop\main\trend_analysis\logs
+set DIR=C:\Users\user\project\ScrapCompetitor
+set LOGDIR=%DIR%\logs
+set LOGFILE=%LOGDIR%\log_%date:~0,4%%date:~5,2%%date:~8,2%.log
 
 if not exist %LOGDIR% (
     mkdir %LOGDIR%
 )
 
-set LOGFILE=%LOGDIR%\log_%date:~0,4%%date:~5,2%%date:~8,2%.log
-
 echo [%date% %time%] ==== Started ==== >> %LOGFILE%
-cd /d "C:\Users\user\project\ScrapCompetitor"
-conda activate jupjup
+cd /d %DIR%
+
+call C:\Users\user\AppData\Local\anaconda3\Scripts\activate.bat jupjup
 echo [%date% %time%] ==== Conda setted ==== >> %LOGFILE%
-git checkout main
-git pull origin main
 echo [%date% %time%] ==== Git setted ==== >> %LOGFILE%
 python batch_runner.py >> %LOGFILE% 2>&1
 set RETURN_CODE=%errorlevel%
