@@ -32,7 +32,4 @@ async def select_random_menu_based_on_weather() -> str:
         prompt=prompt_instruction, input=prompt_input
     )
 
-    result = f"오늘 뭘 드실지 고민이시라면! 이건 어떠세요?:\n\n{gpt_reply}"
-    print(result)
-
-    return result
+    return f"이건 어떠세요?:\n\n{gpt_reply}"
