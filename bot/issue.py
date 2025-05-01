@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from bot.openai import openai_response
+from bot.openai_client import openai_response
 from bot.post_message import post_message_to_channel
 from bot.prompt import PROMPT, TEXT_INPUT
 from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
