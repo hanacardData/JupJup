@@ -102,6 +102,8 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
     command_parts = text.split(maxsplit=1)
     command = command_parts[0]
     argument = command_parts[1] if len(command_parts) > 1 else ""
+    if not command.startswith("/"):
+        return JSONResponse(status_code=200, content={"status": BotStatus.IGNORED})
 
     handler = COMMAND_HANDLERS.get(command)
     if handler:
