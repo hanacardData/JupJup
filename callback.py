@@ -98,6 +98,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
 
 
 async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
+    """메시지를 처리하는 핸들러입니다."""
     command_parts = text.split(maxsplit=1)
     command = command_parts[0]
     argument = command_parts[1] if len(command_parts) > 1 else ""
@@ -140,11 +141,11 @@ async def process_event(data: dict) -> JSONResponse:
         return await handle_message_event(text=text, channel_id=channel_id)
 
 
-# FastAPI 엔드포인트
 @app.post("/")
 async def callback(
     request: Request, x_works_signature: str = Header(None)
 ) -> JSONResponse:
+    """메시지 수신을 위한 메인 엔드포인트입니다."""
     raw_body = await request.body()
     raw_text = raw_body.decode()
 
