@@ -69,7 +69,9 @@ async def callback(
     if event_type == "join":
         return await handle_join_event(channel_id=channel_id)
     elif event_type == "message":
-        return await handle_message_event(data)
+        content = data["content"]
+        text = content.get("text", "")
+        return await handle_message_event(text=text, channel_id=channel_id)
 
 
 async def handle_join_event(channel_id: str) -> JSONResponse:
@@ -92,6 +94,9 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
             if not argument:
                 await async_post_message_to_channel(
                     "질문 내용을 입력해주세요! 예: /질문 넌 누구니?", channel_id
+                )
+                return JSONResponse(
+                    status_code=200, content={"status": "missing_argument"}
                 )
 
             result = await async_openai_response(
