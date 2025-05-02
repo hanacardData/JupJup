@@ -47,6 +47,7 @@ ERROR_REPLY = "⚠️ 처리 중 오류가 발생했어요. 나중에 다시 시
 
 
 def _verify_signature(body: str, received_signature: str) -> bool:
+    """요청 본문과 헤더의 X-WORKS-Signature를 비교"""
     hash_digest = hmac.new(
         BOT_SECRET.encode("utf-8"), body.encode("utf-8"), hashlib.sha256
     ).digest()
