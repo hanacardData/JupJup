@@ -1,11 +1,8 @@
-from functools import lru_cache
-
 import httpx
 
 from secret import OPENWEATHER_API_KEY
 
 
-@lru_cache(maxsize=10)
 async def get_weather_info() -> str:
     url = "http://api.openweathermap.org/data/2.5/weather"
     params = {

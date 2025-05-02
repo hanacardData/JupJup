@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 import pandas as pd
 
 from bot.get_weather import get_weather_info
@@ -9,7 +7,6 @@ from bot.prompt import PROMPT_MENU
 menu_df = pd.read_csv("data/menu.csv")
 
 
-@lru_cache
 async def select_random_menu_based_on_weather() -> str:
     weather = await get_weather_info()
 
