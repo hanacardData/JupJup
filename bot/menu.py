@@ -35,8 +35,4 @@ async def select_random_menu_based_on_weather() -> str:
 
     prompt_input = PROMPT_MENU.format(weather=weather, menu_list=restaurants_string)
 
-    gpt_reply = await async_openai_response(
-        prompt=prompt_instruction, input=prompt_input
-    )
-
-    return f"이건 어떠세요?:\n\n{gpt_reply}"
+    return await async_openai_response(prompt=prompt_instruction, input=prompt_input)
