@@ -47,7 +47,7 @@ class _FeedbackScorer:
         q90 = series.quantile(0.9)
         q80 = series.quantile(0.8)
 
-        def score(val: float):
+        def score(val: float) -> int:
             return (val >= q80) + (val >= q90)
 
         return series.apply(score)
@@ -60,43 +60,27 @@ class _FeedbackScorer:
                 return 1
         return 0
 
-    def apply_scores(
-        self, df: pd.DataFrame, date_column: str = "post_date"
-    ) -> pd.DataFrame:
+    def apply_scores(self, df: pd.DataFrame) -> pd.DataFrame:
         today = datetime.today()
-        df = df.assign(
-            post_date_dt=pd.to_datetime(
-                df[date_column], format="%Y%m%d", errors="coerce"
-            )
-        )
-        df = df.assign(days_diff=(today - df["post_date_dt"]).dt.days)
+        post_date_dt = pd.to_datetime(df["post_date"], format="%Y%m%d", errors="coerce")
+        days_diff: pd.Series = (today - post_date_dt).dt.days.fillna(999)
+        date_score = days_diff.apply(self.calc_date_score)
 
-        df = df.assign(
-            date_score=df["days_diff"].apply(self.calc_date_score),
-            keyword_score=df["description"].fillna("").apply(self.calc_keyword_score),
-            repetition_score=df["description"]
-            .fillna("")
-            .apply(self.score_by_repetition),
-            neg_count_raw=df["description"]
-            .fillna("")
-            .apply(self.count_negative_keywords),
-        )
-        df = df.assign(
-            neg_count_score=self.assign_percentile_score(df["neg_count_raw"]),
-        )
+        _description = df["description"].fillna("")
+        keyword_score = _description.apply(self.calc_keyword_score)
+        repetition_score = _description.apply(self.score_by_repetition)
+        neg_count_raw = _description.apply(self.count_negative_keywords)
+        neg_count_score = self.assign_percentile_score(neg_count_raw)
 
         df = df.assign(
             total_score=(
-                df["date_score"]
-                + df["keyword_score"]
-                + df["repetition_score"]
-                + df["neg_count_score"]
+                date_score + keyword_score + repetition_score + neg_count_score
             )
         )
         return df
 
 
-def _refine_data(data: pd.DataFrame) -> pd.DataFrame:
+def _extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
     scorer = _FeedbackScorer(
         issue_keywords=ISSUE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
@@ -119,7 +103,7 @@ def _refine_data(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_issue_message(data: pd.DataFrame) -> str:
-    refined_data = _refine_data(data)
+    refined_data = _extract_high_score_data(data)
     content = json.dumps(
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
         ensure_ascii=False,
