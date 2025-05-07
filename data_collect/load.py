@@ -30,8 +30,6 @@ def collect_load_data(queries: list[str]) -> None:
             _data = fetch_data(
                 type=source,
                 query=keyword,
-                display=20,
-                sort="sim",
             )
             sleep(0.05)
             if _data is None:
