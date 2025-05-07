@@ -129,18 +129,19 @@ async def process_event(data: dict) -> JSONResponse:
     channel_id = source.get("channelId")
     user_id = source.get("userId")
 
-    if channel_id is None and user_id:
+    if event_type == "join":
+        # 채널에 봇이 추가되었을 때, user 대화에서는 join event가 발생하지 않음
+        return await handle_join_event(channel_id=channel_id)
+
+    if channel_id is None and user_id:  # 개인 대화에서 메세지를 받았을 때
         await async_post_message_to_user(PRIVATE_REPLY, user_id)
         return JSONResponse(
             status_code=200, content={"status": BotStatus.PRIVATE_REPLY_SENT}
         )
 
-    if event_type == "join":
-        return await handle_join_event(channel_id=channel_id)
-    elif event_type == "message":
-        content = data.get("content", {})
-        text = content.get("text", "")
-        return await handle_message_event(text=text, channel_id=channel_id)
+    content = data.get("content", {})
+    text = content.get("text", "")
+    return await handle_message_event(text=text, channel_id=channel_id)
 
 
 @app.post("/")
