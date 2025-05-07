@@ -27,10 +27,7 @@ def collect_load_data(queries: list[str]) -> None:
 
         items: list[dict[str, str]] = []
         for keyword in tqdm(queries, desc="Keyword", leave=False):
-            _data = fetch_data(
-                type=source,
-                query=keyword,
-            )
+            _data = fetch_data(type=source, query=keyword)
             sleep(0.05)
             if _data is None:
                 logger.error(f"Failed to fetch data for {keyword} from {source}")
