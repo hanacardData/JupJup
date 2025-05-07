@@ -24,3 +24,17 @@ private_key_path = "****" # 1번의 경로를 붙여넣는다
 ```bash
 pip install -r requirements.txt
 ```
+
+4. 실행 (Batch)
+```bash
+schtasks /create /sc daily /st 09:00 /tn "JupJupTask" /tr "C:\your\path\run_batch.bat"
+schtasks /query /tn "JupJupTask" /v /fo LIST # 확인
+schtasks /delete /tn "JupJupTask" # 삭제
+schtasks /run /tn "JupJupTask" # 테스트 실행
+```
+
+5. 실행 (Callback)
+```bash
+ngrok http 5000 # 설치 필요
+python callback.py
+```
