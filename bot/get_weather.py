@@ -1,8 +1,10 @@
 import httpx
+from fastapi_cache.decorator import cache
 
 from secret import OPENWEATHER_API_KEY
 
 
+@cache(expire=3600)
 async def get_weather_info() -> str:
     url = "http://api.openweathermap.org/data/2.5/weather"
     params = {

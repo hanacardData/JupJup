@@ -1,4 +1,5 @@
 import pandas as pd
+from fastapi_cache.decorator import cache
 
 from bot.get_weather import get_weather_info
 from bot.openai_client import async_openai_response
@@ -9,6 +10,7 @@ required_columns = ["상호", "메뉴", "위치", "전화번호", "거리(도보
 menu_df = menu_df.dropna(subset=required_columns)
 
 
+@cache(expire=3600)
 async def select_random_menu_based_on_weather() -> str:
     weather = await get_weather_info()
 
