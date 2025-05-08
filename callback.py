@@ -1,21 +1,33 @@
 import base64
 import hashlib
 import hmac
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from enum import Enum
 from typing import Callable
 
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
 from uvicorn.config import LOGGING_CONFIG
 
 from bot.menu import select_random_menu_based_on_weather
 from bot.openai_client import async_openai_response
 from bot.post_message import async_post_message_to_channel, async_post_message_to_user
+from bot.review import get_review_comment
 from logger import logger
 from secret import BOT_SECRET
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 class BotStatus(str, Enum):
@@ -90,10 +102,21 @@ async def handle_menu_command(channel_id: str):
     await async_post_message_to_channel(result, channel_id)
 
 
+async def handle_review_command(channel_id: str, argument: str):
+    if not argument:
+        await async_post_message_to_channel("리뷰 내용을 입력해주세요!", channel_id)
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
+        )
+    result = await get_review_comment(argument)
+    await async_post_message_to_channel(result, channel_id)
+
+
 COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/도움": handle_help_command,
     "/질문": handle_question_command,
     "/식당": handle_menu_command,
+    "/리뷰": handle_review_command,
 }
 
 
@@ -107,9 +130,10 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
 
     handler = COMMAND_HANDLERS.get(command)
     if handler:
-        await handler(channel_id, argument) if command == "/질문" else await handler(
-            channel_id
-        )
+        await handler(channel_id, argument) if command in (
+            "/질문",
+            "/리뷰",
+        ) else await handler(channel_id)
         return JSONResponse(
             status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
         )
