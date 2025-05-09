@@ -2,7 +2,7 @@ import httpx
 import requests
 from retry import retry
 
-from bot.access_token import token_manager
+from bot.utils.access_token import token_manager
 from logger import logger
 
 BOT_ID = 9881957
