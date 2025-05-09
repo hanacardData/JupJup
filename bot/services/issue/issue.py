@@ -4,9 +4,9 @@ from datetime import datetime
 
 import pandas as pd
 
-from bot.openai_client import openai_response
-from bot.post_message import post_message_to_channel
-from bot.prompt import PROMPT, TEXT_INPUT
+from bot.services.core.openai_client import openai_response
+from bot.services.core.post_message import post_message_to_channel
+from bot.services.issue.prompt import PROMPT, TEXT_INPUT
 from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
 from logger import logger
 from variables import DATA_PATH, SUBSCRIBE_CHANNEL_ID, TEST_CHANNEL_ID

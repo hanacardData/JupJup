@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 from holidayskr import is_holiday
 
-from bot.issue import post_issue_message
+from bot.services.issue.issue import post_issue_message
 from data_collect.keywords import QUERIES
 from data_collect.load import collect_load_data
 from logger import logger

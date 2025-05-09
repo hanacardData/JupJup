@@ -1,16 +1,37 @@
+import httpx
 import pandas as pd
+from fastapi_cache.decorator import cache
 
-from bot.get_weather import get_weather_info
-from bot.openai_client import async_openai_response
-from bot.prompt import PROMPT_MENU
+from bot.services.core.openai_client import async_openai_response
+from bot.services.menu.prompt import PROMPT_MENU
+from secret import OPENWEATHER_API_KEY
 
 menu_df = pd.read_csv("data/menu.csv")
 required_columns = ["상호", "메뉴", "위치", "전화번호", "거리(도보)"]
 menu_df = menu_df.dropna(subset=required_columns)
 
 
+@cache(expire=10800)
+async def _get_weather_info() -> str:
+    url = "http://api.openweathermap.org/data/2.5/weather"
+    params = {
+        "q": "SEOUL",
+        "appid": OPENWEATHER_API_KEY,
+        "lang": "kr",
+        "units": "metric",
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params)
+        data = response.json()
+
+    weather_description = data["weather"][0]["description"]
+    return weather_description
+
+
+@cache(expire=10800)
 async def select_random_menu_based_on_weather() -> str:
-    weather = await get_weather_info()
+    weather = await _get_weather_info()
 
     # 모든 음식점 목록 가져오기 (필터 없이)
     selected_data = menu_df.reset_index(drop=True)[required_columns].to_dict(
