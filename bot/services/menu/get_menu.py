@@ -11,7 +11,7 @@ required_columns = ["상호", "메뉴", "위치", "전화번호", "거리(도보
 menu_df = menu_df.dropna(subset=required_columns)
 
 
-@cache(expire=3600)
+@cache(expire=10800)
 async def _get_weather_info() -> str:
     url = "http://api.openweathermap.org/data/2.5/weather"
     params = {
@@ -29,7 +29,7 @@ async def _get_weather_info() -> str:
     return weather_description
 
 
-@cache(expire=3600)
+@cache(expire=10800)
 async def select_random_menu_based_on_weather() -> str:
     weather = await _get_weather_info()
 
