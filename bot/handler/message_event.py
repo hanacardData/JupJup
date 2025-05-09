@@ -11,7 +11,7 @@ from bot.services.review.review import get_review_comment
 
 
 async def handle_help_command(channel_id: str) -> JSONResponse:
-    """채널에 봇이 추가되었을 때나 도움요청에 호출되는 핸들러입니다."""
+    """도움에 호출되는 핸들러입니다."""
     await async_post_message_to_channel(Message.GREETINGS_REPLY.value, channel_id)
 
 
