@@ -8,8 +8,8 @@ from bot.services.core.openai_client import openai_response
 from bot.services.core.post_message import post_message_to_channel
 from bot.services.issue.prompt import PROMPT, TEXT_INPUT
 from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
+from data_collect.variables import DATA_PATH, SUBSCRIBE_CHANNEL_ID, TEST_CHANNEL_ID
 from logger import logger
-from variables import DATA_PATH, SUBSCRIBE_CHANNEL_ID, TEST_CHANNEL_ID
 
 
 def _extract_urls(text: str) -> list[str]:
