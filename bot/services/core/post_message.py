@@ -5,7 +5,6 @@ from retry import retry
 from bot.utils.access_token import token_manager
 from logger import logger
 
-BOT_ID = 9881957
 CHANNEL_POST_URL = (
     "https://www.worksapis.com/v1.0/bots/9881957/channels/{channel_id}/messages"
 )
