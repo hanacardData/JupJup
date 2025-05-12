@@ -5,10 +5,9 @@ from datetime import datetime
 import pandas as pd
 
 from bot.services.core.openai_client import openai_response
-from bot.services.core.post_message import post_message_to_channel
-from bot.services.issue.prompt import PROMPT, TEXT_INPUT
+from data_collect.issue.prompt import PROMPT, TEXT_INPUT
 from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
-from data_collect.variables import DATA_PATH, SUBSCRIBE_CHANNEL_ID, TEST_CHANNEL_ID
+from data_collect.variables import DATA_PATH
 from logger import logger
 
 
@@ -130,17 +129,3 @@ def get_issue_message(data: pd.DataFrame) -> str:
 
     data.to_csv(DATA_PATH, index=False, encoding="utf-8")
     return message
-
-
-def post_issue_message(data: pd.DataFrame, is_test: bool = False) -> None:
-    try:
-        message = get_issue_message(data)
-        if is_test:
-            post_message_to_channel(message, TEST_CHANNEL_ID)
-            return
-
-        for channel_id in SUBSCRIBE_CHANNEL_ID:
-            post_message_to_channel(message, channel_id)
-
-    except Exception as e:
-        post_message_to_channel(str(e), TEST_CHANNEL_ID)
