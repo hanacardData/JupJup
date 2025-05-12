@@ -4,10 +4,10 @@ from fastapi.responses import JSONResponse
 
 from bot.enums.default_messages import Message
 from bot.enums.status import BotStatus
-from bot.services.core.openai_client import async_openai_response
 from bot.services.core.post_message import async_post_message_to_channel
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
-from bot.services.review.review import get_review_comment
+from bot.services.question.get_answer import get_answer
+from bot.services.review.get_review import get_review_comment
 
 
 async def handle_help_command(channel_id: str) -> JSONResponse:
@@ -25,10 +25,7 @@ async def handle_question_command(channel_id: str, argument: str):
             status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
         )
 
-    result = await async_openai_response(
-        prompt="당신은 줍줍이라는 하나카드 회사의 챗봇입니다. 질문에 대한 답변을 간결하고 위트있게 존댓말로 답변합니다.",
-        input=argument,
-    )
+    result = await get_answer(argument)
     await async_post_message_to_channel(result, channel_id)
 
 
