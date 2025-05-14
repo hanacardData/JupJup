@@ -14,4 +14,5 @@ SUBSCRIBE_CHANNEL_IDS: list[str] = [
     "6a81b6d1-66e2-4da1-d1e0-ccae13d6e26a",  # 직원행복팀 하두선
     "ab53861e-8b62-b64a-7708-5755f1c57259",  # 대구센터 곽승열
     "b0adc6b3-e667-3b5c-9911-29266a39cd25",  # 업무지원부 허지숙
+    "0ad1869f-18d0-ccca-418e-c2dbfcfb3d92",  # 디지털본부 박상준
 ]
