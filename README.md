@@ -36,5 +36,5 @@ schtasks /run /tn "JupJupTask" # 테스트 실행
 5. 실행 (Callback)
 ```bash
 ngrok http 5000 # 설치 필요
-python callback.py
+python callback.py > server.log 2>&1
 ```
