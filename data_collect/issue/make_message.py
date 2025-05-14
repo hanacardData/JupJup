@@ -32,7 +32,7 @@ class _FeedbackScorer:
 
     def calculate_product_score(self, text: str) -> int:
         """scoring 기준 2: 우리 상품과 관련된 키워드가 포함될수록 높은 스코어"""
-        return sum(text.count(kw) for kw in self.product_keywords)
+        return int(any(kw in text for kw in self.product_keywords))
 
     def calculate_issue_score(self, text: str) -> int:
         """scoring 기준 3: 글의 길이 대비 issue 단어 카운트가 높을수록 높은 스코어"""
