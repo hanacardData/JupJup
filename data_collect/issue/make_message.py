@@ -79,7 +79,9 @@ class _FeedbackScorer:
         return df
 
 
-def extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
+def extract_high_score_data(
+    data: pd.DataFrame, extracted_data_count: int = 100
+) -> pd.DataFrame:
     scorer = _FeedbackScorer(
         issue_keywords=ISSUE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
@@ -90,12 +92,14 @@ def extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
     data_blog = scorer.apply_scores(data_blog)
     data_blog = data_blog.sort_values(
         ["post_date", "total_score"], ascending=[False, False]
-    ).iloc[:50]
+    ).iloc[: (extracted_data_count // 2)]
 
     # 카페 필터링
     data_cafe = _data[_data["source"] == "cafe"]
     data_cafe = scorer.apply_scores(data_cafe)
-    data_cafe = data_cafe.sort_values("total_score", ascending=False).iloc[:50]
+    data_cafe = data_cafe.sort_values("total_score", ascending=False).iloc[
+        : (extracted_data_count // 2)
+    ]
 
     # 병합하여 반환
     return pd.concat([data_blog, data_cafe], ignore_index=True)
