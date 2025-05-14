@@ -10,13 +10,9 @@ from data_collect.issue.make_message import extract_high_score_data
 from data_collect.variables import DATA_PATH
 
 
-async def get_data() -> pd.DataFrame:
-    return pd.read_csv(DATA_PATH)
-
-
 @cache(expire=43_200)
 async def get_prompt_content() -> str:
-    data = await get_data()
+    data = pd.read_csv(DATA_PATH)
     refined_data = extract_high_score_data(data, extracted_data_count=10)
     content = json.dumps(
         refined_data[["title", "link", "description"]]
