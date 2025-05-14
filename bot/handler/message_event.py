@@ -36,9 +36,12 @@ async def handle_menu_command(channel_id: str):
 
 
 async def handle_review_command(channel_id: str, argument: str):
-    """f리뷰를 요청했을 때 호출되는 핸들러입니다."""
+    """리뷰를 요청했을 때 호출되는 핸들러입니다."""
     if not argument:
-        await async_post_message_to_channel("리뷰 내용을 입력해주세요!", channel_id)
+        await async_post_message_to_channel(
+            "리뷰 내용을 입력해주세요! 예: /리뷰 hanacard에서 판매중인 쿠팡 상품 보셨나요? 트레블로그 master로 구매하는 회원은 전월 실적 30만원만 넘으면 10000 머니 받을 수 있음.",
+            channel_id,
+        )
         return JSONResponse(
             status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
         )
