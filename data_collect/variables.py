@@ -7,7 +7,6 @@ DATA_PATH: str = os.path.join(SAVE_PATH, "data.csv")
 TEST_CHANNEL_ID: str = "8895b3b4-1cff-cec7-b7bc-a6df449d3638"
 SUBSCRIBE_CHANNEL_IDS: list[str] = [
     "bf209668-eca1-250c-88e6-bb224bf9071a",  # 데이터 사업부
-    "bb16f67c-327d-68e3-2e03-4215e67f8eb2",  # 물결님 동기
     "51d15802-cfb6-2e1b-6eb2-c545d2331783",  # CRM 마케팅팀 송치성
     "6a7aa514-55a4-0afd-fd3e-4ed14ec6d81e",  # 트래블로그부 허준회
     "0a7211c1-ae81-e159-55de-7c6d84041508",  # 트래블로그부 허준회
