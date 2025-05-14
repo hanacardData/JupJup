@@ -9,6 +9,11 @@ from bot.services.menu.get_menu import select_random_menu_based_on_weather
 from bot.services.question.get_answer import get_answer
 from bot.services.review.get_review import get_review_comment
 
+_QUESTION_NONE_ARGUMENT_MESSAGE = (
+    "질문 내용을 입력해주세요! 예: /질문 오늘 수집한 부정적인 게시글 하나만 알려줘"
+)
+_REVIEW_NONE_ARGUMENT_MESSAGE = "리뷰 내용을 입력해주세요! 예: /리뷰 hanacard에서 판매중인 쿠팡 상품 보셨나요? 트레블로그 master로 구매하는 회원은 전월 실적 30만원만 넘으면 10000 머니 받을 수 있음."
+
 
 async def handle_help_command(channel_id: str) -> JSONResponse:
     """도움에 호출되는 핸들러입니다."""
@@ -19,7 +24,8 @@ async def handle_question_command(channel_id: str, argument: str):
     """질문을 요청했을 때 호출되는 핸들러입니다."""
     if not argument:
         await async_post_message_to_channel(
-            "질문 내용을 입력해주세요! 예: /질문 넌 누구니?", channel_id
+            _QUESTION_NONE_ARGUMENT_MESSAGE,
+            channel_id,
         )
         return JSONResponse(
             status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
@@ -39,7 +45,7 @@ async def handle_review_command(channel_id: str, argument: str):
     """리뷰를 요청했을 때 호출되는 핸들러입니다."""
     if not argument:
         await async_post_message_to_channel(
-            "리뷰 내용을 입력해주세요! 예: /리뷰 hanacard에서 판매중인 쿠팡 상품 보셨나요? 트레블로그 master로 구매하는 회원은 전월 실적 30만원만 넘으면 10000 머니 받을 수 있음.",
+            _REVIEW_NONE_ARGUMENT_MESSAGE,
             channel_id,
         )
         return JSONResponse(
