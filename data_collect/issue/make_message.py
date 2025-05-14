@@ -79,7 +79,7 @@ class _FeedbackScorer:
         return df
 
 
-def _extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
+def extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
     scorer = _FeedbackScorer(
         issue_keywords=ISSUE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
@@ -102,7 +102,7 @@ def _extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_issue_message(data: pd.DataFrame) -> str:
-    refined_data = _extract_high_score_data(data)
+    refined_data = extract_high_score_data(data)
     content = json.dumps(
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
         ensure_ascii=False,
