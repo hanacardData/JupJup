@@ -33,7 +33,6 @@ def collect_load_data(queries: list[str]) -> None:
             _data = fetch_data(
                 type=source,
                 query=keyword,
-                display=20,
                 sort="date" if source == "cafe" else "sim",
             )
             sleep(0.05)

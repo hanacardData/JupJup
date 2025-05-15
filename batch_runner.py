@@ -26,7 +26,7 @@ def run_all(is_test: bool = False):
         logger.info(f"Not post today: {datetime_now}")
         return
 
-    df = pd.read_csv(DATA_PATH, encoding="utf-8")
+    df = pd.read_csv(DATA_PATH, dtype={"post_date": object}, encoding="utf-8")
     try:
         message = get_issue_message(df, tag=not is_test)
         logger.info(f"Message ready: {message}")

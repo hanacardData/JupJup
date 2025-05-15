@@ -19,7 +19,7 @@ def _select_common_columns(data: pd.DataFrame, has_postdate: bool) -> pd.DataFra
     if has_postdate:
         df = df.rename(columns={"postdate": "post_date"})
     else:
-        df["post_date"] = ""
+        df = df.assign(post_date="")
 
     return df[SCHEMA]
 
