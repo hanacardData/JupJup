@@ -5,6 +5,7 @@ def init_logger() -> logging.Logger:
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(message)s",
         level=logging.INFO,
+        encoding="utf-8",
     )
     return logging.getLogger("JupJup")
 
