@@ -59,26 +59,35 @@ class _FeedbackScorer:
     def apply_scores(self, df: pd.DataFrame) -> pd.DataFrame:
         today = datetime.today()
         post_date_dt = pd.to_datetime(df["post_date"], format="%Y%m%d", errors="coerce")
-        days_diff: pd.Series = (today - post_date_dt).dt.days.fillna(999)
-        date_score = days_diff.apply(self.calculate_date_score)
+        post_days_diff: pd.Series = (today - post_date_dt).dt.days.fillna(999)
+        post_date_score = post_days_diff.apply(self.calculate_date_score)
+
+        scrap_date_dt = pd.to_datetime(
+            df["scrap_date"], format="%Y%m%d", errors="coerce"
+        )
+        scrap_days_diff: pd.Series = (today - scrap_date_dt).dt.days
+        scrap_date_score = scrap_days_diff.apply(self.calculate_date_score)
 
         _title = df["title"].fillna("")
         title_keyword_score = _title.apply(self.calculate_product_score)
+        repetition_title_score = _title.apply(self.score_by_repetition)
 
         _description = df["description"].fillna("")
         _product_keyword_score_raw = _description.apply(self.calculate_product_score)
         product_keyword_score = self.assign_percentile_score(_product_keyword_score_raw)
+        repetition_description_score = _description.apply(self.score_by_repetition)
 
-        repetition_score = _description.apply(self.score_by_repetition)
         _issue_keyword_score_raw = _description.apply(self.calculate_issue_score)
         issue_keyword_score = self.assign_percentile_score(_issue_keyword_score_raw)
 
         df = df.assign(
             total_score=(
-                date_score
+                post_date_score
+                + scrap_date_score
                 + title_keyword_score
                 + product_keyword_score
-                + repetition_score
+                + repetition_title_score
+                + repetition_description_score
                 + issue_keyword_score
             )
         )
@@ -103,9 +112,9 @@ def extract_high_score_data(
     # 카페 필터링
     data_cafe = _data[_data["source"] == "cafe"]
     data_cafe = scorer.apply_scores(data_cafe)
-    data_cafe = data_cafe.sort_values("total_score", ascending=False).iloc[
-        : (extracted_data_count // 2)
-    ]
+    data_cafe = data_cafe.sort_values(
+        ["scrap_date", "total_score"], ascending=[False, False]
+    ).iloc[: (extracted_data_count // 2)]
 
     # 병합하여 반환
     return pd.concat([data_blog, data_cafe], ignore_index=True)
