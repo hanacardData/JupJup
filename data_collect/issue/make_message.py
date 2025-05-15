@@ -120,7 +120,7 @@ def extract_high_score_data(
     return pd.concat([data_blog, data_cafe], ignore_index=True)
 
 
-def get_issue_message(data: pd.DataFrame) -> str:
+def get_issue_message(data: pd.DataFrame, tag: bool = True) -> str:
     refined_data = extract_high_score_data(data)
     content = json.dumps(
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
@@ -144,7 +144,8 @@ def get_issue_message(data: pd.DataFrame) -> str:
     else:
         if len(urls) != 2:
             logger.warning("Not expected number of URLs found in the message.")
-        data.loc[data["link"].isin(urls), "is_posted"] = 1
+        if tag:
+            data.loc[data["link"].isin(urls), "is_posted"] = 1
 
     data.to_csv(DATA_PATH, index=False, encoding="utf-8")
     return message
