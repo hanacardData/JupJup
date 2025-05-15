@@ -8,6 +8,7 @@ SCHEMA: list[str] = [
     "link",
     "description",
     "post_date",
+    "scrap_date",
     "source",
     "is_posted",
 ]
