@@ -17,29 +17,31 @@ def is_weekend(date: datetime.date) -> bool:
 
 def run_all(is_test: bool = False):
     datetime_now = datetime.now()
-    logger.info(f"Batch Start: {datetime_now}")
+    logger.info("Batch Start")
 
     collect_load_data(QUERIES)
-    logger.info(f"Collection Completed: {datetime_now}")
+    logger.info("Collection Completed")
 
     if is_holiday(datetime_now.strftime("%Y-%m-%d")) or is_weekend(datetime_now):
-        logger.info(f"Not today: {datetime_now}")
+        logger.info(f"Not post today: {datetime_now}")
         return
 
-    df = pd.read_csv(DATA_PATH, encoding="utf-8")
+    df = pd.read_csv(DATA_PATH, dtype={"post_date": object}, encoding="utf-8")
     try:
-        message = get_issue_message(df)
+        message = get_issue_message(df, tag=not is_test)
         logger.info(f"Message ready: {message}")
         if is_test:
             post_message_to_channel(message, TEST_CHANNEL_ID)
             return
+
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
             post_message_to_channel(message, channel_id)
+            logger.info(f"Sent Message to channel {channel_id} in {datetime_now}")
 
     except Exception as e:
         logger.error(f"Error: {e}")
         post_message_to_channel(str(e), TEST_CHANNEL_ID)
-    logger.info(f"Sent Message: {datetime_now}")
+        raise Exception(str(e))
 
 
 if __name__ == "__main__":
