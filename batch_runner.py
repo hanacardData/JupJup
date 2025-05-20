@@ -53,4 +53,4 @@ def run_all(is_test: bool = False):
 
 
 if __name__ == "__main__":
-    run_all(is_test=True)  # 테스트 시엔 True
+    run_all(is_test=False)  # 테스트 시엔 True
