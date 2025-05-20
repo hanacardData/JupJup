@@ -32,6 +32,7 @@ def run_all(is_test: bool = False):
         logger.info(f"Message ready: {message}")
     except Exception as e:
         logger.error(f"Failed to generate message: {e}")
+        raise
 
     if is_test:
         try:
