@@ -26,23 +26,30 @@ def run_all(is_test: bool = False):
         logger.info(f"Not post today: {datetime_now}")
         return
 
-    df = pd.read_csv(DATA_PATH, dtype={"post_date": object}, encoding="utf-8")
     try:
+        df = pd.read_csv(DATA_PATH, dtype={"post_date": object}, encoding="utf-8")
         message = get_issue_message(df, tag=not is_test)
         logger.info(f"Message ready: {message}")
-        if is_test:
-            post_message_to_channel(message, TEST_CHANNEL_ID)
-            return
+    except Exception as e:
+        logger.error(f"Failed to generate message: {e}")
 
-        for channel_id in SUBSCRIBE_CHANNEL_IDS:
+    if is_test:
+        try:
+            post_message_to_channel(message, TEST_CHANNEL_ID)
+            logger.info(f"Sent test message in {datetime_now}")
+        except Exception as e:
+            logger.error(f"Failed to send test message: {e}")
+            raise
+        return
+
+    for channel_id in SUBSCRIBE_CHANNEL_IDS:
+        try:
             post_message_to_channel(message, channel_id)
             logger.info(f"Sent Message to channel {channel_id} in {datetime_now}")
 
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        post_message_to_channel(str(e), TEST_CHANNEL_ID)
-        raise Exception(str(e))
+        except Exception as e:
+            logger.warning(f"Failed to send message at {channel_id} {e}")
 
 
 if __name__ == "__main__":
-    run_all(is_test=False)  # 테스트 시엔 True
+    run_all(is_test=True)  # 테스트 시엔 True
