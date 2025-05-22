@@ -27,7 +27,7 @@ async def get_prompt_content() -> str:
     )
 
 
-async def get_answer(input: str) -> str:
+async def get_answer_comment(input: str) -> str:
     content = await get_prompt_content()
     return await async_openai_response(
         prompt=PROMPT.format(content=content),
