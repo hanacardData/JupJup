@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 from fastapi_cache.decorator import cache
@@ -12,17 +13,6 @@ from bot.services.fortune.variables import (
 )
 
 
-@cache(expire=86400)
-async def parse_date(date_str: str) -> tuple[int, int, int]:
-    if len(date_str) != 8:
-        raise ValueError("Date string must be in YYYYMMDD format.")
-
-    year = int(date_str[:4])
-    month = int(date_str[4:6])
-    day = int(date_str[6:8])
-    return year, month, day
-
-
 async def update_five_elements(
     pillar: str, element_scores: dict[str, int]
 ) -> dict[str, int]:
@@ -34,12 +24,9 @@ async def update_five_elements(
 
 @cache(expire=86400)
 async def calculate_four_pillars_with_elements(
-    birthday: str,
+    year: str, month: str, day: str
 ) -> dict[str, str | dict[str, int]]:
-    """만세력 측정 함수"""
     calendar = KoreanLunarCalendar()
-
-    year, month, day = await parse_date(birthday)
     calendar.setSolarDate(year, month, day)
 
     _gapja_string = calendar.getGapJaString()
@@ -62,9 +49,22 @@ async def calculate_four_pillars_with_elements(
 
 
 async def get_fortune_comment(input: str) -> str:
-    user_manse = await calculate_four_pillars_with_elements(birthday=input)
+    if not re.match(r"^\d{8}$", input):
+        return "날짜 형식이 잘못되었어요! YYYYMMDD 형식으로 다시 입력해주세요."
+    try:
+        year = int(input[:4])
+        month = int(input[4:6])
+        day = int(input[6:8])
+        datetime(year, month, day)
+        today = datetime.today()
+    except ValueError:
+        return "존재하지 않는 날짜예요. 올바른 날짜를 입력해주세요 (예: 20230230은 잘못된 날짜입니다)."
+
+    user_manse = await calculate_four_pillars_with_elements(
+        year=year, month=month, day=day
+    )
     today_manse = await calculate_four_pillars_with_elements(
-        birthday=datetime.today().strftime("%Y%m%d")
+        year=today.year, month=today.month, day=today.day
     )
     text_input = TEXT_INPUT.format(manse=user_manse, today_manse=today_manse)
     return await async_openai_response(prompt=PROMPT_FORTUNE, input=text_input)
