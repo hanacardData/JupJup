@@ -22,9 +22,9 @@ async def get_prompt_content() -> str:
     )
     return (
         f"데이터 수집 날짜: {datetime.today().strftime('%Y년 %m월 %d일')}\n"
-        + f"수집 데이터 수: {len(data)}\n"
-        + f"집중 분석 대상 데이터 수: {EXTRACTED_DATA_COUNT}\n"
-        + f"수집 데이터 예시: {content}\n"
+        + f"현재까지 수집한 총 데이터 수: {len(data)}\n"
+        + f"소개할 집중 분석 대상 데이터 수: {EXTRACTED_DATA_COUNT}\n"
+        + f"소개할 집중 분석 데이터: {content}\n"
     )
 
 
