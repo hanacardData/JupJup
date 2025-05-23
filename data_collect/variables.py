@@ -3,6 +3,7 @@ import os
 SOURCES: list[str] = ["blog", "cafe"]
 DATALAB_SOURCE: str = "datalab"
 SAVE_PATH: str = "data"
+EXTRACTED_DATA_COUNT: int = 300
 DATA_PATH: str = os.path.join(SAVE_PATH, "data.csv")
 TEST_CHANNEL_ID: str = "8895b3b4-1cff-cec7-b7bc-a6df449d3638"
 SUBSCRIBE_CHANNEL_IDS: list[str] = [
