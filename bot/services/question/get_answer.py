@@ -2,18 +2,17 @@ import json
 from datetime import datetime
 
 import pandas as pd
-from fastapi_cache.decorator import cache
 
 from bot.services.core.openai_client import async_openai_response
 from bot.services.question.prompt import PROMPT
 from data_collect.issue.make_message import extract_high_score_data
-from data_collect.variables import DATA_PATH
+from data_collect.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 
 
-@cache(expire=43_200)
+# @cache(expire=43_200)
 async def get_prompt_content() -> str:
     data = pd.read_csv(DATA_PATH, dtype={"post_date": object})
-    refined_data = extract_high_score_data(data, extracted_data_count=10)
+    refined_data = extract_high_score_data(data)
     content = json.dumps(
         refined_data[["title", "link", "description"]]
         .astype(str)
@@ -23,6 +22,7 @@ async def get_prompt_content() -> str:
     return (
         f"데이터 수집 날짜: {datetime.today().strftime('%Y년 %m월 %d일')}\n"
         + f"수집 데이터 수: {len(data)}\n"
+        + f"답변 가능 데이터 수: {EXTRACTED_DATA_COUNT}\n"
         + f"수집 데이터 예시: {content}\n"
     )
 

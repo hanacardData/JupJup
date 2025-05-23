@@ -7,7 +7,7 @@ import pandas as pd
 from bot.services.core.openai_client import openai_response
 from data_collect.issue.prompt import PROMPT, TEXT_INPUT
 from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
-from data_collect.variables import DATA_PATH
+from data_collect.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 from logger import logger
 
 
@@ -94,9 +94,7 @@ class _FeedbackScorer:
         return df
 
 
-def extract_high_score_data(
-    data: pd.DataFrame, extracted_data_count: int = 100
-) -> pd.DataFrame:
+def extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
     scorer = _FeedbackScorer(
         issue_keywords=ISSUE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
@@ -107,14 +105,14 @@ def extract_high_score_data(
     data_blog = scorer.apply_scores(data_blog)
     data_blog = data_blog.sort_values(
         ["post_date", "total_score"], ascending=[False, False]
-    ).iloc[: (extracted_data_count // 2)]
+    ).iloc[: (EXTRACTED_DATA_COUNT // 2)]
 
     # 카페 필터링
     data_cafe = _data[_data["source"] == "cafe"]
     data_cafe = scorer.apply_scores(data_cafe)
     data_cafe = data_cafe.sort_values(
         ["scrap_date", "total_score"], ascending=[False, False]
-    ).iloc[: (extracted_data_count // 2)]
+    ).iloc[: (EXTRACTED_DATA_COUNT // 2)]
 
     # 병합하여 반환
     return pd.concat([data_blog, data_cafe], ignore_index=True)
@@ -134,7 +132,7 @@ def get_issue_message(data: pd.DataFrame, tag: bool = True) -> str:
         ),
     )
     message = (
-        f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서를 분석한 결과입니다!\n"
+        f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서 중 {EXTRACTED_DATA_COUNT}를 집중 분석한 결과입니다!\n"
         + result
     )
     urls = _extract_urls(result)
