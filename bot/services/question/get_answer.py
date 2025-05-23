@@ -7,6 +7,7 @@ from fastapi_cache.decorator import cache
 from bot.services.core.openai_client import async_openai_response
 from bot.services.question.prompt import PROMPT
 from data_collect.issue.make_message import extract_high_score_data
+from data_collect.keywords import CARD_PRODUCTS
 from data_collect.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 
 
@@ -31,6 +32,9 @@ async def get_prompt_content() -> str:
 async def get_answer_comment(input: str) -> str:
     content = await get_prompt_content()
     return await async_openai_response(
-        prompt=PROMPT.format(content=content),
+        prompt=PROMPT.format(
+            content=content,
+            card_products=", ".join(CARD_PRODUCTS),
+        ),
         input=input,
     )
