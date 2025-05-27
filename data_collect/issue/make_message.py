@@ -31,7 +31,7 @@ class _FeedbackScorer:
         return sum([days <= 30, days <= 20, days <= 10])
 
     def calculate_product_score(self, text: str) -> int:
-        """scoring 기준 2: 우리 상품과 관련된 키워드가 포함될수록 높은 스코어"""
+        """scoring 기준 2: 우리 상품과 관련된 키워드가 포함되면 1 아니면 0"""
         return int(any(kw in text for kw in self.product_keywords))
 
     def calculate_issue_score(self, text: str) -> int:
@@ -82,13 +82,15 @@ class _FeedbackScorer:
 
         df = df.assign(
             total_score=(
-                post_date_score
-                + scrap_date_score
-                + title_keyword_score
-                + product_keyword_score
-                + repetition_title_score
-                + repetition_description_score
-                + issue_keyword_score
+                title_keyword_score
+                * (
+                    post_date_score
+                    + scrap_date_score
+                    + product_keyword_score
+                    + repetition_title_score
+                    + repetition_description_score
+                    + issue_keyword_score
+                )
             )
         )
         return df
@@ -98,21 +100,21 @@ def extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
     scorer = _FeedbackScorer(
         issue_keywords=ISSUE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
-    _data = data[data["is_posted"] == 0]
+    _data = data.loc[(data["is_posted"] == 0) & data["total_score"] > 0]
 
     # 블로그 필터링
-    data_blog = _data[_data["source"] == "blog"]
+    data_blog = _data.loc[_data["source"] == "blog"]
     data_blog = scorer.apply_scores(data_blog)
     data_blog = data_blog.sort_values(
         ["post_date", "total_score"], ascending=[False, False]
-    ).iloc[: (EXTRACTED_DATA_COUNT // 2)]
+    ).iloc[: max((EXTRACTED_DATA_COUNT // 2), len(data_blog))]
 
     # 카페 필터링
-    data_cafe = _data[_data["source"] == "cafe"]
+    data_cafe = _data.loc[_data["source"] == "cafe"]
     data_cafe = scorer.apply_scores(data_cafe)
     data_cafe = data_cafe.sort_values(
         ["scrap_date", "total_score"], ascending=[False, False]
-    ).iloc[: (EXTRACTED_DATA_COUNT // 2)]
+    ).iloc[: max((EXTRACTED_DATA_COUNT // 2), len(data_cafe))]
 
     # 병합하여 반환
     return pd.concat([data_blog, data_cafe], ignore_index=True)
