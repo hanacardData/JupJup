@@ -100,21 +100,25 @@ def extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
     scorer = _FeedbackScorer(
         issue_keywords=ISSUE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
-    _data = data.loc[(data["is_posted"] == 0) & data["total_score"] > 0]
+    _data = data.loc[data["is_posted"] == 0]
 
     # 블로그 필터링
     data_blog = _data.loc[_data["source"] == "blog"]
     data_blog = scorer.apply_scores(data_blog)
-    data_blog = data_blog.sort_values(
-        ["post_date", "total_score"], ascending=[False, False]
-    ).iloc[: max((EXTRACTED_DATA_COUNT // 2), len(data_blog))]
+    data_blog = (
+        data_blog.loc[data_blog["total_score"] > 0]
+        .sort_values(["post_date", "total_score"], ascending=[False, False])
+        .iloc[: min((EXTRACTED_DATA_COUNT // 2), len(data_blog))]
+    )
 
     # 카페 필터링
     data_cafe = _data.loc[_data["source"] == "cafe"]
     data_cafe = scorer.apply_scores(data_cafe)
-    data_cafe = data_cafe.sort_values(
-        ["scrap_date", "total_score"], ascending=[False, False]
-    ).iloc[: max((EXTRACTED_DATA_COUNT // 2), len(data_cafe))]
+    data_cafe = (
+        data_cafe.loc[data_cafe["total_score"] > 0]
+        .sort_values(["scrap_date", "total_score"], ascending=[False, False])
+        .iloc[: min((EXTRACTED_DATA_COUNT // 2), len(data_cafe))]
+    )
 
     # 병합하여 반환
     return pd.concat([data_blog, data_cafe], ignore_index=True)
@@ -122,6 +126,10 @@ def extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
 
 def get_issue_message(data: pd.DataFrame, tag: bool = True) -> str:
     refined_data = extract_high_score_data(data)
+    if len(refined_data) == 0:
+        logger.warning("No data found after filtering.")
+        return "오늘은 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+
     content = json.dumps(
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
         ensure_ascii=False,
