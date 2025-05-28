@@ -142,7 +142,7 @@ def get_issue_message(data: pd.DataFrame, tag: bool = True) -> str:
         ),
     )
     message = (
-        f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서 중 {EXTRACTED_DATA_COUNT}를 집중 분석한 결과입니다!\n"
+        f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서 중 {EXTRACTED_DATA_COUNT}개를 집중 분석한 결과입니다!\n"
         + result
     )
     urls = _extract_urls(result)
