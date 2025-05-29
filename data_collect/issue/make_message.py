@@ -7,7 +7,7 @@ import pandas as pd
 from bot.services.core.openai_client import openai_response
 from data_collect.issue.prompt import PROMPT, TEXT_INPUT
 from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
-from data_collect.variables import DATA_PATH
+from data_collect.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 from logger import logger
 
 
@@ -26,23 +26,28 @@ class _FeedbackScorer:
         self.product_keywords = product_keywords
         self.all_keywords = issue_keywords + product_keywords
 
-    # scoring 기준 1: 날짜가 최신일수록 높은 스코어
-    def calc_date_score(self, days: int) -> int:
+    def calculate_date_score(self, days: int) -> int:
+        """scoring 기준 1: 날짜가 최신일수록 높은 스코어"""
         return sum([days <= 30, days <= 20, days <= 10])
 
-    # scoring 기준 2: 핵심 키워드가 포함될수록 높은 스코어
-    def calc_keyword_score(self, text: str) -> int:
-        if any(kw in text for kw in self.issue_keywords):
-            return 2
-        elif any(kw in text for kw in self.product_keywords):
-            return 1
-        return 0
+    def calculate_product_score(self, text: str) -> int:
+        """scoring 기준 2: 우리 상품과 관련된 키워드가 포함되면 1 아니면 0"""
+        return int(any(kw in text for kw in self.product_keywords))
 
-    # scoring 기준 3: 글의 길이 대비 부정 단어 카운트가 높을수록 높은 스코어
-    def count_negative_keywords(self, text: str) -> int:
+    def calculate_issue_score(self, text: str) -> int:
+        """scoring 기준 3: 글의 길이 대비 issue 단어 카운트가 높을수록 높은 스코어"""
         return sum(text.count(kw) for kw in self.issue_keywords)
 
+    def score_by_repetition(self, text: str) -> int:
+        """scoring 기준 4: 모든 단어가 자주 반복될수록 낮은 스코어"""
+        for kw in self.all_keywords:
+            pattern = rf"({re.escape(kw)})\1{{2,}}"
+            if re.search(pattern, text):
+                return -1
+        return 0
+
     def assign_percentile_score(self, series: pd.Series) -> pd.Series:
+        """score를 quantile 단위로 grouping 해서 축소"""
         q90 = series.quantile(0.9)
         q80 = series.quantile(0.8)
 
@@ -51,62 +56,80 @@ class _FeedbackScorer:
 
         return series.apply(score)
 
-    # scoring 기준 4: 부정 단어가 자주 반복될수록 높은 스코어
-    def score_by_repetition(self, text: str) -> int:
-        for kw in self.all_keywords:
-            pattern = rf"({re.escape(kw)})\1{{2,}}"
-            if re.search(pattern, text):
-                return 1
-        return 0
-
     def apply_scores(self, df: pd.DataFrame) -> pd.DataFrame:
         today = datetime.today()
         post_date_dt = pd.to_datetime(df["post_date"], format="%Y%m%d", errors="coerce")
-        days_diff: pd.Series = (today - post_date_dt).dt.days.fillna(999)
-        date_score = days_diff.apply(self.calc_date_score)
+        post_days_diff: pd.Series = (today - post_date_dt).dt.days.fillna(999)
+        post_date_score = post_days_diff.apply(self.calculate_date_score)
+
+        scrap_date_dt = pd.to_datetime(
+            df["scrap_date"], format="%Y%m%d", errors="coerce"
+        )
+        scrap_days_diff: pd.Series = (today - scrap_date_dt).dt.days
+        scrap_date_score = scrap_days_diff.apply(self.calculate_date_score)
+
+        _title = df["title"].fillna("")
+        title_keyword_score = _title.apply(self.calculate_product_score)
+        repetition_title_score = _title.apply(self.score_by_repetition)
 
         _description = df["description"].fillna("")
-        keyword_score = _description.apply(self.calc_keyword_score)
-        repetition_score = _description.apply(self.score_by_repetition)
-        neg_count_raw = _description.apply(self.count_negative_keywords)
-        neg_count_score = self.assign_percentile_score(neg_count_raw)
+        _product_keyword_score_raw = _description.apply(self.calculate_product_score)
+        product_keyword_score = self.assign_percentile_score(_product_keyword_score_raw)
+        repetition_description_score = _description.apply(self.score_by_repetition)
+
+        _issue_keyword_score_raw = _description.apply(self.calculate_issue_score)
+        issue_keyword_score = self.assign_percentile_score(_issue_keyword_score_raw)
 
         df = df.assign(
             total_score=(
-                date_score + keyword_score + repetition_score + neg_count_score
+                title_keyword_score
+                * (
+                    post_date_score
+                    + scrap_date_score
+                    + product_keyword_score
+                    + repetition_title_score
+                    + repetition_description_score
+                    + issue_keyword_score
+                )
             )
         )
         return df
 
 
-def extract_high_score_data(
-    data: pd.DataFrame, extracted_data_count: int = 100
-) -> pd.DataFrame:
+def extract_high_score_data(data: pd.DataFrame) -> pd.DataFrame:
     scorer = _FeedbackScorer(
         issue_keywords=ISSUE_KEYWORDS, product_keywords=CARD_PRODUCTS
     )
-    _data = data[data["is_posted"] == 0]
+    _data = data.loc[data["is_posted"] == 0]
 
     # 블로그 필터링
-    data_blog = _data[_data["source"] == "blog"]
+    data_blog = _data.loc[_data["source"] == "blog"]
     data_blog = scorer.apply_scores(data_blog)
-    data_blog = data_blog.sort_values(
-        ["post_date", "total_score"], ascending=[False, False]
-    ).iloc[: (extracted_data_count // 2)]
+    data_blog = (
+        data_blog.loc[data_blog["total_score"] > 0]
+        .sort_values(["post_date", "total_score"], ascending=[False, False])
+        .iloc[: min((EXTRACTED_DATA_COUNT // 2), len(data_blog))]
+    )
 
     # 카페 필터링
-    data_cafe = _data[_data["source"] == "cafe"]
+    data_cafe = _data.loc[_data["source"] == "cafe"]
     data_cafe = scorer.apply_scores(data_cafe)
-    data_cafe = data_cafe.sort_values("total_score", ascending=False).iloc[
-        : (extracted_data_count // 2)
-    ]
+    data_cafe = (
+        data_cafe.loc[data_cafe["total_score"] > 0]
+        .sort_values(["scrap_date", "total_score"], ascending=[False, False])
+        .iloc[: min((EXTRACTED_DATA_COUNT // 2), len(data_cafe))]
+    )
 
     # 병합하여 반환
     return pd.concat([data_blog, data_cafe], ignore_index=True)
 
 
-def get_issue_message(data: pd.DataFrame) -> str:
+def get_issue_message(data: pd.DataFrame, tag: bool = True) -> str:
     refined_data = extract_high_score_data(data)
+    if len(refined_data) == 0:
+        logger.warning("No data found after filtering.")
+        return "오늘은 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+
     content = json.dumps(
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
         ensure_ascii=False,
@@ -119,7 +142,7 @@ def get_issue_message(data: pd.DataFrame) -> str:
         ),
     )
     message = (
-        f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서를 분석한 결과입니다!\n"
+        f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서 중 {EXTRACTED_DATA_COUNT}개를 집중 분석한 결과입니다!\n"
         + result
     )
     urls = _extract_urls(result)
@@ -129,7 +152,8 @@ def get_issue_message(data: pd.DataFrame) -> str:
     else:
         if len(urls) != 2:
             logger.warning("Not expected number of URLs found in the message.")
-        data.loc[data["link"].isin(urls), "is_posted"] = 1
+        if tag:
+            data.loc[data["link"].isin(urls), "is_posted"] = 1
 
     data.to_csv(DATA_PATH, index=False, encoding="utf-8")
     return message

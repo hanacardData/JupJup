@@ -7,13 +7,14 @@ from fastapi_cache.decorator import cache
 from bot.services.core.openai_client import async_openai_response
 from bot.services.question.prompt import PROMPT
 from data_collect.issue.make_message import extract_high_score_data
-from data_collect.variables import DATA_PATH
+from data_collect.keywords import CARD_PRODUCTS
+from data_collect.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 
 
 @cache(expire=43_200)
 async def get_prompt_content() -> str:
-    data = pd.read_csv(DATA_PATH)
-    refined_data = extract_high_score_data(data, extracted_data_count=10)
+    data = pd.read_csv(DATA_PATH, dtype={"post_date": object})
+    refined_data = extract_high_score_data(data)
     content = json.dumps(
         refined_data[["title", "link", "description"]]
         .astype(str)
@@ -22,14 +23,18 @@ async def get_prompt_content() -> str:
     )
     return (
         f"데이터 수집 날짜: {datetime.today().strftime('%Y년 %m월 %d일')}\n"
-        + f"수집 데이터 수: {len(data)}\n"
-        + f"수집 데이터 예시: {content}\n"
+        + f"현재까지 수집한 총 데이터 수: {len(data)}\n"
+        + f"소개할 집중 분석 대상 데이터 수: {EXTRACTED_DATA_COUNT}\n"
+        + f"소개할 집중 분석 데이터: {content}\n"
     )
 
 
-async def get_answer(input: str) -> str:
+async def get_answer_comment(input: str) -> str:
     content = await get_prompt_content()
     return await async_openai_response(
-        prompt=PROMPT.format(content=content),
+        prompt=PROMPT.format(
+            content=content,
+            card_products=", ".join(CARD_PRODUCTS),
+        ),
         input=input,
     )

@@ -8,10 +8,13 @@ def remove_html_tags(text: str) -> str:
 
 
 class AbstractResponse(BaseModel):
-    def to_items(self, query: str) -> list[dict[str, str]]:
+    def to_items(self, query: str, scrap_date: str) -> list[dict[str, str]]:
         if not hasattr(self, "items"):
             raise AttributeError("items not exists.")
-        return [{**item.model_dump(), "query": query} for item in self.items]
+        return [
+            {**item.model_dump(), "query": query, "scrap_date": scrap_date}
+            for item in self.items
+        ]
 
     def to_results(self) -> list[dict[str, str]]:
         if not hasattr(self, "results"):
