@@ -5,6 +5,7 @@ DATALAB_SOURCE: str = "datalab"
 SAVE_PATH: str = "data"
 EXTRACTED_DATA_COUNT: int = 100
 DATA_PATH: str = os.path.join(SAVE_PATH, "data.csv")
+TRAVELLOG_DATA_PATH: str = os.path.join(SAVE_PATH, "travellog_data.csv")
 TEST_CHANNEL_ID: str = "8895b3b4-1cff-cec7-b7bc-a6df449d3638"
 TRAVELLOG_CHANNEL_ID: str = (
     "59fc2740-d582-8072-4c63-add08f331dda",
