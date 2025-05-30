@@ -4,9 +4,9 @@ import pandas as pd
 from holidayskr import is_holiday
 
 from bot.services.core.post_message import post_message_to_channel
+from data_collect.issue.keywords import QUERIES
+from data_collect.issue.load import collect_load_data
 from data_collect.issue.make_message import get_issue_message
-from data_collect.keywords import QUERIES
-from data_collect.load import collect_load_data
 from data_collect.variables import DATA_PATH, SUBSCRIBE_CHANNEL_IDS, TEST_CHANNEL_ID
 from logger import logger
 
