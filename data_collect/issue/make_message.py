@@ -5,8 +5,8 @@ from datetime import datetime
 import pandas as pd
 
 from bot.services.core.openai_client import openai_response
+from data_collect.issue.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
 from data_collect.issue.prompt import PROMPT, TEXT_INPUT
-from data_collect.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
 from data_collect.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 from logger import logger
 

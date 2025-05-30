@@ -93,6 +93,21 @@ QUERIES: list[str] = [
     for combination in combinations
 ]
 
+TRAVELLOG_KEYWORDS: list[str] = [
+    "트래블로그",
+    "트래블고",
+    "트래블GO",
+    "하나머니",
+]
+
+TRAVELLOG_ISSUE_KEYWORDS: list[str] = [
+    "ATM 오류",
+    "ATM 에러",
+    "거절",
+    "불편",
+    "불가",
+]
+
 DATALAB_QUERIES: dict[str, list[str]] = {
     "하나카드": [
         "하나카드",
