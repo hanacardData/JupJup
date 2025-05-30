@@ -29,8 +29,8 @@ async def calculate_four_pillars_with_elements(
     calendar = KoreanLunarCalendar()
     calendar.setSolarDate(year, month, day)
 
-    _gapja_string = calendar.getGapJaString()
-    pillars = [_[:2] for _ in _gapja_string.split(" ")]
+    gapja_string = calendar.getGapJaString()
+    pillars = [_[:2] for _ in gapja_string.split(" ")]
     year_pillar = pillars[0]
     month_pillar = pillars[1]
     day_pillar = pillars[2]
@@ -41,6 +41,7 @@ async def calculate_four_pillars_with_elements(
     element_scores = await update_five_elements(day_pillar, element_scores)
 
     return {
+        "사주": gapja_string,
         "연주": year_pillar,
         "월주": month_pillar,
         "일주": day_pillar,
@@ -66,5 +67,10 @@ async def get_fortune_comment(input: str) -> str:
     today_manse = await calculate_four_pillars_with_elements(
         year=today.year, month=today.month, day=today.day
     )
-    text_input = TEXT_INPUT.format(manse=user_manse, today_manse=today_manse)
+    text_input = TEXT_INPUT.format(
+        manse=user_manse,
+        birthday=input,
+        today_manse=today_manse,
+        today=today.strftime("%Y%m%d"),
+    )
     return await async_openai_response(prompt=PROMPT_FORTUNE, input=text_input)
