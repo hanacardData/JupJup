@@ -5,11 +5,11 @@ from time import sleep
 import pandas as pd
 from tqdm import tqdm
 
-from data_collect.fetch import fetch_data
-from data_collect.travellog.keywords import TRAVELLOG_QUERIES
-from data_collect.travellog.select_column import SOURCES_SELECT_MAP
-from data_collect.utils import read_csv
-from data_collect.variables import SAVE_PATH, SOURCES, TRAVELLOG_DATA_PATH
+from batch.fetch import fetch_data
+from batch.travellog.keywords import TRAVELLOG_QUERIES
+from batch.travellog.select_column import SOURCES_SELECT_MAP
+from batch.utils import read_csv
+from batch.variables import SAVE_PATH, SOURCES, TRAVELLOG_DATA_PATH
 from logger import logger
 
 

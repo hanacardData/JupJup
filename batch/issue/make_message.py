@@ -3,12 +3,12 @@ from datetime import datetime
 
 import pandas as pd
 
+from batch.issue.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
+from batch.issue.prompt import PROMPT, TEXT_INPUT
+from batch.scorer import extract_high_score_data
+from batch.utils import extract_urls
+from batch.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 from bot.services.core.openai_client import openai_response
-from data_collect.issue.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
-from data_collect.issue.prompt import PROMPT, TEXT_INPUT
-from data_collect.scorer import extract_high_score_data
-from data_collect.utils import extract_urls
-from data_collect.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 from logger import logger
 
 

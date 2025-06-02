@@ -4,12 +4,12 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
+from batch.scorer import extract_high_score_data
+from batch.travellog.keywords import TRAVELLOG_ISSUE_KEYWORDS, TRAVELLOG_KEYWORDS
+from batch.travellog.prompt import PROMPT, TEXT_INPUT
+from batch.utils import extract_urls
+from batch.variables import EXTRACTED_DATA_COUNT, TRAVELLOG_DATA_PATH
 from bot.services.core.openai_client import openai_response
-from data_collect.scorer import extract_high_score_data
-from data_collect.travellog.keywords import TRAVELLOG_ISSUE_KEYWORDS, TRAVELLOG_KEYWORDS
-from data_collect.travellog.prompt import PROMPT, TEXT_INPUT
-from data_collect.utils import extract_urls
-from data_collect.variables import EXTRACTED_DATA_COUNT, TRAVELLOG_DATA_PATH
 from logger import logger
 
 

@@ -2,8 +2,8 @@ from typing import Literal
 
 import requests
 
-from data_collect.models.request import SearchRequest, SearchTrendRequest
-from data_collect.models.response import (
+from batch.models.request import SearchRequest, SearchTrendRequest
+from batch.models.response import (
     AbstractResponse,
     BlogResponse,
     CafeResponse,

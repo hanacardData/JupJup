@@ -5,11 +5,11 @@ from time import sleep
 import pandas as pd
 from tqdm import tqdm
 
-from data_collect.fetch import fetch_data
-from data_collect.issue.keywords import QUERIES
-from data_collect.issue.select_column import SOURCES_SELECT_MAP
-from data_collect.utils import read_csv
-from data_collect.variables import DATA_PATH, SAVE_PATH, SOURCES
+from batch.fetch import fetch_data
+from batch.issue.keywords import QUERIES
+from batch.issue.select_column import SOURCES_SELECT_MAP
+from batch.utils import read_csv
+from batch.variables import DATA_PATH, SAVE_PATH, SOURCES
 from logger import logger
 
 
