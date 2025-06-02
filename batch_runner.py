@@ -102,5 +102,5 @@ def run_travellog_batch(is_test: bool = False):
 
 
 if __name__ == "__main__":
-    run_batch(is_test=False)  # 테스트 시엔 True
+    # run_batch(is_test=False)  # 테스트 시엔 True
     run_travellog_batch(is_test=True)  # 테스트 시엔 True
