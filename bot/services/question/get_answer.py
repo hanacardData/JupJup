@@ -4,7 +4,7 @@ from datetime import datetime
 import pandas as pd
 from fastapi_cache.decorator import cache
 
-from batch.issue.keywords import CARD_PRODUCTS
+from batch.issue.keywords import CARD_PRODUCTS, ISSUE_KEYWORDS
 from batch.issue.make_message import extract_high_score_data
 from batch.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 from bot.services.core.openai_client import async_openai_response
@@ -14,7 +14,12 @@ from bot.services.question.prompt import PROMPT
 @cache(expire=43_200)
 async def get_prompt_content() -> str:
     data = pd.read_csv(DATA_PATH, dtype={"post_date": object})
-    refined_data = extract_high_score_data(data)
+    refined_data = extract_high_score_data(
+        data=data,
+        issue_keywords=ISSUE_KEYWORDS,
+        card_products=CARD_PRODUCTS,
+        extracted_data_count=EXTRACTED_DATA_COUNT,
+    )
     content = json.dumps(
         refined_data[["title", "link", "description"]]
         .astype(str)
