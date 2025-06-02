@@ -17,7 +17,7 @@ async def get_prompt_content() -> str:
     refined_data = extract_high_score_data(
         data=data,
         issue_keywords=ISSUE_KEYWORDS,
-        card_products=CARD_PRODUCTS,
+        product_keywords=CARD_PRODUCTS,
         extracted_data_count=EXTRACTED_DATA_COUNT,
     )
     content = json.dumps(
