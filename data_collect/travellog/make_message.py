@@ -49,6 +49,7 @@ def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
     ]
     entries = re.split(r"\n\s*\n|[-]{6,}", result.strip())
     entries = [e.strip() for e in entries if e.strip()]
+    entries = [f"번호: {i + 1}\n{e}" for i, e in enumerate(entries)]
 
     urls = extract_urls(result)
     if len(urls) == 0:

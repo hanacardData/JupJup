@@ -9,11 +9,22 @@ TRAVELLOG_KEYWORDS: list[str] = [
 ]
 
 TRAVELLOG_ISSUE_KEYWORDS: list[str] = [
-    "ATM 오류",
-    "ATM 에러",
-    "거절",
     "불편",
-    "불가",
+    "오류",
+    "불만",
+    "안돼요",
+    "안되요",
+    "문의",
+    "도와주세요",
+    "절대",
+    "거절",
+    "불안",
+    "급해요",
+    "인출",
+    "ATM",
+    "출금",
+    "질문",
+    "수수료",
 ]
 
 combinations = list(itertools.product(TRAVELLOG_KEYWORDS, TRAVELLOG_ISSUE_KEYWORDS))

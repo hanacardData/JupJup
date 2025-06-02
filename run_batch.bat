@@ -15,6 +15,17 @@ cd /d %DIR%
 call C:\Users\user\AppData\Local\anaconda3\Scripts\activate.bat jupjup
 echo [%date% %time%] ==== Conda setted ==== >> %LOGFILE%
 echo [%date% %time%] ==== Git setted ==== >> %LOGFILE%
+git checkout main >> %LOGFILE% 2>&1
+if %errorlevel% neq 0 (
+    echo [%date% %time%] !!! git checkout 실패 !!! >> %LOGFILE%
+    exit /b %errorlevel%
+)
+
+git pull >> %LOGFILE% 2>&1
+if %errorlevel% neq 0 (
+    echo [%date% %time%] !!! git pull 실패 !!! >> %LOGFILE%
+    exit /b %errorlevel%
+)
 python batch_runner.py >> %LOGFILE% 2>&1
 set RETURN_CODE=%errorlevel%
 if %RETURN_CODE% neq 0 (

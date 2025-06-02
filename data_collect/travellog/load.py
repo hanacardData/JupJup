@@ -29,6 +29,7 @@ def collect_load_travellog_data(queries: list[str]) -> None:
                 type=source,
                 query=keyword,
                 sort="date",
+                display=100,
             )
             sleep(0.05)
             if _data is None:
