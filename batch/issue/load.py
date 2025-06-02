@@ -5,28 +5,23 @@ from time import sleep
 import pandas as pd
 from tqdm import tqdm
 
-from data_collect.fetch import fetch_data
-from data_collect.keywords import QUERIES
-from data_collect.select_column import SOURCES_SELECT_MAP
-from data_collect.variables import DATA_PATH, SAVE_PATH, SOURCES
+from batch.fetch import fetch_data
+from batch.issue.keywords import QUERIES
+from batch.issue.select_column import SOURCES_SELECT_MAP
+from batch.utils import read_csv
+from batch.variables import DATA_PATH, SAVE_PATH, SOURCES
 from logger import logger
-
-
-def _read_csv(file_path: str) -> pd.DataFrame:
-    if os.path.exists(file_path):
-        return pd.read_csv(file_path, encoding="utf-8")
-    return pd.DataFrame()
 
 
 def collect_load_data(queries: list[str]) -> None:
     """데이터를 수집하고 저장."""
     os.makedirs(SAVE_PATH, exist_ok=True)
 
-    _df_list: list[pd.DataFrame] = [_read_csv(DATA_PATH)]
+    _df_list: list[pd.DataFrame] = [read_csv(DATA_PATH)]
     for source in tqdm(SOURCES, disable=True):
         logger.info(f"{source} scrap started")
         _file_path = os.path.join(SAVE_PATH, f"_{source}.csv")
-        _data_source = _read_csv(_file_path)
+        _data_source = read_csv(_file_path)
 
         items: list[dict[str, str]] = []
         for keyword in tqdm(queries, disable=True):

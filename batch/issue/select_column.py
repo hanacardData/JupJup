@@ -14,22 +14,14 @@ SCHEMA: list[str] = [
 ]
 
 
-def _select_common_columns(data: pd.DataFrame, has_postdate: bool) -> pd.DataFrame:
-    df = data.copy()
-    if has_postdate:
-        df = df.rename(columns={"postdate": "post_date"})
-    else:
-        df = df.assign(post_date="")
-
+def _select_blog_data(data: pd.DataFrame) -> pd.DataFrame:
+    df = data.rename(columns={"postdate": "post_date"})
     return df[SCHEMA]
 
 
-def _select_blog_data(data: pd.DataFrame) -> pd.DataFrame:
-    return _select_common_columns(data, has_postdate=True)
-
-
 def _select_cafe_data(data: pd.DataFrame) -> pd.DataFrame:
-    return _select_common_columns(data, has_postdate=False)
+    df = data.assign(post_date="")
+    return df[SCHEMA]
 
 
 SOURCES_SELECT_MAP: dict[str, Callable[[pd.DataFrame], pd.DataFrame]] = {

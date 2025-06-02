@@ -4,11 +4,11 @@ from datetime import datetime
 import pandas as pd
 from fastapi_cache.decorator import cache
 
+from batch.issue.keywords import CARD_PRODUCTS
+from batch.issue.make_message import extract_high_score_data
+from batch.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 from bot.services.core.openai_client import async_openai_response
 from bot.services.question.prompt import PROMPT
-from data_collect.issue.make_message import extract_high_score_data
-from data_collect.keywords import CARD_PRODUCTS
-from data_collect.variables import DATA_PATH, EXTRACTED_DATA_COUNT
 
 
 @cache(expire=43_200)
