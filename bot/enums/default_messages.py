@@ -32,3 +32,4 @@ class NoneArgumentMessage(Enum):
     )
     REVIEW: str = "리뷰 내용을 입력해주세요! 예: /리뷰 hanacard에서 판매중인 쿠팡 상품 보셨나요? 트레블로그 master로 구매하는 회원은 전월 실적 30만원만 넘으면 10000 머니 받을 수 있음."
     FORTUNE: str = "생년월일을 입력해주세요! 예: /운세 19900101"
+    COMPLIMENT: str = "칭찬할 사람을 입력해주세요! 예: /칭찬 @김물결"
