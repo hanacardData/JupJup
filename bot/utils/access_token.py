@@ -62,6 +62,7 @@ class TokenManager:
 
 token_manager = TokenManager()
 
-if __name__ == "__main__":
-    token_manager = TokenManager()
+
+def set_headers() -> dict[str, str]:
     token = token_manager.get_token()
+    return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
