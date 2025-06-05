@@ -99,6 +99,7 @@ def run_travellog_batch(is_test: bool = False):
 
     except Exception as e:
         logger.warning(f"Failed to send message at {TRAVELLOG_CHANNEL_ID} {e}")
+        post_message_to_channel(str(e), TEST_CHANNEL_ID)
 
 
 if __name__ == "__main__":
