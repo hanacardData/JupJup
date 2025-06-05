@@ -17,7 +17,7 @@ def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
     refined_data = extract_high_score_data(
         data=data,
         issue_keywords=TRAVELLOG_ISSUE_KEYWORDS,
-        product_keywords=TRAVELLOG_KEYWORDS,
+        product_keywords=TRAVELLOG_KEYWORDS + ["트레블로그", "트레블고", "트레블GO"],
         extracted_data_count=EXTRACTED_DATA_COUNT,
     )
 
