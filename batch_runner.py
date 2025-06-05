@@ -59,6 +59,9 @@ def run_batch(is_test: bool = False):
 
         except Exception as e:
             logger.warning(f"Failed to send message at {channel_id} {e}")
+            post_message_to_channel(
+                f"batch to {channel_id} error: {str(e)}", TEST_CHANNEL_ID
+            )
 
 
 def run_travellog_batch(is_test: bool = False):
@@ -99,8 +102,9 @@ def run_travellog_batch(is_test: bool = False):
 
     except Exception as e:
         logger.warning(f"Failed to send message at {TRAVELLOG_CHANNEL_ID} {e}")
+        post_message_to_channel(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
 
 
 if __name__ == "__main__":
     run_batch(is_test=False)  # 테스트 시엔 True
-    run_travellog_batch(is_test=True)  # 테스트 시엔 True
+    run_travellog_batch(is_test=False)  # 테스트 시엔 True
