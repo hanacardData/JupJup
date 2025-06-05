@@ -55,8 +55,7 @@ def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
     if len(urls) == 0:
         logger.warning("No URLs found in the message.")
     else:
-        if len(urls) != 2:
-            logger.warning("Not expected number of URLs found in the message.")
+        logger.info(f"{len(urls)} found in the message.")
         if tag:
             data.loc[data["link"].isin(urls), "is_posted"] = 1
 
