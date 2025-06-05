@@ -7,9 +7,10 @@ EXTRACTED_DATA_COUNT: int = 100
 DATA_PATH: str = os.path.join(SAVE_PATH, "data.csv")
 TRAVELLOG_DATA_PATH: str = os.path.join(SAVE_PATH, "travellog_data.csv")
 TEST_CHANNEL_ID: str = "8895b3b4-1cff-cec7-b7bc-a6df449d3638"
-TRAVELLOG_CHANNEL_ID: str = (
-    "59fc2740-d582-8072-4c63-add08f331dda"  # 트래블로그UX부 우수현
-)
+
+# 트래블로그UX부 우수현
+TRAVELLOG_CHANNEL_ID: str = "59fc2740-d582-8072-4c63-add08f331dda"
+
 SUBSCRIBE_CHANNEL_IDS: list[str] = [
     "bf209668-eca1-250c-88e6-bb224bf9071a",  # 데이터 사업부
     "51d15802-cfb6-2e1b-6eb2-c545d2331783",  # CRM 마케팅팀 송치성
@@ -25,5 +26,4 @@ SUBSCRIBE_CHANNEL_IDS: list[str] = [
     "8e1d14fb-535d-174e-35f6-3a5b7cdd7bfe",  # 발급팀 조복엽
     "599dab73-3c5a-91ef-3925-2187d8ba3e87",  # 하나페이사업부 서지은
     "115639965",  # 감사부 이명주
-    TRAVELLOG_CHANNEL_ID,  # 트래블로그UX부 우수현
 ]
