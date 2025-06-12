@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
@@ -8,7 +9,9 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from uvicorn.config import LOGGING_CONFIG
 
+from batch.variables import TEST_CHANNEL_ID
 from bot.handler.event import process_event
+from bot.services.core.post_message import post_message_to_channel
 from bot.utils.signature import verify_signature
 from logger import logger
 
@@ -16,7 +19,14 @@ from logger import logger
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
-    yield
+    try:
+        yield
+    finally:
+        logger.info("줍줍이 서버 종료")
+        await post_message_to_channel(
+            f"줍줍이 종료: {datetime.now().isoformat()}",
+            TEST_CHANNEL_ID,
+        )
 
 
 app = FastAPI(lifespan=lifespan)
