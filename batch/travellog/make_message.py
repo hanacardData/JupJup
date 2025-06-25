@@ -54,6 +54,9 @@ def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
     urls = extract_urls(result)
     if len(urls) == 0:
         logger.warning("No URLs found in the message.")
+        return [
+            "오늘은 주목할만한 이슈가 없거나 ChatGPT 쪽 문제가 있는거 같아요. 확인하고 다시 찾아올게요 😊"
+        ]
     else:
         logger.info(f"{len(urls)} found in the message.")
         if tag:
