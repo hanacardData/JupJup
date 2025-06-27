@@ -96,13 +96,9 @@ def run_travellog_batch(is_test: bool = False):
         return
 
     try:
-        if isinstance(messages, list) and len(messages) == 1:
-            post_message_to_channel(
-                messages[0], TEST_CHANNEL_ID
-            )  # 트래블로그UX부 에러 모니터랑
-
         for message in messages:
             post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
+            post_message_to_channel(message, TEST_CHANNEL_ID)
         logger.info(f"Sent Message to channel {TRAVELLOG_CHANNEL_ID} in {datetime_now}")
 
     except Exception as e:
