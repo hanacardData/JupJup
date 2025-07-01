@@ -12,6 +12,7 @@ from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
 from bot.services.question.get_answer import get_answer_comment
 from bot.services.review.get_review import get_review_comment
+from bot.services.scheduler.register import handle_schedule_command
 
 
 async def handle_help_command(channel_id: str) -> JSONResponse:
@@ -94,6 +95,12 @@ async def handle_dog_command(channel_id: str):
     await async_post_image_to_channel(result, channel_id)
 
 
+async def handle_schedule_command_wrapper(channel_id: str, argument: str):
+    """스케줄 등록 요청을 처리하는 핸들러입니다."""
+    result = handle_schedule_command(channel_id, f"/스케줄등록 {argument}")
+    await async_post_message_to_channel(result, channel_id)
+
+
 COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/도움": handle_help_command,
     "/질문": handle_question_command,
@@ -103,6 +110,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/칭찬": handle_compliment_command,
     "/냥": handle_cat_command,
     "/멍": handle_dog_command,
+    "/스케줄등록": handle_schedule_command_wrapper,
 }
 
 
