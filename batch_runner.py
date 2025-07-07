@@ -11,7 +11,7 @@ from batch.travellog.keywords import TRAVELLOG_QUERIES
 from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
-    COMPARE_TRAVEL_CHANNEL_ID,
+    COMPARE_TRAVEL_CHANNEL_IDS,
     DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
     TEST_CHANNEL_ID,
@@ -115,14 +115,16 @@ def run_compare_travel_batch():
         raise
 
     try:
-        for message in messages:
-            post_message_to_channel(message, COMPARE_TRAVEL_CHANNEL_ID)
+        for compare_travel_channel_id in COMPARE_TRAVEL_CHANNEL_IDS:
+            for message in messages:
+                post_message_to_channel(message, compare_travel_channel_id)
+            logger.info(f"Sending message to channel {compare_travel_channel_id}")
         logger.info(
-            f"Sent Message to channel {COMPARE_TRAVEL_CHANNEL_ID} in {datetime_now}"
+            f"Sent Message to channel {compare_travel_channel_id} in {datetime_now}"
         )
 
     except Exception as e:
-        logger.warning(f"Failed to send message at {COMPARE_TRAVEL_CHANNEL_ID} {e}")
+        logger.warning(f"Failed to send message at {compare_travel_channel_id} {e}")
         post_message_to_channel(f"compare travel card error: {str(e)}", TEST_CHANNEL_ID)
 
 
