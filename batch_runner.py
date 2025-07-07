@@ -118,6 +118,7 @@ def run_compare_travel_batch():
         for compare_travel_channel_id in COMPARE_TRAVEL_CHANNEL_IDS:
             for message in messages:
                 post_message_to_channel(message, compare_travel_channel_id)
+                post_message_to_channel(message, TEST_CHANNEL_ID)
             logger.info(f"Sending message to channel {compare_travel_channel_id}")
         logger.info(
             f"Sent Message to channel {compare_travel_channel_id} in {datetime_now}"
