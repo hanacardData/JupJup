@@ -129,4 +129,4 @@ def run_compare_travel_batch():
 if __name__ == "__main__":
     run_batch(is_test=False)  # 테스트 시엔 True
     run_travellog_batch(is_test=False)  # 테스트 시엔 True
-    run_compare_travel_batch()  # 테스트 시엔 True
+    run_compare_travel_batch()
