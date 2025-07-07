@@ -12,7 +12,6 @@ from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
     COMPARE_TRAVEL_CHANNEL_ID,
-    COMPARE_TRAVEL_DATA_PATH,
     DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
     TEST_CHANNEL_ID,
@@ -92,7 +91,7 @@ def run_travellog_batch(is_test: bool = False):
         for message in messages:
             if not is_test:
                 post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
-            post_message_to_channel(message, TEST_CHANNEL_ID)
+            post_message_to_channel(message, TEST_CHANNEL_ID)  # 무조건 송신
         logger.info(f"Sent Message to channel {TRAVELLOG_CHANNEL_ID} in {datetime_now}")
 
     except Exception as e:
@@ -100,22 +99,16 @@ def run_travellog_batch(is_test: bool = False):
         post_message_to_channel(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
 
 
-def run_compare_travel_batch(is_test: bool = False):
+def run_compare_travel_batch():
     datetime_now = datetime.now()
     logger.info("Compare travel Batch Start")
-
-    # collect_load_compare_travel_data(COMPARE_TRAVEL_KEYWORDS)
-    logger.info("Compare travel load Completed")
 
     if is_holiday(datetime_now.strftime("%Y-%m-%d")) or is_weekend(datetime_now):
         logger.info(f"Not post today: {datetime_now}")
         return
 
     try:
-        df = pd.read_csv(
-            COMPARE_TRAVEL_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
-        )
-        messages = get_compare_travel_message(df, tag=not is_test)
+        messages = get_compare_travel_message()
         logger.info(f"Message ready: {messages}")
     except Exception as e:
         logger.error(f"Failed to generate message: {e}")
@@ -130,10 +123,10 @@ def run_compare_travel_batch(is_test: bool = False):
 
     except Exception as e:
         logger.warning(f"Failed to send message at {COMPARE_TRAVEL_CHANNEL_ID} {e}")
-        post_message_to_channel(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
+        post_message_to_channel(f"compare travel card error: {str(e)}", TEST_CHANNEL_ID)
 
 
 if __name__ == "__main__":
     # run_batch(is_test=False)  # 테스트 시엔 True
     # run_travellog_batch(is_test=False)  # 테스트 시엔 True
-    run_compare_travel_batch(is_test=True)  # 테스트 시엔 True
+    run_compare_travel_batch()  # 테스트 시엔 True
