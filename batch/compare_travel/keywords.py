@@ -11,6 +11,7 @@ COMPARE_TRAVEL_TREND_KEYWORDS: list[dict[str : str | list[str]]] = [
         "groupName": "쏠트래블",
         "keywords": [
             "쏠트래블",
+            "쏠트레블",
             "SOL트래블",
             "트래블쏠",
         ],
