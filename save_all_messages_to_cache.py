@@ -1,6 +1,5 @@
 import asyncio
 
-from cache_util import save_message_to_cache
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 
@@ -11,6 +10,7 @@ from batch.issue.make_message import get_issue_message
 from batch.travellog.keywords import TRAVELLOG_QUERIES
 from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
+from bot.services.cache_util import save_message_to_cache
 
 
 async def main():
