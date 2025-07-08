@@ -13,7 +13,9 @@ from batch.variables import SAVE_PATH, SOURCES, TRAVELLOG_DATA_PATH
 from logger import logger
 
 
-def collect_load_travellog_data(queries: list[str]) -> None:
+def collect_load_travellog_data(
+    queries: list[str], return_data: bool = False
+) -> pd.DataFrame | None:
     """데이터를 수집하고 저장."""
     os.makedirs(SAVE_PATH, exist_ok=True)
 
@@ -60,6 +62,9 @@ def collect_load_travellog_data(queries: list[str]) -> None:
     data["scrap_date"] = data["scrap_date"].astype(str)
     data["post_date"] = data["post_date"].astype(str)
     data.to_csv(TRAVELLOG_DATA_PATH, index=False, encoding="utf-8")
+
+    if return_data:
+        return data
 
 
 if __name__ == "__main__":

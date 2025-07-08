@@ -4,9 +4,9 @@ from fastapi.responses import JSONResponse
 
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
+from bot.services.cache_util import load_message_from_cache
 from bot.services.catanddog.get_catanddog import get_cat, get_dog
 from bot.services.compliment.get_compliment import get_compliment_comment
-from bot.services.core.cache_util import load_message_from_cache
 from bot.services.core.post_images import async_post_image_to_channel
 from bot.services.core.post_message import (
     async_post_message_to_channel,

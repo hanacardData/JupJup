@@ -13,7 +13,9 @@ from batch.variables import DATA_PATH, SAVE_PATH, SOURCES
 from logger import logger
 
 
-def collect_load_data(queries: list[str]) -> None:
+def collect_load_data(
+    queries: list[str], return_data: bool = False
+) -> pd.DataFrame | None:
     """데이터를 수집하고 저장."""
     os.makedirs(SAVE_PATH, exist_ok=True)
 
@@ -57,6 +59,9 @@ def collect_load_data(queries: list[str]) -> None:
         .drop_duplicates(subset="link", keep="first")  # link 기준으로 중복 제거
     )
     data.to_csv(DATA_PATH, index=False, encoding="utf-8")
+
+    if return_data:
+        return data
 
 
 if __name__ == "__main__":
