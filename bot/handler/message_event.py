@@ -7,7 +7,10 @@ from bot.enums.status import BotStatus
 from bot.services.catanddog.get_catanddog import get_cat, get_dog
 from bot.services.compliment.get_compliment import get_compliment_comment
 from bot.services.core.post_images import async_post_image_to_channel
-from bot.services.core.post_message import async_post_message_to_channel
+from bot.services.core.post_message import (
+    async_post_message_to_channel,
+    async_post_template_message_to_channel,
+)
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
 from bot.services.question.get_answer import get_answer_comment
@@ -126,3 +129,27 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
 
     await async_post_message_to_channel(Message.UNKNOWN_COMMAND_REPLY.value, channel_id)
     return JSONResponse(status_code=200, content={"status": BotStatus.NO_COMMAND})
+
+
+async def handle_jupjup_command(channel_id: str):
+    template = {
+        "type": "template",
+        "template": {
+            "contentText": "무엇을 도와드릴까요?",
+            "buttons": [
+                {
+                    "type": "text",
+                    "label": "트래블로그 이슈",
+                    "value": "/트래블로그이슈",
+                },
+                {
+                    "type": "text",
+                    "label": "트래블카드 리뷰",
+                    "value": "/트래블카드리뷰",
+                },
+                {"type": "text", "label": "하나카드 반응", "value": "/하나카드반응"},
+                {"type": "text", "label": "점심 추천", "value": "/식당"},
+            ],
+        },
+    }
+    await async_post_template_message_to_channel(template, channel_id)
