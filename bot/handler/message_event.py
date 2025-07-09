@@ -4,7 +4,6 @@ from fastapi.responses import JSONResponse
 
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
-from bot.services.cache_util import load_message_from_cache
 from bot.services.catanddog.get_catanddog import get_cat, get_dog
 from bot.services.compliment.get_compliment import get_compliment_comment
 from bot.services.core.post_images import async_post_image_to_channel
@@ -122,21 +121,6 @@ async def handle_jupjup_command(channel_id: str):
     await async_post_template_message_to_channel(template, channel_id)
 
 
-async def handle_travel_issue_command(channel_id: str):
-    message = await load_message_from_cache("issue_message")
-    await async_post_message_to_channel(message, channel_id)
-
-
-async def handle_travel_review_command(channel_id: str):
-    message = await load_message_from_cache("travellog_message")
-    await async_post_message_to_channel(message, channel_id)
-
-
-async def handle_compare_command(channel_id: str):
-    message = await load_message_from_cache("compare_travel_message")
-    await async_post_message_to_channel(message, channel_id)
-
-
 COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/도움": handle_help_command,
     "/질문": handle_question_command,
@@ -145,11 +129,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/칭찬": handle_compliment_command,
     "/냥": handle_cat_command,
     "/멍": handle_dog_command,
-    "/줍줍": handle_jupjup_command,
-    # 추가된 버튼 커맨드
-    "/트래블로그이슈": handle_travel_issue_command,
-    "/트래블카드리뷰": handle_travel_review_command,
-    "/하나카드반응": handle_compare_command,
+    "/줍줍": handle_jupjup_command,  # 추가된 버튼 커맨드
     "/식당": handle_menu_command,  # 이미 존재
 }
 
