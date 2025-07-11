@@ -98,16 +98,7 @@ async def handle_dog_command(channel_id: str):
 
 
 async def handle_jupjup_command(channel_id: str):
-    template = {
-        "type": "template",
-        "template": {
-            "contentText": "무엇을 도와드릴까요?",
-            "buttons": [
-                {"type": "text", "label": "점심 추천", "value": "/식당"},
-            ],
-        },
-    }
-    await async_post_template_message_to_channel(template, channel_id)
+    await async_post_template_message_to_channel(channel_id)
 
 
 COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
