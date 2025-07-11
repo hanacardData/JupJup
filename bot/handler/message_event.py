@@ -103,17 +103,6 @@ async def handle_jupjup_command(channel_id: str):
         "template": {
             "contentText": "무엇을 도와드릴까요?",
             "buttons": [
-                {
-                    "type": "text",
-                    "label": "트래블로그 이슈",
-                    "value": "/트래블로그이슈",
-                },
-                {
-                    "type": "text",
-                    "label": "트래블카드 리뷰",
-                    "value": "/트래블카드리뷰",
-                },
-                {"type": "text", "label": "하나카드 반응", "value": "/하나카드반응"},
                 {"type": "text", "label": "점심 추천", "value": "/식당"},
             ],
         },
@@ -129,8 +118,8 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/칭찬": handle_compliment_command,
     "/냥": handle_cat_command,
     "/멍": handle_dog_command,
-    "/줍줍": handle_jupjup_command,  # 추가된 버튼 커맨드
-    "/식당": handle_menu_command,  # 이미 존재
+    "/줍줍": handle_jupjup_command,
+    "/식당": handle_menu_command,
 }
 
 
