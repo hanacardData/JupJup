@@ -29,7 +29,7 @@ def _set_template_payload() -> dict[str, dict[str, str]]:
                 },
                 {
                     "type": "message",
-                    "label": "점심 추천",
+                    "label": "식당 추천",
                     "text": "/식당",
                 },
                 {
@@ -122,11 +122,7 @@ async def async_post_template_message_to_channel(channel_id: str) -> None:
     url = CHANNEL_POST_URL.format(channel_id=channel_id)
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(
-                url,
-                headers=headers,
-                json=template_payload,
-            )
+            response = await client.post(url, headers=headers, json=template_payload)
             response.raise_for_status()
             return
         except (httpx.RequestError, httpx.HTTPStatusError) as e:
