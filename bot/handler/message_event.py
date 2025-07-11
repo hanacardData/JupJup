@@ -7,7 +7,10 @@ from bot.enums.status import BotStatus
 from bot.services.catanddog.get_catanddog import get_cat, get_dog
 from bot.services.compliment.get_compliment import get_compliment_comment
 from bot.services.core.post_images import async_post_image_to_channel
-from bot.services.core.post_message import async_post_message_to_channel
+from bot.services.core.post_message import (
+    async_post_message_to_channel,
+    async_post_template_message_to_channel,
+)
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
 from bot.services.question.get_answer import get_answer_comment
@@ -94,15 +97,29 @@ async def handle_dog_command(channel_id: str):
     await async_post_image_to_channel(result, channel_id)
 
 
+async def handle_jupjup_command(channel_id: str):
+    template = {
+        "type": "template",
+        "template": {
+            "contentText": "무엇을 도와드릴까요?",
+            "buttons": [
+                {"type": "text", "label": "점심 추천", "value": "/식당"},
+            ],
+        },
+    }
+    await async_post_template_message_to_channel(template, channel_id)
+
+
 COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/도움": handle_help_command,
     "/질문": handle_question_command,
-    "/식당": handle_menu_command,
     "/리뷰": handle_review_command,
     "/운세": handle_fortune_command,
     "/칭찬": handle_compliment_command,
     "/냥": handle_cat_command,
     "/멍": handle_dog_command,
+    "/줍줍": handle_jupjup_command,
+    "/식당": handle_menu_command,
 }
 
 
