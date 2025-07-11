@@ -16,37 +16,6 @@ def _set_messge_payload(message: str) -> dict[str, dict[str, str]]:
     }
 
 
-def _set_template_payload() -> dict[str, dict[str, str]]:
-    return {
-        "content": {
-            "type": "button_template",
-            "contentText": "무엇을 도와드릴까요?",
-            "actions": [
-                {
-                    "type": "message",
-                    "label": "사용법 안내",
-                    "text": "/도움",
-                },
-                {
-                    "type": "message",
-                    "label": "식당 추천",
-                    "text": "/식당",
-                },
-                {
-                    "type": "message",
-                    "label": "고양이 사진 보기",
-                    "text": "/냥",
-                },
-                {
-                    "type": "message",
-                    "label": "강아지 사진 보기",
-                    "text": "/멍",
-                },
-            ],
-        }
-    }
-
-
 @retry(
     tries=3,
     delay=1,
@@ -108,21 +77,6 @@ async def async_post_message_to_user(message: str, user_id: str) -> None:
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(url, headers=headers, json=message_payload)
-            response.raise_for_status()
-            return
-        except (httpx.RequestError, httpx.HTTPStatusError) as e:
-            logger.error(e)
-            raise
-
-
-@retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
-async def async_post_template_message_to_channel(channel_id: str) -> None:
-    headers = set_headers()
-    template_payload = _set_template_payload()
-    url = CHANNEL_POST_URL.format(channel_id=channel_id)
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(url, headers=headers, json=template_payload)
             response.raise_for_status()
             return
         except (httpx.RequestError, httpx.HTTPStatusError) as e:

@@ -1,0 +1,42 @@
+import httpx
+from retry import retry
+
+from bot.services.core.variables import CHANNEL_POST_URL
+from bot.utils.access_token import set_headers
+from logger import logger
+
+
+def _set_button_payload() -> dict[str, dict[str, str]]:
+    return {
+        "content": {
+            "type": "button_template",
+            "contentText": "무엇을 도와드릴까요?",
+            "actions": [
+                {
+                    "type": "message",
+                    "label": "사용법 안내",
+                    "text": "/도움",
+                },
+                {
+                    "type": "message",
+                    "label": "식당 추천",
+                    "text": "/식당",
+                },
+            ],
+        }
+    }
+
+
+@retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
+async def async_post_button_message_to_channel(channel_id: str) -> None:
+    headers = set_headers()
+    template_payload = _set_button_payload()
+    url = CHANNEL_POST_URL.format(channel_id=channel_id)
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=template_payload)
+            response.raise_for_status()
+            return
+        except (httpx.RequestError, httpx.HTTPStatusError) as e:
+            logger.error(e)
+            raise
