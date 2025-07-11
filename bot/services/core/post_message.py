@@ -84,6 +84,7 @@ async def async_post_message_to_user(message: str, user_id: str) -> None:
             raise
 
 
+@retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
 async def async_post_template_message_to_channel(
     template_payload: dict, channel_id: str
 ) -> None:
