@@ -1,3 +1,5 @@
+import json
+import os
 from datetime import datetime
 
 import pandas as pd
@@ -33,15 +35,15 @@ def data_collect():
 
 
 def make_message(is_test: bool = False):
-    if is_skip_batch(datetime.now()):
-        logger.info(f"Not post today: {datetime.now()}")
+    today_timestamp = datetime.now()
+    if is_skip_batch(today_timestamp):
+        logger.info(f"Not post today: {today_timestamp}")
         return
 
     try:  # Issue 메시지 생성
         logger.info("Generating issue message")
         issue_df = pd.read_csv(DATA_PATH, dtype={"post_date": object}, encoding="utf-8")
-        message = get_issue_message(issue_df, tag=not is_test)
-        # FIXME: message save 로직 추가할것
+        issue_message = get_issue_message(issue_df, tag=not is_test)
         logger.info("Created issue message")
     except Exception as e:
         logger.error(f"Failed to generate message: {e}")
@@ -52,15 +54,14 @@ def make_message(is_test: bool = False):
         travellog_df = pd.read_csv(
             TRAVELLOG_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
         )
-        messages = get_travellog_message(travellog_df, tag=not is_test)
-        # FIXME: message save 로직 추가할것
+        travellog_messages = get_travellog_message(travellog_df, tag=not is_test)
         logger.info("Created travellog message")
     except Exception as e:
         logger.error(f"Failed to generate message: {e}")
         raise
 
     try:  # 트래블로그 부 메세지 송신
-        for message in messages:
+        for message in travellog_messages:
             if not is_test:
                 post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
             post_message_to_channel(message, TEST_CHANNEL_ID)  # 무조건 송신
@@ -71,10 +72,29 @@ def make_message(is_test: bool = False):
         post_message_to_channel(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
 
     try:  # Compare 트래블카드 메시지 생성
-        messages = get_compare_travel_message()
-        logger.info(f"Message ready: {messages}")
+        travelcard_messages = get_compare_travel_message()
+        logger.info(f"Message ready: {travelcard_messages}")
     except Exception as e:
         logger.error(f"Failed to generate message: {e}")
+        raise
+
+    ## 메세지 저장 로직
+    try:
+        today_str = today_timestamp.strftime("%Y-%m-%d")
+        output_dir = os.path.join("data", "issues")
+        os.mkdir(output_dir, exist_ok=True)
+        output_file = os.path.join(output_dir, f"message_{today_str}.json")
+
+        data = {
+            "issue": issue_message,
+            "travellog": travellog_messages,
+            "travelcard": travelcard_messages,
+        }
+        with open(output_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        logger.info(f"Message saved to {output_file}")
+    except Exception as e:
+        logger.error(f"Failed to save message: {e}")
         raise
 
 
