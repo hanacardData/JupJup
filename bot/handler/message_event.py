@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
+from bot.services.batch_message.get_message import get_batch_message
 from bot.services.core.post_button import async_post_button_message_to_channel
 from bot.services.core.post_message import async_post_message_to_channel
 from bot.services.fortune.get_fortune import get_fortune_comment
@@ -17,7 +18,45 @@ async def handle_help_command(channel_id: str) -> JSONResponse:
     await async_post_message_to_channel(Message.GREETINGS_REPLY.value, channel_id)
 
 
-async def handle_question_command(channel_id: str, argument: str):
+async def handle_travellog_command(channel_id: str) -> JSONResponse:
+    """트래블로그를 요청했을 때 호출되는 핸들러입니다."""
+    messages = get_batch_message("travellog")
+    for message in messages:
+        await async_post_message_to_channel(message, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
+async def handle_issue_command(channel_id: str) -> JSONResponse:
+    """이슈를 요청했을 때 호출되는 핸들러입니다."""
+    message = get_batch_message("issue")
+    await async_post_message_to_channel(message, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
+async def handle_travelcard_command(channel_id: str) -> JSONResponse:
+    """트래블카드를 요청했을 때 호출되는 핸들러입니다."""
+    messages = get_batch_message("travelcard")
+    for message in messages:
+        await async_post_message_to_channel(message, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
+async def handle_menu_command(channel_id: str) -> JSONResponse:
+    """식당 추천을 요청했을 때 호출되는 핸들러입니다."""
+    result = await select_random_menu_based_on_weather()
+    await async_post_message_to_channel(result, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
+async def handle_question_command(channel_id: str, argument: str) -> JSONResponse:
     """질문을 요청했을 때 호출되는 핸들러입니다."""
     if not argument:
         await async_post_message_to_channel(
@@ -30,15 +69,12 @@ async def handle_question_command(channel_id: str, argument: str):
 
     result = await get_answer_comment(argument)
     await async_post_message_to_channel(result, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
 
 
-async def handle_menu_command(channel_id: str):
-    """식당 추천을 요청했을 때 호출되는 핸들러입니다."""
-    result = await select_random_menu_based_on_weather()
-    await async_post_message_to_channel(result, channel_id)
-
-
-async def handle_review_command(channel_id: str, argument: str):
+async def handle_review_command(channel_id: str, argument: str) -> JSONResponse:
     """리뷰를 요청했을 때 호출되는 핸들러입니다."""
     if not argument:
         await async_post_message_to_channel(
@@ -50,9 +86,12 @@ async def handle_review_command(channel_id: str, argument: str):
         )
     result = await get_review_comment(argument)
     await async_post_message_to_channel(result, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
 
 
-async def handle_fortune_command(channel_id: str, argument: str):
+async def handle_fortune_command(channel_id: str, argument: str) -> JSONResponse:
     """운세를 요청했을 때 호출되는 핸들러입니다."""
     if not argument:
         await async_post_message_to_channel(
@@ -64,16 +103,25 @@ async def handle_fortune_command(channel_id: str, argument: str):
         )
     result = await get_fortune_comment(argument)
     await async_post_message_to_channel(result, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
 
 
-async def handle_jupjup_command(channel_id: str):
+async def handle_jupjup_command(channel_id: str) -> JSONResponse:
     await async_post_button_message_to_channel(channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
 
 
 COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     # Argument 필요 없는 커맨드
     "/줍줍": handle_jupjup_command,
     "/도움": handle_help_command,
+    "/트래블로그": handle_travellog_command,
+    "/이슈": handle_issue_command,
+    "/트래블카드": handle_travelcard_command,
     "/식당": handle_menu_command,
     # Argument 필요한 커맨드
     "/질문": handle_question_command,

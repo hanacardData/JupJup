@@ -19,8 +19,18 @@ def _set_button_payload() -> dict[str, dict[str, str]]:
                 },
                 {
                     "type": "message",
-                    "label": "식당 추천",
-                    "text": "/식당",
+                    "label": "하나카드 블로그, 카페 이슈",
+                    "text": "/이슈",
+                },
+                {
+                    "type": "message",
+                    "label": "트래블로그 이슈 확인",
+                    "text": "/트래블로그",
+                },
+                {
+                    "type": "message",
+                    "label": "트래블카드의 트렌드를 비교",
+                    "text": "/트래블카드",
                 },
             ],
         }
