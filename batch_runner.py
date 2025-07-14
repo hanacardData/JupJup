@@ -69,7 +69,6 @@ def make_message(is_test: bool = False):
         for message in travellog_messages:
             if not is_test:
                 post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
-            post_message_to_channel(message, TEST_CHANNEL_ID)  # 무조건 송신
         logger.info(f"Sent Message to channel {TRAVELLOG_CHANNEL_ID}")
 
     except Exception as e:
