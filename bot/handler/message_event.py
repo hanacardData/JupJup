@@ -30,8 +30,9 @@ async def handle_travellog_command(channel_id: str) -> JSONResponse:
 
 async def handle_issue_command(channel_id: str) -> JSONResponse:
     """이슈를 요청했을 때 호출되는 핸들러입니다."""
-    message = get_batch_message("issue")
-    await async_post_message_to_channel(message, channel_id)
+    messages = get_batch_message("issue")
+    for message in messages:
+        await async_post_message_to_channel(message, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
