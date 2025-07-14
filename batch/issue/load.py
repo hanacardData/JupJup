@@ -19,10 +19,8 @@ def collect_load_data(queries: list[str]) -> None:
 
     _df_list: list[pd.DataFrame] = [read_csv(DATA_PATH)]
     for source in tqdm(SOURCES, disable=True):
-        logger.info(f"{source} scrap started")
         _file_path = os.path.join(SAVE_PATH, f"_{source}.csv")
         _data_source = read_csv(_file_path)
-
         items: list[dict[str, str]] = []
         for keyword in tqdm(queries, disable=True):
             _data = fetch_data(
@@ -47,7 +45,7 @@ def collect_load_data(queries: list[str]) -> None:
         _data_source = _data_source.drop_duplicates(subset=["link"])
         _data_source.to_csv(_file_path, index=False, encoding="utf-8")
         _df_list.append(SOURCES_SELECT_MAP[source](_data_source))
-        logger.info(f"{source} scrap completed")
+        logger.info(f"{_file_path} scrap completed")
 
     data = (
         pd.concat(_df_list, ignore_index=True)

@@ -12,7 +12,7 @@ from bot.services.core.openai_client import openai_response
 from logger import logger
 
 
-def get_issue_message(data: pd.DataFrame, tag: bool = True) -> str:
+def get_issue_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
     refined_data = extract_high_score_data(
         data=data,
         issue_keywords=ISSUE_KEYWORDS,
@@ -50,4 +50,4 @@ def get_issue_message(data: pd.DataFrame, tag: bool = True) -> str:
             data.loc[data["link"].isin(urls), "is_posted"] = 1
 
     data.to_csv(DATA_PATH, index=False, encoding="utf-8")
-    return message
+    return [message]
