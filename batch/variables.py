@@ -15,7 +15,7 @@ TRAVELLOG_CHANNEL_ID: str = "59fc2740-d582-8072-4c63-add08f331dda"
 COMPARE_TRAVEL_CHANNEL_IDS: list[str] = [
     "0ad1869f-18d0-ccca-418e-c2dbfcfb3d92",  # 디지털본부 박상준
 ]
-# 하나카드 이슈
+# 구독 채널 ID 목록
 SUBSCRIBE_CHANNEL_IDS: list[str] = [
     "51d15802-cfb6-2e1b-6eb2-c545d2331783",  # CRM 마케팅팀 송치성
     "6a7aa514-55a4-0afd-fd3e-4ed14ec6d81e",  # 트래블로그부 허준회
