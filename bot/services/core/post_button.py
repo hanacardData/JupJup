@@ -10,13 +10,8 @@ def _set_button_payload() -> dict[str, dict[str, str]]:
     return {
         "content": {
             "type": "button_template",
-            "contentText": "무엇을 도와드릴까요?",
+            "contentText": "생성한 뉴스레터를 클릭해서 확인해보세요!",
             "actions": [
-                {
-                    "type": "message",
-                    "label": "사용법 안내",
-                    "text": "/도움",
-                },
                 {
                     "type": "message",
                     "label": "하나카드 블로그, 카페 이슈",

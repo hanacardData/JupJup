@@ -102,13 +102,11 @@ def make_message(is_test: bool = False):
         raise
 
 
-async def send_message(is_test: bool = False):
+async def send_message():
     try:
-        if is_test:
-            await async_post_button_message_to_channel(TEST_CHANNEL_ID)
-        else:
-            for channel_id in SUBSCRIBE_CHANNEL_IDS:
-                await async_post_button_message_to_channel(channel_id)
+        await async_post_button_message_to_channel(TEST_CHANNEL_ID)
+        for channel_id in SUBSCRIBE_CHANNEL_IDS:
+            await async_post_button_message_to_channel(channel_id)
 
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
@@ -124,7 +122,7 @@ if __name__ == "__main__":
     make_message(is_test=False)  # 메시지 생성
     logger.info("Message created")
 
-    asyncio.run(send_message(is_test=False))  # 메시지 송신
+    asyncio.run(send_message())  # 메시지 송신
     logger.info("Message sent")
 
     logger.info("Batch completed")
