@@ -15,6 +15,7 @@ from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
     DATA_PATH,
+    SUBSCRIBE_CHANNEL_IDS,
     TEST_CHANNEL_ID,
     TRAVELLOG_CHANNEL_ID,
     TRAVELLOG_DATA_PATH,
@@ -103,11 +104,9 @@ def make_message(is_test: bool = False):
 
 async def send_message():
     try:
-        await async_post_button_message_to_channel(
-            "5d12d31b-baa8-b92f-ad6b-1e0ef2642e5d"
-        )
-        # for channel_id in SUBSCRIBE_CHANNEL_IDS:
-        #     await async_post_button_message_to_channel(channel_id)
+        await async_post_button_message_to_channel(TEST_CHANNEL_ID)
+        for channel_id in SUBSCRIBE_CHANNEL_IDS:
+            await async_post_button_message_to_channel(channel_id)
 
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
@@ -117,7 +116,7 @@ async def send_message():
 if __name__ == "__main__":
     logger.info("Batch started")
 
-    # data_collect()  # 데이터 수집
+    data_collect()  # 데이터 수집
     logger.info("Data collection completed")
 
     make_message(is_test=False)  # 메시지 생성
