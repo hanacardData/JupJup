@@ -10,7 +10,7 @@ def _set_button_payload() -> dict[str, dict[str, str]]:
     return {
         "content": {
             "type": "button_template",
-            "contentText": "줍줍 뉴스레터를 클릭해서 확인해보세요!",
+            "contentText": "뉴스레터를 확인해보세요!",
             "actions": [
                 {
                     "type": "message",
