@@ -11,10 +11,6 @@ TEST_CHANNEL_ID: str = "8895b3b4-1cff-cec7-b7bc-a6df449d3638"
 # 트래블로그 블로그글 송신, 트래블로그UX부 우수현
 TRAVELLOG_CHANNEL_ID: str = "59fc2740-d582-8072-4c63-add08f331dda"
 
-# 트래블카드 비교분석, 쏠트래블, 트래블러스, 트래블월렛, 위비트래블 등
-COMPARE_TRAVEL_CHANNEL_IDS: list[str] = [
-    "0ad1869f-18d0-ccca-418e-c2dbfcfb3d92",  # 디지털본부 박상준
-]
 # 구독 채널 ID 목록
 SUBSCRIBE_CHANNEL_IDS: list[str] = [
     "51d15802-cfb6-2e1b-6eb2-c545d2331783",  # CRM 마케팅팀 송치성
@@ -30,4 +26,5 @@ SUBSCRIBE_CHANNEL_IDS: list[str] = [
     "599dab73-3c5a-91ef-3925-2187d8ba3e87",  # 하나페이사업부 서지은
     "115639965",  # 감사부 이명주
     "8c81a639-960d-4e0e-2626-5773f3dd3486",  # 손님관리부 백호선
+    "0ad1869f-18d0-ccca-418e-c2dbfcfb3d92",  # 디지털본부 박상준
 ]
