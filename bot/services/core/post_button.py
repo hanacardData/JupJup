@@ -14,17 +14,17 @@ def _set_button_payload() -> dict[str, dict[str, str]]:
             "actions": [
                 {
                     "type": "message",
-                    "label": "하나카드 블로그, 카페 이슈",
+                    "label": "하나카드 이슈",
                     "text": "/이슈",
                 },
                 {
                     "type": "message",
-                    "label": "트래블로그 이슈 확인",
+                    "label": "트래블로그 이슈",
                     "text": "/트래블로그",
                 },
                 {
                     "type": "message",
-                    "label": "트래블카드의 트렌드를 비교",
+                    "label": "트래블카드 트렌드 비교",
                     "text": "/트래블카드",
                 },
             ],
