@@ -21,10 +21,7 @@ from batch.variables import (
     TRAVELLOG_DATA_PATH,
 )
 from bot.services.core.post_button import async_post_button_message_to_channel
-from bot.services.core.post_message import (
-    async_post_message_to_channel,
-    post_message_to_channel,
-)
+from bot.services.core.post_message import post_message_to_channel
 from logger import logger
 
 
@@ -105,34 +102,11 @@ def make_message(is_test: bool = False):
         raise
 
 
-_message = """
-안녕하세요, AI 데이터사업부 문상준 대리, 김물결 주임입니다.
-
-매일 아침 전달되던 줍줍이의 소식이 이제는 원할 때 직접 받아볼 수 있는 방식으로 새로워졌습니다!
-
-앞으로는 줍줍이 소식을 아래 방법으로 받아보실 수 있습니다:
-(1) 채팅창에 /줍줍 이라고 입력합니다.
-(2) 그러면 여러 개의 버튼이 화면에 나타납니다.
-(3) 받고 싶은 주제를 고르고 버튼을 클릭하면, 해당 소식만 간편하게 확인하실 수 있습니다.
-복잡하지 않으니 한 번만 따라 해보시면 금방 익숙해지실 거예요!
-
-아직 출시 초기 단계인 줍줍이는 앞으로도 다양한 시도와 변화를 이어갈 예정입니다.
-직원 여러분께 더 도움이 되는 방향으로 발전해 나갈 수 있도록, 피드백은 언제든 환영입니다!
-
-** 해당 변화와 관련한 피드백은 AI 데이터사업부 김물결 주임에게 메신저 또는 네이버웍스 채팅으로 편하게 보내주세요.
-
-감사합니다.
-"""  ## FIXME: 0718 only
-
-
 async def send_message(is_test: bool = False):
     try:
         await async_post_button_message_to_channel(TEST_CHANNEL_ID)
         if is_test:
             for channel_id in SUBSCRIBE_CHANNEL_IDS:
-                await async_post_message_to_channel(
-                    _message, channel_id
-                )  # FIXME: 0718 only
                 await async_post_button_message_to_channel(channel_id)
 
     except Exception as e:
