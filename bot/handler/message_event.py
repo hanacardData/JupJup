@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
 from bot.services.batch_message.get_message import get_batch_message
+from bot.services.cafeteria.menu import get_weekly_menu_message
 from bot.services.core.post_button import async_post_button_message_to_channel
 from bot.services.core.post_message import async_post_message_to_channel
 from bot.services.fortune.get_fortune import get_fortune_comment
@@ -52,6 +53,15 @@ async def handle_menu_command(channel_id: str) -> JSONResponse:
     """식당 추천을 요청했을 때 호출되는 핸들러입니다."""
     result = await select_random_menu_based_on_weather()
     await async_post_message_to_channel(result, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
+async def handle_cafeteria_command(channel_id: str) -> JSONResponse:
+    """구내식당 식단을 요청했을 때 호출되는 핸들러입니다."""
+    message = get_weekly_menu_message()
+    await async_post_message_to_channel(message, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -124,6 +134,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/이슈": handle_issue_command,
     "/트래블카드": handle_travelcard_command,
     "/식당": handle_menu_command,
+    "/구내식당": handle_cafeteria_command,
     # Argument 필요한 커맨드
     "/질문": handle_question_command,
     "/리뷰": handle_review_command,
