@@ -5,12 +5,12 @@ from fastapi.responses import JSONResponse
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
 from bot.services.batch_message.get_message import get_batch_message
+from bot.services.brother.get_answer import get_brother_answer
 from bot.services.cafeteria.menu import get_weekly_menu_message
 from bot.services.core.post_button import async_post_button_message_to_channel
 from bot.services.core.post_message import async_post_message_to_channel
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
-from bot.services.question.get_answer import get_answer_comment
 from bot.services.review.get_review import get_review_comment
 
 
@@ -67,18 +67,18 @@ async def handle_cafeteria_command(channel_id: str) -> JSONResponse:
     )
 
 
-async def handle_question_command(channel_id: str, argument: str) -> JSONResponse:
-    """질문을 요청했을 때 호출되는 핸들러입니다."""
+async def handle_brother_command(channel_id: str, argument: str) -> JSONResponse:
+    """아우야를 요청했을 때 호출되는 핸들러입니다."""
     if not argument:
         await async_post_message_to_channel(
-            NoneArgumentMessage.QUESTION.value,
+            NoneArgumentMessage.BROTHER.value,
             channel_id,
         )
         return JSONResponse(
             status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
         )
 
-    result = await get_answer_comment(argument)
+    result = await get_brother_answer(argument)
     await async_post_message_to_channel(result, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
@@ -136,7 +136,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/식당": handle_menu_command,
     "/구내식당": handle_cafeteria_command,
     # Argument 필요한 커맨드
-    "/질문": handle_question_command,
+    "/아우야": handle_brother_command,
     "/리뷰": handle_review_command,
     "/운세": handle_fortune_command,
 }
@@ -152,7 +152,7 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
 
     handler = COMMAND_HANDLERS.get(command)
     if handler:
-        if command in ("/질문", "/리뷰", "/운세"):
+        if command in ("/아우야", "/리뷰", "/운세"):
             await handler(channel_id, argument)
         else:
             await handler(channel_id)
