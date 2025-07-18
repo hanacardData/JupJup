@@ -105,7 +105,7 @@ def make_message(is_test: bool = False):
 async def send_message(is_test: bool = False):
     try:
         await async_post_button_message_to_channel(TEST_CHANNEL_ID)
-        if is_test:
+        if not is_test:
             for channel_id in SUBSCRIBE_CHANNEL_IDS:
                 await async_post_button_message_to_channel(channel_id)
 
