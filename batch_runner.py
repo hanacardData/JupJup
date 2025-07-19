@@ -66,8 +66,8 @@ def make_message(is_test: bool = False):
         raise
 
     try:  # 트래블로그 부 메세지 송신
-        for message in travellog_messages:
-            if not is_test:
+        if not is_test:
+            for message in travellog_messages:
                 post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
         logger.info(f"Sent Message to channel {TRAVELLOG_CHANNEL_ID}")
 
@@ -103,11 +103,17 @@ def make_message(is_test: bool = False):
 
 
 async def send_message(is_test: bool = False):
+    today_timestamp = datetime.now()
+    if is_skip_batch(today_timestamp):
+        logger.info(f"Not post today: {today_timestamp}")
+        return
     try:
         await async_post_button_message_to_channel(TEST_CHANNEL_ID)
-        if not is_test:
-            for channel_id in SUBSCRIBE_CHANNEL_IDS:
-                await async_post_button_message_to_channel(channel_id)
+        if is_test:
+            return
+
+        for channel_id in SUBSCRIBE_CHANNEL_IDS:
+            await async_post_button_message_to_channel(channel_id)
 
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
