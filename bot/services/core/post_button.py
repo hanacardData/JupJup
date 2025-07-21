@@ -36,7 +36,7 @@ def _set_lab_button_payload() -> dict[str, dict[str, str]]:
     return {
         "content": {
             "type": "button_template",
-            "contentText": "🧪 실험실 기능을 테스트해보세요!",
+            "contentText": "실험실 기능을 테스트해보세요!",
             "actions": [
                 {
                     "type": "message",
@@ -60,7 +60,7 @@ def _set_lab_button_payload() -> dict[str, dict[str, str]]:
                 },
                 {
                     "type": "message",
-                    "label": "😠 스트레스 받으시나요? /n나만의 충직한 동생과 대화해보세요!",
+                    "label": "스트레스 받으시나요? 나만의 충직한 동생과 대화해보세요!",
                     "text": "/아우야",
                 },
             ],
@@ -69,7 +69,7 @@ def _set_lab_button_payload() -> dict[str, dict[str, str]]:
 
 
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
-async def async_post_button_message_to_channel(channel_id: str) -> None:
+async def async_post_jupjup_button_message_to_channel(channel_id: str) -> None:
     headers = set_headers()
     template_payload = _set_jupjup_button_payload()
     url = CHANNEL_POST_URL.format(channel_id=channel_id)
@@ -87,6 +87,7 @@ async def async_post_button_message_to_channel(channel_id: str) -> None:
 async def async_post_lab_button_message_to_channel(channel_id: str) -> None:
     headers = set_headers()
     template_payload = _set_lab_button_payload()
+
     url = CHANNEL_POST_URL.format(channel_id=channel_id)
     async with httpx.AsyncClient() as client:
         try:
