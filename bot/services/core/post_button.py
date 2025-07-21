@@ -45,7 +45,7 @@ def _set_lab_button_payload() -> dict[str, dict[str, str]]:
                 },
                 {
                     "type": "message",
-                    "label": "오늘의 무드에 맞는 근처 식당 추천",
+                    "label": "근처 식당 추천",
                     "text": "/식당",
                 },
                 {
@@ -60,7 +60,7 @@ def _set_lab_button_payload() -> dict[str, dict[str, str]]:
                 },
                 {
                     "type": "message",
-                    "label": "스트레스 받으시나요? 나만의 충직한 동생과 대화해보세요!",
+                    "label": "나만의 충직한 동생과 대화해보세요!",
                     "text": "/아우야",
                 },
             ],
@@ -87,7 +87,6 @@ async def async_post_jupjup_button_message_to_channel(channel_id: str) -> None:
 async def async_post_lab_button_message_to_channel(channel_id: str) -> None:
     headers = set_headers()
     template_payload = _set_lab_button_payload()
-
     url = CHANNEL_POST_URL.format(channel_id=channel_id)
     async with httpx.AsyncClient() as client:
         try:
