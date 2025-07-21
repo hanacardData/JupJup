@@ -17,11 +17,6 @@ from bot.services.menu.get_menu import select_random_menu_based_on_weather
 from bot.services.review.get_review import get_review_comment
 
 
-async def handle_help_command(channel_id: str) -> JSONResponse:
-    """도움에 호출되는 핸들러입니다."""
-    await async_post_message_to_channel(Message.GREETINGS_REPLY.value, channel_id)
-
-
 async def handle_travellog_command(channel_id: str) -> JSONResponse:
     """트래블로그를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("travellog")
@@ -142,7 +137,6 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     # Argument 필요 없는 커맨드
     "/줍줍": handle_jupjup_command,
     "/실험실": handle_lab_command,
-    "/도움": handle_help_command,
     "/트래블로그": handle_travellog_command,
     "/이슈": handle_issue_command,
     "/트래블카드": handle_travelcard_command,
