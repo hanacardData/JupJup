@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from datetime import datetime
 from typing import Literal
 
@@ -17,3 +18,54 @@ def get_batch_message(
             return data[type_]
     except Exception as e:
         return [f"배치 메세지를 불러오는 중 오류가 발생했어요: {str(e)}"]
+
+
+def make_travellog_flexible_payload(
+    messages: list[str],
+) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
+    carousel_payload = {"type": "carousel", "contents": []}
+
+    for msg in messages[1:]:  # 첫 줄은 무시 (인사말)
+        title_match = re.search(r"제목:\s*(.+)", msg)
+        text_match = re.search(r"내용:\s*(.+)", msg)
+        link_match = re.search(r"링크:\s*(.+)", msg)
+
+        if not (title_match or text_match or link_match):
+            continue
+        title = title_match.group(1)
+        text = text_match.group(1)
+        link = link_match.group(1)
+        content = {
+            "type": "bubble",
+            "header": {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [{"type": "text", "text": title, "wrap": True}],
+            },
+            "body": {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [{"type": "text", "text": text, "wrap": True}],
+            },
+            "footer": {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [
+                    {
+                        "type": "button",
+                        "style": "primary",
+                        "action": {"type": "uri", "label": "link", "uri": link},
+                        "height": "sm",
+                    }
+                ],
+            },
+        }
+        carousel_payload["contents"].append(content)
+
+    return {
+        "content": {
+            "type": "flex",
+            "altText": "TravelLog",
+            "contents": carousel_payload,
+        }
+    }
