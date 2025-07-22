@@ -7,8 +7,8 @@ from logger import logger
 
 
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
-async def async_post_button_to_channel(
-    payload: dict[str, dict[str, str | list[dict[str, str]]]],
+async def async_post_flexible_to_channel(
+    payload: dict[str, str | list[dict[str, str | list[dict[str, str]]]]],
     channel_id: str,
 ) -> None:
     headers = set_headers()
