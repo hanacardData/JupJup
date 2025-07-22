@@ -4,13 +4,17 @@ from fastapi.responses import JSONResponse
 
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
-from bot.services.batch_message.get_message import get_batch_message
+from bot.services.batch_message.get_message import (
+    get_batch_message,
+    make_travellog_carousel_payload,
+)
 from bot.services.brother.get_answer import get_brother_answer
 from bot.services.cafeteria.menu import get_weekly_menu_message
 from bot.services.core.post_button import (
     async_post_jupjup_button_message_to_channel,
     async_post_lab_button_message_to_channel,
 )
+from bot.services.core.post_carousel import async_post_carousel_to_channel
 from bot.services.core.post_message import async_post_message_to_channel
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
@@ -25,8 +29,11 @@ async def handle_help_command(channel_id: str) -> JSONResponse:
 async def handle_travellog_command(channel_id: str) -> JSONResponse:
     """트래블로그를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("travellog")
-    for message in messages:
-        await async_post_message_to_channel(message, channel_id)
+    if len(messages) == 1:
+        await async_post_message_to_channel(messages[0], channel_id)
+
+    payload = make_travellog_carousel_payload(messages)
+    await async_post_carousel_to_channel(payload=payload, channel_id=channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
