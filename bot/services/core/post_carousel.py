@@ -8,7 +8,8 @@ from logger import logger
 
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
 async def async_post_carousel_to_channel(
-    channel_id: str, payload: dict[str, str | list[dict[str, str | dict[str, str]]]]
+    payload: dict[str, str | list[dict[str, str | dict[str, str]]]],
+    channel_id: str,
 ) -> None:
     headers = set_headers()
     url = CHANNEL_POST_URL.format(channel_id=channel_id)
