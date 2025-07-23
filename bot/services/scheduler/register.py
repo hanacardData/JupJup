@@ -1,0 +1,24 @@
+from datetime import datetime
+
+import pytz
+
+from bot.services.scheduler.notice_schedule import schedule_message
+
+
+def handle_schedule_command(channel_id: str, content: str) -> str:
+    try:
+        # 예: "/스케줄등록 2025-07-01 14:30 회의"
+        parts = content.strip().split()
+        if len(parts) < 4:
+            raise ValueError("형식 오류")
+
+        _, date_str, time_str, *msg_parts = parts
+        message = " ".join(msg_parts)
+
+        dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+        dt = pytz.timezone("Asia/Seoul").localize(dt)
+
+        schedule_message(dt=dt, message=f"⏰ 알림: {message}", channel_id=channel_id)
+        return f"✅ {date_str} {time_str}에 알림을 등록했어요!"
+    except Exception:
+        return "⚠️ 등록 형식이 잘못되었습니다. 예시: /스케줄등록 2025-07-01 14:30 회의"
