@@ -21,7 +21,7 @@ def handle_schedule_command(channel_id: str, content: str) -> str:
         dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
         dt = pytz.timezone("Asia/Seoul").localize(dt)
 
-        schedule_message(dt, channel_id, f"⏰ 알림: {message}")
+        schedule_message(dt=dt, message=f"⏰ 알림: {message}", channel_id=channel_id)
         return f"✅ {date_str} {time_str}에 알림을 등록했어요!"
     except Exception:
         return "⚠️ 등록 형식이 잘못되었습니다. 예시: /스케줄등록 2025-07-01 14:30 회의"
