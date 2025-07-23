@@ -12,8 +12,8 @@ def schedule_message(dt: datetime, message: str, channel_id: str) -> None:
     scheduler.add_job(
         func=post_message_to_channel,
         trigger="date",
-        run_date=target_datetime,
+        run_date=dt,
         args=[message, channel_id],
-        id=f"{channel_id}-{target_datetime.timestamp()}",
+        id=f"{channel_id}-{dt.timestamp()}",
         misfire_grace_time=60,
     )
