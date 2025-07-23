@@ -8,7 +8,7 @@ scheduler = BackgroundScheduler()
 scheduler.start()
 
 
-def schedule_message(target_datetime: datetime, channel_id: str, message: str):
+def schedule_message(dt: datetime, message: str, channel_id: str) -> None:
     scheduler.add_job(
         func=post_message_to_channel,
         trigger="date",
