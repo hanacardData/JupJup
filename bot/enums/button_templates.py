@@ -20,6 +20,11 @@ LAB_BUTTON = {
             },
             {
                 "type": "message",
+                "label": "일정 알리미",
+                "text": "/스케줄등록",
+            },
+            {
+                "type": "message",
                 "label": "사주팔자 기반의 운세",
                 "text": "/운세",
             },
