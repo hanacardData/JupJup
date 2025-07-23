@@ -2,10 +2,7 @@ from datetime import datetime
 
 import pytz
 
-from bot.services.scheduler.schedule import schedule_message
-
-# 테스트 채널 제한 여부 (테스트 시에만 True)
-TEST_MODE = True
+from bot.services.scheduler.notice_schedule import schedule_message
 
 
 def handle_schedule_command(channel_id: str, content: str) -> str:
