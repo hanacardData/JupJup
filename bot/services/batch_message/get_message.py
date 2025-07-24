@@ -30,11 +30,11 @@ def make_travellog_flexible_payload(
         text_match = re.search(r"내용:\s*(.+)", msg)
         link_match = re.search(r"링크:\s*(.+)", msg)
 
-        if not (title_match or text_match or link_match):
+        if not (title_match and text_match and link_match):
             continue
-        title = title_match.group(1)
-        text = text_match.group(1)
-        link = link_match.group(1)
+        title = title_match.group(1).strip('"')
+        text = text_match.group(1).strip('"')
+        link = link_match.group(1).strip('"')
         content = {
             "type": "bubble",
             "header": {
