@@ -37,6 +37,7 @@ def make_travellog_flexible_payload(
         link = link_match.group(1).strip('"')
         content = {
             "type": "bubble",
+            "size": "kilo",
             "header": {
                 "type": "box",
                 "layout": "horizontal",
