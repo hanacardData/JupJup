@@ -12,6 +12,7 @@ from uvicorn.config import LOGGING_CONFIG
 from batch.variables import TEST_CHANNEL_ID
 from bot.handler.event import process_event
 from bot.services.core.post_message import post_message_to_channel
+from bot.services.scheduler.apscheduler_setup import start_scheduler
 from bot.utils.signature import verify_signature
 from logger import logger
 
@@ -19,6 +20,7 @@ from logger import logger
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
+    start_scheduler()
     try:
         yield
     finally:
