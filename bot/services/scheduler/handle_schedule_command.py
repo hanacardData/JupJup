@@ -2,8 +2,9 @@ from datetime import datetime
 
 import pytz
 
+from bot.services.core.post_message import async_post_message_to_channel
+
 from .apscheduler_setup import scheduler
-from .job_functions import send_scheduled_message
 
 
 def handle_schedule_command(customer_id: str, channel_id: str, content: str) -> str:
@@ -19,11 +20,11 @@ def handle_schedule_command(customer_id: str, channel_id: str, content: str) -> 
         dt = pytz.timezone("Asia/Seoul").localize(dt)
 
         scheduler.add_job(
-            send_scheduled_message,
+            async_post_message_to_channel,
             "date",
             run_date=dt,
             args=[f"⏰ 알림: {message}", channel_id],
-            id=f"{customer_id}:{dt.timestamp()}",  # 중복 방지용
+            id=f"{customer_id}:{dt.timestamp()}",
         )
 
         return f"✅ {date_str} {time_str}에 예약 완료!"
