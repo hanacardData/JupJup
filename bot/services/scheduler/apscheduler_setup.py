@@ -6,7 +6,7 @@ scheduler = AsyncIOScheduler(
         "default": RedisJobStore(
             jobs_key="apscheduler.jobs",
             run_times_key="apscheduler.run_times",
-            host="redis",
+            host="127.0.0.1",
             port=6379,
             db=0,
         )
