@@ -17,7 +17,7 @@ from bot.services.core.post_message import async_post_message_to_channel
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
 from bot.services.review.get_review import get_review_comment
-from bot.services.scheduler.register import handle_schedule_command
+from bot.services.scheduler.handle_schedule_command import handle_schedule_command
 
 
 async def handle_help_command(channel_id: str) -> JSONResponse:

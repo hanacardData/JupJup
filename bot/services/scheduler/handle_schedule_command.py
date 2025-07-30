@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 
 import pytz
@@ -5,6 +6,10 @@ import pytz
 from bot.services.core.post_message import async_post_message_to_channel
 
 from .apscheduler_setup import scheduler
+
+
+def async_job_wrapper(message: str, channel_id: str):
+    asyncio.run(async_post_message_to_channel(message, channel_id))
 
 
 def handle_schedule_command(customer_id: str, channel_id: str, content: str) -> str:
@@ -20,7 +25,7 @@ def handle_schedule_command(customer_id: str, channel_id: str, content: str) -> 
         dt = pytz.timezone("Asia/Seoul").localize(dt)
 
         scheduler.add_job(
-            async_post_message_to_channel,
+            async_job_wrapper,
             "date",
             run_date=dt,
             args=[f"⏰ 알림: {message}", channel_id],
