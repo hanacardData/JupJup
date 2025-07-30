@@ -78,7 +78,15 @@ async def handle_cafeteria_command(channel_id: str) -> JSONResponse:
 
 async def handle_schedule_command(channel_id: str, argument: str) -> JSONResponse:
     """스케줄 등록 요청을 처리하는 핸들러입니다."""
-    result = register_schedule(channel_id, f"/스케줄등록 {argument}")
+    if not argument:
+        await async_post_message_to_channel(
+            NoneArgumentMessage.SCHEDULE.value,
+            channel_id,
+        )
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
+        )
+    result = register_schedule(channel_id, argument)
     await async_post_message_to_channel(result, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}

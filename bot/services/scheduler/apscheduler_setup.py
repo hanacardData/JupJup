@@ -6,14 +6,10 @@ scheduler = AsyncIOScheduler(
         "default": RedisJobStore(
             jobs_key="apscheduler.jobs",
             run_times_key="apscheduler.run_times",
-            host="localhost",
+            host="127.0.0.1",
             port=6379,
             db=0,
         )
     },
     timezone="Asia/Seoul",
 )
-
-
-def start_scheduler():
-    scheduler.start()
