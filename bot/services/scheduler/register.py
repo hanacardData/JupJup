@@ -3,11 +3,10 @@ from datetime import datetime
 import pytz
 
 from bot.services.core.post_message import async_post_message_to_channel
+from bot.services.scheduler.apscheduler_setup import scheduler
 
-from .apscheduler_setup import scheduler
 
-
-def handle_schedule_command(customer_id: str, channel_id: str, content: str) -> str:
+def register_schedule(customer_id: str, channel_id: str, content: str) -> str:
     try:
         parts = content.strip().split()
         if len(parts) < 3:

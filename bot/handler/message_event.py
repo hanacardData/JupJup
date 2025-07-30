@@ -17,7 +17,7 @@ from bot.services.core.post_message import async_post_message_to_channel
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
 from bot.services.review.get_review import get_review_comment
-from bot.services.scheduler.register import handle_schedule_command
+from bot.services.scheduler.register import register_schedule
 
 
 async def handle_help_command(channel_id: str) -> JSONResponse:
@@ -76,11 +76,9 @@ async def handle_cafeteria_command(channel_id: str) -> JSONResponse:
     )
 
 
-async def handle_schedule_command_wrapper(
-    channel_id: str, argument: str
-) -> JSONResponse:
+async def handle_schedule_command(channel_id: str, argument: str) -> JSONResponse:
     """스케줄 등록 요청을 처리하는 핸들러입니다."""
-    result = handle_schedule_command(channel_id, f"/스케줄등록 {argument}")
+    result = register_schedule(channel_id, f"/스케줄등록 {argument}")
     await async_post_message_to_channel(result, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
@@ -164,7 +162,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/트래블카드": handle_travelcard_command,
     "/식당": handle_menu_command,
     "/구내식당": handle_cafeteria_command,
-    "/스케줄등록": handle_schedule_command_wrapper,
+    "/스케줄등록": handle_schedule_command,
     # Argument 필요한 커맨드
     "/아우야": handle_brother_command,
     "/리뷰": handle_review_command,
