@@ -1,4 +1,3 @@
-import redis
 from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -15,5 +14,12 @@ scheduler = AsyncIOScheduler(
     timezone="Asia/Seoul",
 )
 
-r = redis.Redis(host="127.0.0.1", port=6379, db=0, decode_responses=True)
-r.set("whoami_bot", "i_am_fastapi_server")
+
+def start_scheduler():
+    scheduler.start()
+
+    redis_client = scheduler._jobstores["default"].redis
+    info = redis_client.connection_pool.connection_kwargs
+    print("[DEBUG] this bot where REDIS:", info)
+
+    redis_client.set("whoami_from_bot", "네이버웍스봇")
