@@ -10,11 +10,13 @@ from batch.compare_travel.make_message import get_compare_travel_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
+from batch.security_monitor.make_message import generate_security_alerts
 from batch.travellog.keywords import TRAVELLOG_QUERIES
 from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
     DATA_PATH,
+    SECURITY_CHANNEL_ID,
     SUBSCRIBE_CHANNEL_IDS,
     TEST_CHANNEL_ID,
     TRAVELLOG_CHANNEL_ID,
@@ -22,7 +24,10 @@ from batch.variables import (
 )
 from bot.enums.button_templates import JUPJUP_BUTTON
 from bot.services.core.post_button import async_post_button_to_channel
-from bot.services.core.post_message import post_message_to_channel
+from bot.services.core.post_message import (
+    async_post_message_to_channel,
+    post_message_to_channel,
+)
 from logger import logger
 
 
@@ -83,6 +88,14 @@ def make_message(is_test: bool = False):
         logger.error(f"Failed to generate message: {e}")
         raise
 
+    try:  # 보안 모니터링 메시지 생성
+        logger.info("Generating security issue message")
+        security_messages = generate_security_alerts()
+        logger.info("Created security issue messages")
+    except Exception as e:
+        logger.error(f"Failed to generate security alerts: {e}")
+        security_messages = ["보안 이슈 메시지 생성 실패"]
+
     ## 메세지 저장 로직
     try:
         today_str = today_timestamp.strftime("%Y-%m-%d")
@@ -94,6 +107,7 @@ def make_message(is_test: bool = False):
             "issue": issue_message,
             "travellog": travellog_messages,
             "travelcard": travelcard_messages,
+            "security": security_messages,
         }
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -115,6 +129,12 @@ async def send_message(is_test: bool = False):
 
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
             await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
+
+        logger.info(f"Sending security alerts to {SECURITY_CHANNEL_ID}")
+        security_messages = generate_security_alerts()
+        for message in security_messages:
+            await async_post_message_to_channel(message, SECURITY_CHANNEL_ID)
+        logger.info("Security alerts sent")
 
     except Exception as e:
         logger.error(f"Failed to send message: {e}")

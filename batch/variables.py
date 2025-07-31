@@ -11,6 +11,9 @@ TEST_CHANNEL_ID: str = "8895b3b4-1cff-cec7-b7bc-a6df449d3638"
 # 트래블로그 블로그글 송신, 트래블로그UX부 우수현
 TRAVELLOG_CHANNEL_ID: str = "59fc2740-d582-8072-4c63-add08f331dda"
 
+# 보안 관련 블로그/카페/뉴스글 송신, 정보보호부 김남학
+SECURITY_CHANNEL_ID: str = "395e2db8-f9af-5abc-45a5-e4feae9b8b22"
+
 # 구독 채널 ID 목록
 SUBSCRIBE_CHANNEL_IDS: list[str] = [
     "51d15802-cfb6-2e1b-6eb2-c545d2331783",  # CRM 마케팅팀 송치성
