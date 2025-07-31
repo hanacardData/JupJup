@@ -16,6 +16,6 @@ ISSUE_KEYWORDS: list[str] = [
 ]
 
 combinations = list(itertools.product(CARD_PRODUCTS, ISSUE_KEYWORDS))
-QUERIES: list[str] = [
+SECURITY_QUERIES: list[str] = [
     re.sub(r"\s+", " ", f"{product} {issue}").strip() for product, issue in combinations
 ]

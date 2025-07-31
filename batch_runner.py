@@ -10,6 +10,8 @@ from batch.compare_travel.make_message import get_compare_travel_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
+from batch.security_monitor.keywords import SECURITY_QUERIES
+from batch.security_monitor.load import load_security_issues
 from batch.security_monitor.make_message import generate_security_alerts
 from batch.travellog.keywords import TRAVELLOG_QUERIES
 from batch.travellog.load import collect_load_travellog_data
@@ -43,6 +45,10 @@ def data_collect():
     logger.info("Travellog Data Collection Started")
     collect_load_travellog_data(TRAVELLOG_QUERIES)
     logger.info("Travellog Data Collection Completed")
+
+    logger.info("Security Data Collection Started")
+    load_security_issues(SECURITY_QUERIES)
+    logger.info("Security Data Collection Completed")
 
 
 def make_message(is_test: bool = False):
