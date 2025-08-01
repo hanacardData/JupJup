@@ -10,11 +10,16 @@ from batch.compare_travel.make_message import get_compare_travel_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
+from batch.security_monitor.keywords import SECURITY_QUERIES
+from batch.security_monitor.load import load_security_issues
+from batch.security_monitor.make_message import generate_security_alert_messages
 from batch.travellog.keywords import TRAVELLOG_QUERIES
 from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
     DATA_PATH,
+    SECURITY_CHANNEL_ID,
+    SECURITY_DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
     TEST_CHANNEL_ID,
     TRAVELLOG_CHANNEL_ID,
@@ -38,6 +43,10 @@ def data_collect():
     logger.info("Travellog Data Collection Started")
     collect_load_travellog_data(TRAVELLOG_QUERIES)
     logger.info("Travellog Data Collection Completed")
+
+    logger.info("Security Data Collection Started")
+    load_security_issues(SECURITY_QUERIES)
+    logger.info("Security Data Collection Completed")
 
 
 def make_message(is_test: bool = False):
@@ -71,7 +80,6 @@ def make_message(is_test: bool = False):
             for message in travellog_messages:
                 post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
         logger.info(f"Sent Message to channel {TRAVELLOG_CHANNEL_ID}")
-
     except Exception as e:
         logger.warning(f"Failed to send message at {TRAVELLOG_CHANNEL_ID} {e}")
         post_message_to_channel(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
@@ -82,6 +90,32 @@ def make_message(is_test: bool = False):
     except Exception as e:
         logger.error(f"Failed to generate message: {e}")
         raise
+
+    try:  # 보안 모니터링 메시지 생성
+        logger.info("Generating security issue message")
+        security_df = pd.read_csv(
+            SECURITY_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
+        )
+        security_messages = generate_security_alert_messages(
+            security_df, tag=not is_test
+        )
+        logger.info("Created security issue messages")
+    except Exception as e:
+        logger.error(f"Failed to generate security alerts: {e}")
+        raise
+
+    try:  # 보안 모니터링 메세지 송신
+        for message in security_messages:
+            post_message_to_channel(message, TEST_CHANNEL_ID)
+
+        # if not is_test: # FIXME: 배포 테스트
+        #     for message in security_messages:
+        #         post_message_to_channel(message, SECURITY_CHANNEL_ID)
+        logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
+
+    except Exception as e:
+        logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
+        post_message_to_channel(f"Security error: {str(e)}", TEST_CHANNEL_ID)
 
     ## 메세지 저장 로직
     try:
@@ -94,6 +128,7 @@ def make_message(is_test: bool = False):
             "issue": issue_message,
             "travellog": travellog_messages,
             "travelcard": travelcard_messages,
+            "security": security_messages,
         }
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -115,7 +150,6 @@ async def send_message(is_test: bool = False):
 
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
             await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
-
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
         raise
