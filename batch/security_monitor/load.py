@@ -6,7 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from batch.fetch import fetch_data
-from batch.security_monitor.select_column import SECURITY_SOURCE_SELECTOR
+from batch.security_monitor.select_column import SOURCES_SELECT_MAP
 from batch.utils import read_csv
 from batch.variables import SECURITY_DATA_PATH, SECURITY_SAVE_PATH, SECURITY_SOURCES
 from logger import logger
@@ -40,7 +40,7 @@ def load_security_issues(queries: list[str]) -> None:
         ).drop_duplicates(subset=["link"])
 
         df.to_csv(file_path, index=False, encoding="utf-8")
-        _df_list.append(SECURITY_SOURCE_SELECTOR[source](df))
+        _df_list.append(SOURCES_SELECT_MAP[source](df))
         logger.info(f"{file_path} scrap completed")
 
     final = (

@@ -30,7 +30,7 @@ def _select_news_data(data: pd.DataFrame) -> pd.DataFrame:
 
 
 SOURCES_SELECT_MAP: dict[str, Callable[[pd.DataFrame], pd.DataFrame]] = {
-    "blog": _select_blog_data,
-    "cafe": _select_cafe_data,
+    # "blog": _select_blog_data,
+    # "cafe": _select_cafe_data,
     "news": _select_news_data,
 }

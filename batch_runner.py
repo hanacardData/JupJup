@@ -123,7 +123,7 @@ def make_message(is_test: bool = False):
         raise
 
 
-async def send_message(is_test: bool = False):
+async def send_message(messages: dict[str, list[str] | str], is_test: bool = False):
     today_timestamp = datetime.now()
     if is_skip_batch(today_timestamp):
         logger.info(f"Not post today: {today_timestamp}")
@@ -135,6 +135,11 @@ async def send_message(is_test: bool = False):
 
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
             await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
+
+        security_messages = messages.get("security", [])
+        if not security_messages:
+            logger.info("No security alerts to send.")
+            return
 
         logger.info(f"Sending security alerts to {SECURITY_CHANNEL_ID}")
         security_messages = generate_security_alerts()
