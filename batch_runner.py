@@ -108,7 +108,7 @@ def make_message(is_test: bool = False):
         for message in security_messages:
             post_message_to_channel(message, TEST_CHANNEL_ID)
 
-        # if not is_test: # FIXME: 배포시엔 볼것~
+        # if not is_test: # FIXME: 배포 테스트
         #     for message in security_messages:
         #         post_message_to_channel(message, SECURITY_CHANNEL_ID)
         logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
