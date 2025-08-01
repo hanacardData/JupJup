@@ -12,7 +12,7 @@ from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
 from batch.security_monitor.load import load_security_issues
-from batch.security_monitor.make_message import generate_security_alerts
+from batch.security_monitor.make_message import generate_security_alert_messages
 from batch.travellog.keywords import TRAVELLOG_QUERIES
 from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
@@ -27,7 +27,6 @@ from batch.variables import (
 from bot.enums.button_templates import JUPJUP_BUTTON
 from bot.services.core.post_button import async_post_button_to_channel
 from bot.services.core.post_message import (
-    async_post_message_to_channel,
     post_message_to_channel,
 )
 from logger import logger
@@ -96,11 +95,21 @@ def make_message(is_test: bool = False):
 
     try:  # 보안 모니터링 메시지 생성
         logger.info("Generating security issue message")
-        security_messages = generate_security_alerts()
+        security_messages = generate_security_alert_messages()
         logger.info("Created security issue messages")
     except Exception as e:
         logger.error(f"Failed to generate security alerts: {e}")
         security_messages = ["보안 이슈 메시지 생성 실패"]
+
+    try:  # 보안 모니터링 메세지 송신
+        if not is_test:
+            for message in security_messages:
+                post_message_to_channel(message, SECURITY_CHANNEL_ID)
+        logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
+
+    except Exception as e:
+        logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
+        post_message_to_channel(f"Security error: {str(e)}", TEST_CHANNEL_ID)
 
     ## 메세지 저장 로직
     try:
@@ -123,7 +132,7 @@ def make_message(is_test: bool = False):
         raise
 
 
-async def send_message(messages: dict[str, list[str] | str], is_test: bool = False):
+async def send_message(is_test: bool = False):
     today_timestamp = datetime.now()
     if is_skip_batch(today_timestamp):
         logger.info(f"Not post today: {today_timestamp}")
@@ -135,18 +144,6 @@ async def send_message(messages: dict[str, list[str] | str], is_test: bool = Fal
 
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
             await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
-
-        security_messages = messages.get("security", [])
-        if not security_messages:
-            logger.info("No security alerts to send.")
-            return
-
-        logger.info(f"Sending security alerts to {SECURITY_CHANNEL_ID}")
-        security_messages = generate_security_alerts()
-        for message in security_messages:
-            await async_post_message_to_channel(message, SECURITY_CHANNEL_ID)
-        logger.info("Security alerts sent")
-
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
         raise

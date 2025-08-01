@@ -8,7 +8,7 @@ from bot.services.core.openai_client import openai_response
 from logger import logger
 
 
-def generate_security_alerts() -> list[str]:
+def generate_security_alert_messages() -> list[str]:
     try:
         data = pd.read_csv(DATA_PATH)
 
