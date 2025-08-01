@@ -85,18 +85,17 @@ def make_message(is_test: bool = False):
         security_df = pd.read_csv(
             SECURITY_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
         )
-        security_messages = generate_security_alert_messages(security_df, tag=is_test)
+        security_messages = generate_security_alert_messages(
+            security_df, tag=not is_test
+        )
         logger.info("Created security issue messages")
     except Exception as e:
         logger.error(f"Failed to generate security alerts: {e}")
-        security_messages = ["보안 이슈 메시지 생성 실패"]
+        raise
 
     try:  # 보안 모니터링 메세지 송신
-        if isinstance(security_messages, str):
-            post_message_to_channel(security_messages, TEST_CHANNEL_ID)
-        else:
-            for message in security_messages:
-                post_message_to_channel(message, TEST_CHANNEL_ID)
+        for message in security_messages:
+            post_message_to_channel(message, TEST_CHANNEL_ID)
 
         if not is_test:
             for message in security_messages:

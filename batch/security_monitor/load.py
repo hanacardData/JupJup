@@ -23,7 +23,7 @@ def load_security_issues(queries: list[str]) -> None:
         items: list[dict[str, str]] = []
 
         for keyword in tqdm(queries, desc=source, leave=False):
-            result = fetch_data(source, keyword, sort="date")
+            result = fetch_data(source, keyword, display=100, sort="date")
             sleep(0.1)
             if result is None:
                 logger.error(f"Failed to fetch data for {keyword} from {source}")
