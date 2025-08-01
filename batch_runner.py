@@ -12,7 +12,7 @@ from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
 from batch.security_monitor.load import load_security_issues
-from batch.security_monitor.make_message import generate_security_alert_messages
+from batch.security_monitor.make_message import get_security_messages
 from batch.travellog.keywords import TRAVELLOG_QUERIES
 from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
@@ -96,9 +96,7 @@ def make_message(is_test: bool = False):
         security_df = pd.read_csv(
             SECURITY_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
         )
-        security_messages = generate_security_alert_messages(
-            security_df, tag=not is_test
-        )
+        security_messages = get_security_messages(security_df, tag=not is_test)
         logger.info("Created security issue messages")
     except Exception as e:
         logger.error(f"Failed to generate security alerts: {e}")

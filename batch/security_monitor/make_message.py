@@ -13,7 +13,7 @@ from bot.services.core.openai_client import openai_response
 from logger import logger
 
 
-def generate_security_alert_messages(data: pd.DataFrame, tag: bool = True) -> list[str]:
+def get_security_messages(data: pd.DataFrame, tag: bool = True) -> list[str]:
     refined_data = extract_high_score_data(
         data=data,
         issue_keywords=ISSUE_KEYWORDS,
@@ -57,7 +57,7 @@ def generate_security_alert_messages(data: pd.DataFrame, tag: bool = True) -> li
     entries = re.split(r"\n\s*\n|[-]{6,}", result.strip())
     entries = [e.strip() for e in entries if e.strip()]
     entries = [f"번호: {i + 1}\n{e}" for i, e in enumerate(entries)]
-    entries.append("오늘의 보완 이슈를 다 보내드렸어요! 내일 다시 찾아올게요 😊")
+    entries.append("오늘의 보안 이슈를 다 보내드렸어요! 내일 다시 찾아올게요 😊")
     urls = extract_urls(result)
     if len(urls) == 0:
         logger.warning("No URLs found in the message.")
