@@ -114,5 +114,14 @@ def extract_high_score_data(
         .iloc[: min((extracted_data_count // 2), len(data_cafe))]
     )
 
+    # 뉴스 필터링
+    data_news = _data.loc[_data["source"] == "news"]
+    data_news = scorer.apply_scores(data_news)
+    data_news = (
+        data_news.loc[data_news["total_score"] > 0]
+        .sort_values(["scrap_date", "total_score"], ascending=[False, False])
+        .iloc[: min(extracted_data_count, len(data_news))]
+    )
+
     # 병합하여 반환
-    return pd.concat([data_blog, data_cafe], ignore_index=True)
+    return pd.concat([data_blog, data_cafe, data_news], ignore_index=True)

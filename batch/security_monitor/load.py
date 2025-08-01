@@ -8,17 +8,17 @@ from tqdm import tqdm
 from batch.fetch import fetch_data
 from batch.security_monitor.select_column import SOURCES_SELECT_MAP
 from batch.utils import read_csv
-from batch.variables import SECURITY_DATA_PATH, SECURITY_SAVE_PATH
+from batch.variables import SAVE_PATH, SECURITY_DATA_PATH
 from logger import logger
 
 
 def load_security_issues(queries: list[str]) -> None:
-    os.makedirs(SECURITY_SAVE_PATH, exist_ok=True)
+    os.makedirs(SAVE_PATH, exist_ok=True)
 
     _df_list: list[pd.DataFrame] = [read_csv(SECURITY_DATA_PATH)]
 
     for source in tqdm(["news"], desc="source"):
-        file_path = os.path.join(SECURITY_SAVE_PATH, f"{source}.csv")
+        file_path = os.path.join(SAVE_PATH, f"_{source}_security.csv")
         existing = read_csv(file_path)
         items: list[dict[str, str]] = []
 
