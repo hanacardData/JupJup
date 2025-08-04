@@ -96,7 +96,9 @@ def make_message(is_test: bool = False):
         security_df = pd.read_csv(
             SECURITY_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
         )
-        security_messages = get_security_messages(security_df, tag=not is_test)
+        security_messages = get_security_messages(
+            security_df, tag=False
+        )  # FIXME: 배포시에 not is_test 로 수정할것
         logger.info("Created security issue messages")
     except Exception as e:
         logger.error(f"Failed to generate security alerts: {e}")
