@@ -2,12 +2,12 @@ import json
 import os
 import re
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 
 
 def get_batch_message(
     type_: Literal["issue", "travellog", "travelcard", "product"],
-    subkey: Optional[str] = None,
+    subkey: str | None = None,
 ) -> list[str]:
     today_str = datetime.now().strftime("%Y-%m-%d")
     output_file = os.path.join("data", "messages", f"message_{today_str}.json")
@@ -25,7 +25,7 @@ def get_batch_message(
                     "/JADE": "JADE 고객반응",
                 }
                 label = subkey_map.get(subkey)
-                if not label:
+                if label is None:
                     return ["지원하지 않는 상품 메시지 유형입니다."]
                 return data["product"].get(label, ["해당 메시지가 없습니다."])
             return data[type_]

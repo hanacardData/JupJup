@@ -17,7 +17,7 @@ def collect_product_data(queries: list[str]) -> None:
     os.makedirs(SAVE_PATH, exist_ok=True)
 
     _df_list: list[pd.DataFrame] = [read_csv(PRODUCT_DATA_PATH)]
-    for source in tqdm(SOURCES, disable=True):
+    for source in tqdm(["news"] + SOURCES, desc="source"):
         _file_path = os.path.join(SAVE_PATH, f"_{source}_product.csv")
         _data_source = read_csv(_file_path)
         items: list[dict[str, str]] = []
@@ -26,7 +26,7 @@ def collect_product_data(queries: list[str]) -> None:
             _data = fetch_data(
                 type=source,
                 query=keyword,
-                sort="date" if source == "cafe" else "sim",
+                sort="sim",
             )
             sleep(0.05)
             if _data is None:
