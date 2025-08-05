@@ -62,7 +62,7 @@ def get_product_message(
 
     message = (
         f"[{button_label}]\n"
-        f"{datetime.today().strftime('%Y년 %m월 %d일')} 카드 관련 뉴스를 분석했어요.\n\n"
+        f"{datetime.today().strftime('%Y년 %m월 %d일')} 카드 관련 소식을 분석했어요.\n\n"
         + result
     )
     urls = extract_urls(result)
