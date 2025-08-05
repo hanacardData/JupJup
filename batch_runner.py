@@ -16,6 +16,7 @@ from batch.product.keywords import (
     JADE_CARD_FEEDBACK_KEYWORDS,
     WONDER_CARD_FEEDBACK_KEYWORDS,
 )
+from batch.product.load import collect_other_data, collect_us_data
 from batch.product.make_message import get_product_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
 from batch.security_monitor.load import load_security_issues
@@ -56,6 +57,11 @@ def data_collect():
     logger.info("Security Data Collection Started")
     load_security_issues(SECURITY_QUERIES)
     logger.info("Security Data Collection Completed")
+
+    logger.info("Product Data Collection Started")
+    collect_other_data(CREDIT_CARD_KEYWORDS + DEBIT_CARD_KEYWORDS)
+    collect_us_data(WONDER_CARD_FEEDBACK_KEYWORDS + JADE_CARD_FEEDBACK_KEYWORDS)
+    logger.info("Product Data Collection Completed")
 
 
 def make_message(is_test: bool = False):

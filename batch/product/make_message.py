@@ -3,13 +3,16 @@ from datetime import datetime
 
 import pandas as pd
 
-from batch.product.keywords import CARD_COMPANIES
-from batch.product.prompt import PROMPT, TEXT_INPUT
+from batch.product.keywords import CARD_COMPANIES, KEYWORDS_BY_BUTTON
+from batch.product.prompt import OTHER_TEXT_INPUT, PROMPT, US_TEXT_INPUT
 from batch.scorer import extract_high_score_data
-from batch.utils import extract_urls
-from batch.variables import DATA_PATH, EXTRACTED_DATA_COUNT
+from batch.utils import read_csv
+from batch.variables import (
+    EXTRACTED_DATA_COUNT,
+    PRODUCT_OTHER_DATA_PATH,
+    PRODUCT_US_DATA_PATH,
+)
 from bot.services.core.openai_client import openai_response
-from logger import logger
 
 
 def identify_company(text: str) -> str:
@@ -51,30 +54,58 @@ def get_product_message(
         ensure_ascii=False,
     )
 
-    result = openai_response(
-        prompt=PROMPT,
-        input=TEXT_INPUT.format(
+    if button_label in ["원더카드 고객반응", "JADE 고객반응"]:
+        prompt = US_TEXT_INPUT
+        text_input = US_TEXT_INPUT.format(
+            date=datetime.today().strftime("%Y년 %m월 %d일"),
+            product_name=button_label.replace(" 고객반응", ""),
+            count=len(refined_data),
+            content=content,
+        )
+
+        product_name = button_label[:4]
+
+        header = (
+            f"안녕하세요, 줍줍이입니다. "
+            f"{datetime.today().strftime('%Y년 %m월 %d일')} "
+            f'줍줍한 당사 중점상품 "{product_name}" 고객 반응을 공유드릴게요.\n\n'
+            f"수집한 문서 {len(refined_data)}개를 집중 분석한 결과입니다.\n"
+        )
+
+    else:
+        prompt = PROMPT
+        text_input = OTHER_TEXT_INPUT.format(
             count=len(refined_data),
             companies=", ".join(sorted(set(refined_data["company"]))),
             content=content,
-        ),
-    )
+        )
 
-    message = (
-        f"[{button_label}]\n"
-        f"{datetime.today().strftime('%Y년 %m월 %d일')} 카드 관련 소식을 분석했어요.\n\n"
-        + result
-    )
-    urls = extract_urls(result)
+        header = (
+            f"안녕하세요, 줍줍이입니다. "
+            f"{datetime.today().strftime('%Y년 %m월 %d일')} "
+            f"줍줍한 경쟁사 신상품 고객 반응을 공유드릴게요.\n\n"
+            f"수집한 문서 {len(refined_data)}개를 집중 분석한 결과입니다.\n"
+        )
 
-    if len(urls) == 0:
-        logger.warning("No URLs found in the message.")
-        return "오늘은 주목할만한 이슈가 없거나 ChatGPT 쪽 문제가 있는거 같아요. 확인하고 다시 찾아올게요 😊"
-    else:
-        if len(urls) != 2:
-            logger.warning("Not expected number of URLs found in the message.")
-        if tag:
-            data.loc[data["link"].isin(urls), "is_posted"] = 1
+    result = openai_response(prompt=prompt, input=text_input)
+    message = f"[{button_label}]\n{header}\n{result}"
 
-    data.to_csv(DATA_PATH, index=False, encoding="utf-8")
     return [message]
+
+
+def load_and_send_message(button_label: str) -> list[str]:
+    """버튼 라벨에 따라 적절한 데이터 로드 및 메시지 생성"""
+    keywords = KEYWORDS_BY_BUTTON[button_label]
+
+    if button_label in ["원더카드 고객반응", "JADE 고객반응"]:
+        data_path = PRODUCT_US_DATA_PATH
+    else:
+        data_path = PRODUCT_OTHER_DATA_PATH
+
+    data = read_csv(data_path)
+
+    return get_product_message(
+        data=data,
+        button_label=button_label,
+        keywords=keywords,
+    )
