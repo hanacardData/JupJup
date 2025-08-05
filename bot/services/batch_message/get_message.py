@@ -2,11 +2,12 @@ import json
 import os
 import re
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Optional
 
 
 def get_batch_message(
-    type_: Literal["issue", "travellog", "travelcard"],
+    type_: Literal["issue", "travellog", "travelcard", "product"],
+    subkey: Optional[str] = None,
 ) -> list[str]:
     today_str = datetime.now().strftime("%Y-%m-%d")
     output_file = os.path.join("data", "messages", f"message_{today_str}.json")
@@ -15,6 +16,18 @@ def get_batch_message(
     try:
         with open(output_file, "r", encoding="utf-8") as f:
             data = json.load(f)
+            if type_ == "product":
+                # 신상품 출시: 명령어를 버튼 이름으로 매핑
+                subkey_map = {
+                    "/경쟁사신용": "신용카드 신상품",
+                    "/경쟁사체크": "체크카드 신상품",
+                    "/원더카드": "원더카드 고객반응",
+                    "/JADE": "JADE 고객반응",
+                }
+                label = subkey_map.get(subkey)
+                if not label:
+                    return ["지원하지 않는 상품 메시지 유형입니다."]
+                return data["product"].get(label, ["해당 메시지가 없습니다."])
             return data[type_]
     except Exception as e:
         return [f"배치 메세지를 불러오는 중 오류가 발생했어요: {str(e)}"]

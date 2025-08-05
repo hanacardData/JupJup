@@ -10,6 +10,13 @@ from batch.compare_travel.make_message import get_compare_travel_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
+from batch.product.keywords import (
+    CREDIT_CARD_KEYWORDS,
+    DEBIT_CARD_KEYWORDS,
+    JADE_CARD_FEEDBACK_KEYWORDS,
+    WONDER_CARD_FEEDBACK_KEYWORDS,
+)
+from batch.product.make_message import get_product_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
 from batch.security_monitor.load import load_security_issues
 from batch.security_monitor.make_message import get_security_messages
@@ -18,6 +25,8 @@ from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
     DATA_PATH,
+    PRODUCT_CHANNEL_ID,
+    PRODUCT_DATA_PATH,
     SECURITY_CHANNEL_ID,
     SECURITY_DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
@@ -25,7 +34,7 @@ from batch.variables import (
     TRAVELLOG_CHANNEL_ID,
     TRAVELLOG_DATA_PATH,
 )
-from bot.enums.button_templates import JUPJUP_BUTTON
+from bot.enums.button_templates import JUPJUP_BUTTON, PRODUCT_BUTTON
 from bot.services.core.post_button import async_post_button_to_channel
 from bot.services.core.post_message import post_message_to_channel
 from logger import logger
@@ -112,10 +121,46 @@ def make_message(is_test: bool = False):
         #     for message in security_messages:
         #         post_message_to_channel(message, SECURITY_CHANNEL_ID)
         logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
-
     except Exception as e:
         logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
         post_message_to_channel(f"Security error: {str(e)}", TEST_CHANNEL_ID)
+
+    try:  # 신상품 출시 메시지 송신
+        product_messages = {
+            "/경쟁사신용": get_product_message(
+                pd.read_csv(PRODUCT_DATA_PATH),
+                button_label="경쟁사신용",
+                tag=not is_test,
+                keywords=CREDIT_CARD_KEYWORDS,
+            ),
+            "/경쟁사체크": get_product_message(
+                pd.read_csv(PRODUCT_DATA_PATH),
+                button_label="경쟁사체크",
+                tag=not is_test,
+                keywords=DEBIT_CARD_KEYWORDS,
+            ),
+            "/원더카드": get_product_message(
+                pd.read_csv(PRODUCT_DATA_PATH),
+                button_label="원더카드",
+                tag=not is_test,
+                keywords=WONDER_CARD_FEEDBACK_KEYWORDS,
+            ),
+            "/JADE": get_product_message(
+                pd.read_csv(PRODUCT_DATA_PATH),
+                button_label="JADE",
+                tag=not is_test,
+                keywords=JADE_CARD_FEEDBACK_KEYWORDS,
+            ),
+        }
+        logger.info("Created product messages")
+    except Exception as e:
+        logger.warning(f"Failed to generate product messages: {e}")
+        product_messages = {
+            "/경쟁사신용": ["경쟁사신용 메시지 생성 실패"],
+            "/경쟁사체크": ["경쟁사체크 메시지 생성 실패"],
+            "/원더카드": ["원더카드 메시지 생성 실패"],
+            "/JADE": ["JADE 메시지 생성 실패"],
+        }
 
     ## 메세지 저장 로직
     try:
@@ -129,6 +174,7 @@ def make_message(is_test: bool = False):
             "travellog": travellog_messages,
             "travelcard": travelcard_messages,
             "security": security_messages,
+            "product": product_messages,
         }
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -145,11 +191,13 @@ async def send_message(is_test: bool = False):
         return
     try:
         await async_post_button_to_channel(JUPJUP_BUTTON, TEST_CHANNEL_ID)
+        await async_post_button_to_channel(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)  # FIXME
         if is_test:
             return
 
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
             await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
+        await async_post_button_to_channel(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
         raise
