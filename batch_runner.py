@@ -79,7 +79,7 @@ def make_message(is_test: bool = False):
         if not is_test:
             for message in travellog_messages:
                 post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
-        logger.info(f"Sent Message to channel {TRAVELLOG_CHANNEL_ID}")
+            logger.info(f"Sent Message to channel {TRAVELLOG_CHANNEL_ID}")
     except Exception as e:
         logger.warning(f"Failed to send message at {TRAVELLOG_CHANNEL_ID} {e}")
         post_message_to_channel(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
@@ -96,9 +96,7 @@ def make_message(is_test: bool = False):
         security_df = pd.read_csv(
             SECURITY_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
         )
-        security_messages = get_security_messages(
-            security_df, tag=False
-        )  # FIXME: 배포시에 not is_test 로 수정할것
+        security_messages = get_security_messages(security_df, tag=not is_test)
         logger.info("Created security issue messages")
     except Exception as e:
         logger.error(f"Failed to generate security alerts: {e}")
@@ -108,10 +106,10 @@ def make_message(is_test: bool = False):
         for message in security_messages:
             post_message_to_channel(message, TEST_CHANNEL_ID)
 
-        # if not is_test: # FIXME: 배포 테스트
-        #     for message in security_messages:
-        #         post_message_to_channel(message, SECURITY_CHANNEL_ID)
-        logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
+        if not is_test:
+            for message in security_messages:
+                post_message_to_channel(message, SECURITY_CHANNEL_ID)
+            logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
 
     except Exception as e:
         logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
