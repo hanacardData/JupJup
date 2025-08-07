@@ -11,7 +11,7 @@ from batch.utils import read_csv
 from logger import logger
 
 
-def _collect_data_common(
+def load_product_issues(
     queries: list[str],
     save_path: str,
     file_tag: str,
