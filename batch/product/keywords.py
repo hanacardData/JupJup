@@ -41,3 +41,10 @@ KEYWORDS_BY_BUTTON = {
     "원더카드 고객반응": WONDER_CARD_FEEDBACK_KEYWORDS,
     "JADE 고객반응": JADE_CARD_FEEDBACK_KEYWORDS,
 }
+
+BUTTON_TAG_MAP = {
+    "신용카드 신상품": "credit",
+    "체크카드 신상품": "debit",
+    "JADE 고객반응": "jade",
+    "원더카드 고객반응": "wonder",
+}
