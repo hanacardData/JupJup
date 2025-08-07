@@ -8,7 +8,6 @@ EXTRACTED_DATA_COUNT: int = 100
 DATA_PATH: str = os.path.join(SAVE_PATH, "data.csv")
 SECURITY_DATA_PATH: str = os.path.join(SAVE_PATH, "security_data.csv")
 TRAVELLOG_DATA_PATH: str = os.path.join(SAVE_PATH, "travellog_data.csv")
-PRODUCT_SAVE_PATH: str = os.path.join(SAVE_PATH, "product")
 TEST_CHANNEL_ID: str = "8895b3b4-1cff-cec7-b7bc-a6df449d3638"
 
 # 트래블로그 블로그글 송신, 트래블로그UX부 우수현
