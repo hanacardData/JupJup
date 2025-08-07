@@ -17,7 +17,7 @@ from batch.product.keywords import (
     WONDER_CARD_FEEDBACK_KEYWORDS,
 )
 from batch.product.load import _collect_data_common
-from batch.product.make_message import get_product_message
+from batch.product.make_message import load_and_send_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
 from batch.security_monitor.load import load_security_issues
 from batch.security_monitor.make_message import get_security_messages
@@ -27,10 +27,7 @@ from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
     DATA_PATH,
     PRODUCT_CHANNEL_ID,
-    PRODUCT_DATA_PATH,
-    PRODUCT_OTHER_DATA_PATH,
-    PRODUCT_US_DATA_PATH,
-    SAVE_PATH,
+    PRODUCT_SAVE_PATH,
     SECURITY_CHANNEL_ID,
     SECURITY_DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
@@ -63,14 +60,27 @@ def data_collect():
 
     logger.info("Product Data Collection Started")
     _collect_data_common(
-        queries=CREDIT_CARD_KEYWORDS + DEBIT_CARD_KEYWORDS,
-        save_path=SAVE_PATH,
-        result_path=PRODUCT_OTHER_DATA_PATH,
+        queries=CREDIT_CARD_KEYWORDS,
+        save_path=PRODUCT_SAVE_PATH,
+        file_tag="credit",  # news_credit.csv, blog_credit.csv
     )
+
     _collect_data_common(
-        queries=WONDER_CARD_FEEDBACK_KEYWORDS + JADE_CARD_FEEDBACK_KEYWORDS,
-        save_path=SAVE_PATH,
-        result_path=PRODUCT_US_DATA_PATH,
+        queries=DEBIT_CARD_KEYWORDS,
+        save_path=PRODUCT_SAVE_PATH,
+        file_tag="debit",  # news_debit.csv, blog_debit.csv
+    )
+
+    _collect_data_common(
+        queries=WONDER_CARD_FEEDBACK_KEYWORDS,
+        save_path=PRODUCT_SAVE_PATH,
+        file_tag="wonder",  # news_wonder.csv, blog_wonder.csv
+    )
+
+    _collect_data_common(
+        queries=JADE_CARD_FEEDBACK_KEYWORDS,
+        save_path=PRODUCT_SAVE_PATH,
+        file_tag="jade",  # news_jade.csv, blog_jade.csv
     )
     logger.info("Product Data Collection Completed")
 
@@ -142,28 +152,12 @@ def make_message(is_test: bool = False):
         logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
         post_message_to_channel(f"Security error: {str(e)}", TEST_CHANNEL_ID)
 
-    try:  # 신상품 출시 메시지 송신
+    try:
         product_messages = {
-            "/경쟁사신용": get_product_message(
-                pd.read_csv(PRODUCT_DATA_PATH),
-                button_label="경쟁사신용",
-                keywords=CREDIT_CARD_KEYWORDS,
-            ),
-            "/경쟁사체크": get_product_message(
-                pd.read_csv(PRODUCT_DATA_PATH),
-                button_label="경쟁사체크",
-                keywords=DEBIT_CARD_KEYWORDS,
-            ),
-            "/원더카드": get_product_message(
-                pd.read_csv(PRODUCT_DATA_PATH),
-                button_label="원더카드",
-                keywords=WONDER_CARD_FEEDBACK_KEYWORDS,
-            ),
-            "/JADE": get_product_message(
-                pd.read_csv(PRODUCT_DATA_PATH),
-                button_label="JADE",
-                keywords=JADE_CARD_FEEDBACK_KEYWORDS,
-            ),
+            "/경쟁사신용": load_and_send_message("신용카드 신상품"),
+            "/경쟁사체크": load_and_send_message("체크카드 신상품"),
+            "/원더카드": load_and_send_message("원더카드 고객반응"),
+            "/JADE": load_and_send_message("JADE 고객반응"),
         }
         logger.info("Created product messages")
     except Exception as e:

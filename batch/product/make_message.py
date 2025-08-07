@@ -70,10 +70,9 @@ def _handle_competitor_product(button_label: str) -> list[str]:
     )
 
     header = _make_header(
-        title="경쟁사 신상품",
+        button_label=button_label,
         expected=total_count,
         actual=actual_count,
-        is_our_product=False,
     )
 
     result = openai_response(prompt=PROMPT, input=text_input)
@@ -121,10 +120,9 @@ def _handle_our_product(button_label: str) -> list[str]:
     )
 
     header = _make_header(
-        title="경쟁사 신상품",
+        button_label=button_label,
         expected=total_count,
         actual=actual_count,
-        is_our_product=False,
     )
 
     result = openai_response(prompt=US_TEXT_INPUT, input=text_input)
@@ -138,7 +136,6 @@ def _load_dataframes(tag: str) -> list[pd.DataFrame]:
         path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
         df = read_csv(path)
         if df is not None and not df.empty:
-            logger.warning(f"[{source.upper()}] {path} load success but empty file.")
             dfs.append(df)
     return dfs
 
