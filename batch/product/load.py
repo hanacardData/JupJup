@@ -8,12 +8,6 @@ from tqdm import tqdm
 from batch.fetch import fetch_data
 from batch.product.select_column import SOURCES_SELECT_MAP
 from batch.utils import read_csv
-from batch.variables import (
-    PRODUCT_OTHER_DATA_PATH,
-    PRODUCT_US_DATA_PATH,
-    SAVE_PATH,
-    SOURCES,
-)
 from logger import logger
 
 
@@ -22,7 +16,7 @@ def _collect_data_common(queries: list[str], save_path: str, result_path: str) -
     os.makedirs(save_path, exist_ok=True)
     _df_list: list[pd.DataFrame] = [read_csv(result_path)]
 
-    for source in tqdm(["news"] + [s for s in SOURCES if s != "cafe"], desc="source"):
+    for source in tqdm(["news", "blog"], desc="source"):
         _file_path = os.path.join(save_path, f"_{source}_product.csv")
         _data_source = read_csv(_file_path)
         items: list[dict[str, str]] = []
@@ -59,15 +53,3 @@ def _collect_data_common(queries: list[str], save_path: str, result_path: str) -
         .drop_duplicates(subset="link", keep="first")
     )
     data.to_csv(result_path, index=False, encoding="utf-8")
-
-
-def collect_other_data(queries: list[str]) -> None:
-    _collect_data_common(
-        queries=queries, save_path=SAVE_PATH, result_path=PRODUCT_OTHER_DATA_PATH
-    )
-
-
-def collect_us_data(queries: list[str]) -> None:
-    _collect_data_common(
-        queries=queries, save_path=SAVE_PATH, result_path=PRODUCT_US_DATA_PATH
-    )

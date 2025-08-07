@@ -16,7 +16,7 @@ from batch.product.keywords import (
     JADE_CARD_FEEDBACK_KEYWORDS,
     WONDER_CARD_FEEDBACK_KEYWORDS,
 )
-from batch.product.load import collect_other_data, collect_us_data
+from batch.product.load import _collect_data_common
 from batch.product.make_message import get_product_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
 from batch.security_monitor.load import load_security_issues
@@ -28,6 +28,9 @@ from batch.variables import (
     DATA_PATH,
     PRODUCT_CHANNEL_ID,
     PRODUCT_DATA_PATH,
+    PRODUCT_OTHER_DATA_PATH,
+    PRODUCT_US_DATA_PATH,
+    SAVE_PATH,
     SECURITY_CHANNEL_ID,
     SECURITY_DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
@@ -59,8 +62,16 @@ def data_collect():
     logger.info("Security Data Collection Completed")
 
     logger.info("Product Data Collection Started")
-    collect_other_data(CREDIT_CARD_KEYWORDS + DEBIT_CARD_KEYWORDS)
-    collect_us_data(WONDER_CARD_FEEDBACK_KEYWORDS + JADE_CARD_FEEDBACK_KEYWORDS)
+    _collect_data_common(
+        queries=CREDIT_CARD_KEYWORDS + DEBIT_CARD_KEYWORDS,
+        save_path=SAVE_PATH,
+        result_path=PRODUCT_OTHER_DATA_PATH,
+    )
+    _collect_data_common(
+        queries=WONDER_CARD_FEEDBACK_KEYWORDS + JADE_CARD_FEEDBACK_KEYWORDS,
+        save_path=SAVE_PATH,
+        result_path=PRODUCT_US_DATA_PATH,
+    )
     logger.info("Product Data Collection Completed")
 
 
@@ -136,25 +147,21 @@ def make_message(is_test: bool = False):
             "/경쟁사신용": get_product_message(
                 pd.read_csv(PRODUCT_DATA_PATH),
                 button_label="경쟁사신용",
-                tag=not is_test,
                 keywords=CREDIT_CARD_KEYWORDS,
             ),
             "/경쟁사체크": get_product_message(
                 pd.read_csv(PRODUCT_DATA_PATH),
                 button_label="경쟁사체크",
-                tag=not is_test,
                 keywords=DEBIT_CARD_KEYWORDS,
             ),
             "/원더카드": get_product_message(
                 pd.read_csv(PRODUCT_DATA_PATH),
                 button_label="원더카드",
-                tag=not is_test,
                 keywords=WONDER_CARD_FEEDBACK_KEYWORDS,
             ),
             "/JADE": get_product_message(
                 pd.read_csv(PRODUCT_DATA_PATH),
                 button_label="JADE",
-                tag=not is_test,
                 keywords=JADE_CARD_FEEDBACK_KEYWORDS,
             ),
         }
@@ -203,7 +210,7 @@ async def send_message(is_test: bool = False):
 
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
             await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
-        await async_post_button_to_channel(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
+
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
         raise

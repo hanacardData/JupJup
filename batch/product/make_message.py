@@ -26,7 +26,6 @@ def get_product_message(
     data: pd.DataFrame,
     button_label: str,
     keywords: list[str],
-    tag: bool = True,
     extracted_data_count: int = EXTRACTED_DATA_COUNT,
 ) -> list[str]:
     if len(data) == 0:
