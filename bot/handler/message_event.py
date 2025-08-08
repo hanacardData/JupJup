@@ -7,7 +7,7 @@ from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
 from bot.services.batch_message.get_message import (
     get_batch_message,
-    get_product_message,
+    get_product_batch_message,
     make_travellog_flexible_payload,
 )
 from bot.services.brother.get_answer import get_brother_answer
@@ -60,7 +60,7 @@ async def handle_travelcard_command(channel_id: str) -> JSONResponse:
 
 
 async def handle_product_command(channel_id: str, subkey: str) -> JSONResponse:
-    messages = get_product_message(subkey=subkey)
+    messages = get_product_batch_message(subkey=subkey)
     for msg in messages:
         await async_post_message_to_channel(msg, channel_id)
     return JSONResponse(
