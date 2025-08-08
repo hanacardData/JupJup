@@ -7,6 +7,7 @@ from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
 from bot.services.batch_message.get_message import (
     get_batch_message,
+    get_product_message,
     make_travellog_flexible_payload,
 )
 from bot.services.brother.get_answer import get_brother_answer
@@ -56,6 +57,31 @@ async def handle_travelcard_command(channel_id: str) -> JSONResponse:
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
+
+
+async def handle_product_command(channel_id: str, subkey: str) -> JSONResponse:
+    messages = get_product_message(subkey=subkey)
+    for msg in messages:
+        await async_post_message_to_channel(msg, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
+async def handle_product_credit_command(channel_id: str) -> JSONResponse:
+    return await handle_product_command(channel_id, "/경쟁사신용")
+
+
+async def handle_product_debit_command(channel_id: str) -> JSONResponse:
+    return await handle_product_command(channel_id, "/경쟁사체크")
+
+
+async def handle_product_wonder_command(channel_id: str) -> JSONResponse:
+    return await handle_product_command(channel_id, "/원더카드")
+
+
+async def handle_product_jade_command(channel_id: str) -> JSONResponse:
+    return await handle_product_command(channel_id, "/JADE")
 
 
 async def handle_menu_command(channel_id: str) -> JSONResponse:
@@ -168,6 +194,10 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/트래블로그": handle_travellog_command,
     "/이슈": handle_issue_command,
     "/트래블카드": handle_travelcard_command,
+    "/경쟁사신용": handle_product_credit_command,
+    "/경쟁사체크": handle_product_debit_command,
+    "/원더카드": handle_product_wonder_command,
+    "/JADE": handle_product_jade_command,
     "/식당": handle_menu_command,
     "/구내식당": handle_cafeteria_command,
     "/스케줄등록": handle_schedule_command,

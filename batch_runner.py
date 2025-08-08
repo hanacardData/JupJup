@@ -10,6 +10,14 @@ from batch.compare_travel.make_message import get_compare_travel_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
+from batch.product.keywords import (
+    CREDIT_CARD_KEYWORDS,
+    DEBIT_CARD_KEYWORDS,
+    JADE_CARD_FEEDBACK_KEYWORDS,
+    WONDER_CARD_FEEDBACK_KEYWORDS,
+)
+from batch.product.load import load_product_issues
+from batch.product.make_message import load_and_send_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
 from batch.security_monitor.load import load_security_issues
 from batch.security_monitor.make_message import get_security_messages
@@ -18,6 +26,8 @@ from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
     DATA_PATH,
+    PRODUCT_CHANNEL_ID,
+    PRODUCT_SAVE_PATH,
     SECURITY_CHANNEL_ID,
     SECURITY_DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
@@ -25,7 +35,7 @@ from batch.variables import (
     TRAVELLOG_CHANNEL_ID,
     TRAVELLOG_DATA_PATH,
 )
-from bot.enums.button_templates import JUPJUP_BUTTON
+from bot.enums.button_templates import JUPJUP_BUTTON, PRODUCT_BUTTON
 from bot.services.core.post_button import async_post_button_to_channel
 from bot.services.core.post_message import post_message_to_channel
 from logger import logger
@@ -47,6 +57,32 @@ def data_collect():
     logger.info("Security Data Collection Started")
     load_security_issues(SECURITY_QUERIES)
     logger.info("Security Data Collection Completed")
+
+    logger.info("Product Data Collection Started")
+    load_product_issues(
+        queries=CREDIT_CARD_KEYWORDS,
+        save_path=PRODUCT_SAVE_PATH,
+        file_tag="credit",  # news_credit.csv, blog_credit.csv
+    )
+
+    load_product_issues(
+        queries=DEBIT_CARD_KEYWORDS,
+        save_path=PRODUCT_SAVE_PATH,
+        file_tag="debit",  # news_debit.csv, blog_debit.csv
+    )
+
+    load_product_issues(
+        queries=WONDER_CARD_FEEDBACK_KEYWORDS,
+        save_path=PRODUCT_SAVE_PATH,
+        file_tag="wonder",  # news_wonder.csv, blog_wonder.csv
+    )
+
+    load_product_issues(
+        queries=JADE_CARD_FEEDBACK_KEYWORDS,
+        save_path=PRODUCT_SAVE_PATH,
+        file_tag="jade",  # news_jade.csv, blog_jade.csv
+    )
+    logger.info("Product Data Collection Completed")
 
 
 def make_message(is_test: bool = False):
@@ -115,6 +151,23 @@ def make_message(is_test: bool = False):
         logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
         post_message_to_channel(f"Security error: {str(e)}", TEST_CHANNEL_ID)
 
+    try:
+        product_messages = {
+            "/경쟁사신용": load_and_send_message("신용카드 신상품"),
+            "/경쟁사체크": load_and_send_message("체크카드 신상품"),
+            "/원더카드": load_and_send_message("원더카드 고객반응"),
+            "/JADE": load_and_send_message("JADE 고객반응"),
+        }
+        logger.info("Created product messages")
+    except Exception as e:
+        logger.warning(f"Failed to generate product messages: {e}")
+        product_messages = {
+            "/경쟁사신용": ["경쟁사신용 메시지 생성 실패"],
+            "/경쟁사체크": ["경쟁사체크 메시지 생성 실패"],
+            "/원더카드": ["원더카드 메시지 생성 실패"],
+            "/JADE": ["JADE 메시지 생성 실패"],
+        }
+
     ## 메세지 저장 로직
     try:
         today_str = today_timestamp.strftime("%Y-%m-%d")
@@ -127,6 +180,7 @@ def make_message(is_test: bool = False):
             "travellog": travellog_messages,
             "travelcard": travelcard_messages,
             "security": security_messages,
+            "product": product_messages,
         }
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -143,11 +197,13 @@ async def send_message(is_test: bool = False):
         return
     try:
         await async_post_button_to_channel(JUPJUP_BUTTON, TEST_CHANNEL_ID)
+        await async_post_button_to_channel(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)  # FIXME
         if is_test:
             return
 
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
             await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
+
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
         raise

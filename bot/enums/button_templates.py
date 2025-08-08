@@ -60,3 +60,32 @@ JUPJUP_BUTTON = {
         ],
     }
 }
+
+PRODUCT_BUTTON = {
+    "content": {
+        "type": "button_template",
+        "contentText": "경쟁사 카드 상품 출시 소식을 확인해보세요!",
+        "actions": [
+            {
+                "type": "message",
+                "label": "신용카드 신상품",
+                "text": "/경쟁사신용",
+            },
+            {
+                "type": "message",
+                "label": "체크카드 신상품",
+                "text": "/경쟁사체크",
+            },
+            {
+                "type": "message",
+                "label": "원더카드 고객반응",
+                "text": "/원더카드",
+            },
+            {
+                "type": "message",
+                "label": "JADE 고객반응",
+                "text": "/JADE",
+            },
+        ],
+    }
+}
