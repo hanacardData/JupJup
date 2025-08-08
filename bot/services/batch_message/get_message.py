@@ -57,9 +57,9 @@ def make_travellog_flexible_payload(
 
         if not (title_match and text_match and link_match):
             continue
-        title = title_match.group(1).strip('"')
-        text = text_match.group(1).strip('"')
-        link = link_match.group(1).strip('"')
+        title = title_match.group(1).strip('"{}').strip()
+        text = text_match.group(1).strip('"{}').strip()
+        link = link_match.group(1).strip('"{}').strip()
         content = {
             "type": "bubble",
             "size": "kilo",
