@@ -97,7 +97,7 @@ def make_message(is_test: bool = False):
         issue_message = get_issue_message(issue_df, tag=not is_test)
         logger.info("Created issue message")
     except Exception as e:
-        logger.error(f"Failed to generate message: {e}")
+        logger.error(f"Failed to generate issue message: {e}")
         raise
 
     try:  # 트래블로그 메시지 생성
@@ -108,23 +108,25 @@ def make_message(is_test: bool = False):
         travellog_messages = get_travellog_message(travellog_df, tag=not is_test)
         logger.info("Created travellog message")
     except Exception as e:
-        logger.error(f"Failed to generate message: {e}")
+        logger.error(f"Failed to generate travellog message: {e}")
         raise
 
     try:  # 트래블로그 부 메세지 송신
         if not is_test:
             for message in travellog_messages:
                 post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
-            logger.info(f"Sent Message to channel {TRAVELLOG_CHANNEL_ID}")
+            logger.info(f"Sent Travellog Message to channel {TRAVELLOG_CHANNEL_ID}")
     except Exception as e:
-        logger.warning(f"Failed to send message at {TRAVELLOG_CHANNEL_ID} {e}")
+        logger.warning(
+            f"Failed to send travellog message to {TRAVELLOG_CHANNEL_ID} {e}"
+        )
         post_message_to_channel(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
 
     try:  # Compare 트래블카드 메시지 생성
         travelcard_messages = get_compare_travel_message()
-        logger.info(f"Message ready: {travelcard_messages}")
+        logger.info("Message ready: travelcard_messages")
     except Exception as e:
-        logger.error(f"Failed to generate message: {e}")
+        logger.error(f"Failed to generate travelcard message: {e}")
         raise
 
     try:  # 보안 모니터링 메시지 생성
