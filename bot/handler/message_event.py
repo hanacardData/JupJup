@@ -209,7 +209,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/식당": handle_menu_command,
     "/구내식당": handle_cafeteria_command,
     "/스케줄등록": handle_schedule_command,
-    "/신상": handle_product_command,
+    "/신상품": handle_product_command,
     # Argument 필요한 커맨드
     "/아우야": handle_brother_command,
     "/리뷰": handle_review_command,
