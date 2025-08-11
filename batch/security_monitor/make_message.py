@@ -59,7 +59,7 @@ def get_security_messages(data: pd.DataFrame, tag: bool = True) -> list[str]:
     entries.append("오늘의 보안 이슈를 다 보내드렸어요! 내일 다시 찾아올게요 😊")
     urls = extract_urls(result)
     if len(urls) == 0:
-        logger.warning("No URLs found in the message.")
+        logger.warning("No URLs found in the security message.")
         return [
             "오늘은 주목할만한 이슈가 없거나 ChatGPT 쪽 문제가 있는거 같아요. 확인하고 다시 찾아올게요 😊"
         ]

@@ -2,12 +2,12 @@ from typing import Callable
 
 from fastapi.responses import JSONResponse
 
-from bot.enums.button_templates import JUPJUP_BUTTON, LAB_BUTTON
+from bot.enums.button_templates import JUPJUP_BUTTON, LAB_BUTTON, PRODUCT_BUTTON
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
 from bot.services.batch_message.get_message import (
     get_batch_message,
-    get_product_message,
+    get_product_batch_message,
     make_travellog_flexible_payload,
 )
 from bot.services.brother.get_answer import get_brother_answer
@@ -59,8 +59,8 @@ async def handle_travelcard_command(channel_id: str) -> JSONResponse:
     )
 
 
-async def handle_product_command(channel_id: str, subkey: str) -> JSONResponse:
-    messages = get_product_message(subkey=subkey)
+async def _handle_product_command(channel_id: str, subkey: str) -> JSONResponse:
+    messages = get_product_batch_message(subkey=subkey)
     for msg in messages:
         await async_post_message_to_channel(msg, channel_id)
     return JSONResponse(
@@ -69,19 +69,19 @@ async def handle_product_command(channel_id: str, subkey: str) -> JSONResponse:
 
 
 async def handle_product_credit_command(channel_id: str) -> JSONResponse:
-    return await handle_product_command(channel_id, "/경쟁사신용")
+    return await _handle_product_command(channel_id, "/경쟁사신용")
 
 
 async def handle_product_debit_command(channel_id: str) -> JSONResponse:
-    return await handle_product_command(channel_id, "/경쟁사체크")
+    return await _handle_product_command(channel_id, "/경쟁사체크")
 
 
 async def handle_product_wonder_command(channel_id: str) -> JSONResponse:
-    return await handle_product_command(channel_id, "/원더카드")
+    return await _handle_product_command(channel_id, "/원더카드")
 
 
 async def handle_product_jade_command(channel_id: str) -> JSONResponse:
-    return await handle_product_command(channel_id, "/JADE")
+    return await _handle_product_command(channel_id, "/JADE")
 
 
 async def handle_menu_command(channel_id: str) -> JSONResponse:
@@ -187,6 +187,14 @@ async def handle_lab_command(channel_id: str) -> JSONResponse:
     )
 
 
+async def handle_product_command(channel_id: str) -> JSONResponse:
+    """신규 상품 핸들러"""
+    await async_post_button_to_channel(PRODUCT_BUTTON, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
 COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     # Argument 필요 없는 커맨드
     "/줍줍": handle_jupjup_command,
@@ -201,6 +209,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/식당": handle_menu_command,
     "/구내식당": handle_cafeteria_command,
     "/스케줄등록": handle_schedule_command,
+    "/신상": handle_product_command,
     # Argument 필요한 커맨드
     "/아우야": handle_brother_command,
     "/리뷰": handle_review_command,
