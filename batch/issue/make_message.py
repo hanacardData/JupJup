@@ -21,7 +21,7 @@ def get_issue_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
     )
     if len(refined_data) == 0:
         logger.warning("No data found after filtering.")
-        return "오늘은 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+        return ["오늘은 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"]
 
     content = json.dumps(
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
@@ -42,7 +42,7 @@ def get_issue_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
 
     if len(urls) == 0:
         logger.warning("No URLs found in the message.")
-        return "오늘은 주목할만한 이슈가 없거나 ChatGPT 쪽 문제가 있는거 같아요. 확인하고 다시 찾아올게요 😊"
+        return ["오늘은 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"]
     else:
         if len(urls) != 2:
             logger.warning("Not expected number of URLs found in the message.")
