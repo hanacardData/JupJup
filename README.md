@@ -1,5 +1,5 @@
-# ScrapCompetitor
-네이버 검색 API 스크랩하는 코드
+# JupJup
+네이버 웍스 줍줍이 레포
 
 ## 사용법
 1. `private.key`를 Naver works에서 발급, root 폴더에 저장한다.
