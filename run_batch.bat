@@ -1,7 +1,7 @@
 setlocal
 
 @echo off
-set DIR=C:\Users\user\project\ScrapCompetitor
+set DIR=C:\Users\user\Desktop\main\trend_analysis
 set LOGDIR=%DIR%\logs
 set LOGFILE=%LOGDIR%\log_%date:~0,4%%date:~5,2%%date:~8,2%.log
 
