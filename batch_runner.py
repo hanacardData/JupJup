@@ -199,7 +199,7 @@ async def send_message(is_test: bool = False):
         return
     try:
         await async_post_button_to_channel(JUPJUP_BUTTON, TEST_CHANNEL_ID)
-        await async_post_button_to_channel(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)  # FIXME
+        await async_post_button_to_channel(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
         if is_test:
             return
 
