@@ -12,7 +12,7 @@ if not exist %LOGDIR% (
 echo [%date% %time%] ==== Started ==== >> %LOGFILE%
 cd /d %DIR%
 
-call C:\Users\user\AppData\Local\anaconda3\Scripts\activate.bat jupjup
+call C:\Users\user\anaconda3\Scripts\activate.bat jupjup
 echo [%date% %time%] ==== Conda setted ==== >> %LOGFILE%
 echo [%date% %time%] ==== Git setted ==== >> %LOGFILE%
 git checkout main >> %LOGFILE% 2>&1
