@@ -16,7 +16,7 @@ from batch.product.keywords import (
     JADE_CARD_FEEDBACK_KEYWORDS,
     WONDER_CARD_FEEDBACK_KEYWORDS,
 )
-from batch.product.load import load_product_issues
+from batch.product.load import load_competitor_issues, load_ourproduct_issues
 from batch.product.make_message import load_and_send_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
 from batch.security_monitor.load import load_security_issues
@@ -59,25 +59,25 @@ def data_collect():
     logger.info("Security Data Collection Completed")
 
     logger.info("Product Data Collection Started")
-    load_product_issues(
+    load_competitor_issues(
         queries=CREDIT_CARD_KEYWORDS,
         save_path=PRODUCT_SAVE_PATH,
         file_tag="credit",  # news_credit.csv, blog_credit.csv
     )
 
-    load_product_issues(
+    load_competitor_issues(
         queries=DEBIT_CARD_KEYWORDS,
         save_path=PRODUCT_SAVE_PATH,
         file_tag="debit",  # news_debit.csv, blog_debit.csv
     )
 
-    load_product_issues(
+    load_ourproduct_issues(
         queries=WONDER_CARD_FEEDBACK_KEYWORDS,
         save_path=PRODUCT_SAVE_PATH,
         file_tag="wonder",  # news_wonder.csv, blog_wonder.csv
     )
 
-    load_product_issues(
+    load_ourproduct_issues(
         queries=JADE_CARD_FEEDBACK_KEYWORDS,
         save_path=PRODUCT_SAVE_PATH,
         file_tag="jade",  # news_jade.csv, blog_jade.csv
