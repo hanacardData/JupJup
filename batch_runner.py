@@ -3,13 +3,8 @@ import json
 import os
 from datetime import datetime
 
-import pandas as pd
 from holidayskr import is_holiday
 
-from batch.compare_travel.make_message import get_compare_travel_message
-from batch.issue.keywords import QUERIES
-from batch.issue.load import collect_load_data
-from batch.issue.make_message import get_issue_message
 from batch.product.keywords import (
     CREDIT_CARD_KEYWORDS,
     DEBIT_CARD_KEYWORDS,
@@ -18,26 +13,14 @@ from batch.product.keywords import (
 )
 from batch.product.load import load_competitor_issues, load_ourproduct_issues
 from batch.product.make_message import load_and_send_message
-from batch.security_monitor.keywords import SECURITY_QUERIES
-from batch.security_monitor.load import load_security_issues
-from batch.security_monitor.make_message import get_security_messages
-from batch.travellog.keywords import TRAVELLOG_QUERIES
-from batch.travellog.load import collect_load_travellog_data
-from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
-    DATA_PATH,
     PRODUCT_CHANNEL_ID,
     PRODUCT_SAVE_PATH,
-    SECURITY_CHANNEL_ID,
-    SECURITY_DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
     TEST_CHANNEL_ID,
-    TRAVELLOG_CHANNEL_ID,
-    TRAVELLOG_DATA_PATH,
 )
 from bot.enums.button_templates import JUPJUP_BUTTON, PRODUCT_BUTTON
 from bot.services.core.post_button import async_post_button_to_channel
-from bot.services.core.post_message import post_message_to_channel
 from logger import logger
 
 
@@ -46,17 +29,17 @@ def is_skip_batch(date: datetime) -> bool:
 
 
 def data_collect():
-    logger.info("Issue Data Collection Strarted")
-    collect_load_data(QUERIES)
-    logger.info("Issue Data Collection Completed")
+    # logger.info("Issue Data Collection Strarted")
+    # collect_load_data(QUERIES)
+    # logger.info("Issue Data Collection Completed")
 
-    logger.info("Travellog Data Collection Started")
-    collect_load_travellog_data(TRAVELLOG_QUERIES)
-    logger.info("Travellog Data Collection Completed")
+    # logger.info("Travellog Data Collection Started")
+    # collect_load_travellog_data(TRAVELLOG_QUERIES)
+    # logger.info("Travellog Data Collection Completed")
 
-    logger.info("Security Data Collection Started")
-    load_security_issues(SECURITY_QUERIES)
-    logger.info("Security Data Collection Completed")
+    # logger.info("Security Data Collection Started")
+    # load_security_issues(SECURITY_QUERIES)
+    # logger.info("Security Data Collection Completed")
 
     logger.info("Product Data Collection Started")
     load_competitor_issues(
@@ -91,67 +74,67 @@ def make_message(is_test: bool = False):
         logger.info(f"Not post today: {today_timestamp}")
         return
 
-    try:  # Issue 메시지 생성
-        logger.info("Generating issue message")
-        issue_df = pd.read_csv(DATA_PATH, dtype={"post_date": object}, encoding="utf-8")
-        issue_message = get_issue_message(issue_df, tag=not is_test)
-        logger.info("Created issue message")
-    except Exception as e:
-        logger.error(f"Failed to generate issue message: {e}")
-        raise
+    # try:  # Issue 메시지 생성
+    #     logger.info("Generating issue message")
+    #     issue_df = pd.read_csv(DATA_PATH, dtype={"post_date": object}, encoding="utf-8")
+    #     issue_message = get_issue_message(issue_df, tag=not is_test)
+    #     logger.info("Created issue message")
+    # except Exception as e:
+    #     logger.error(f"Failed to generate issue message: {e}")
+    #     raise
 
-    try:  # 트래블로그 메시지 생성
-        logger.info("Generating travellog message")
-        travellog_df = pd.read_csv(
-            TRAVELLOG_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
-        )
-        travellog_messages = get_travellog_message(travellog_df, tag=not is_test)
-        logger.info("Created travellog message")
-    except Exception as e:
-        logger.error(f"Failed to generate travellog message: {e}")
-        raise
+    # try:  # 트래블로그 메시지 생성
+    #     logger.info("Generating travellog message")
+    #     travellog_df = pd.read_csv(
+    #         TRAVELLOG_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
+    #     )
+    #     travellog_messages = get_travellog_message(travellog_df, tag=not is_test)
+    #     logger.info("Created travellog message")
+    # except Exception as e:
+    #     logger.error(f"Failed to generate travellog message: {e}")
+    #     raise
 
-    try:  # 트래블로그 부 메세지 송신
-        if not is_test:
-            for message in travellog_messages:
-                post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
-            logger.info(f"Sent Travellog Message to channel {TRAVELLOG_CHANNEL_ID}")
-    except Exception as e:
-        logger.warning(
-            f"Failed to send travellog message to {TRAVELLOG_CHANNEL_ID} {e}"
-        )
-        post_message_to_channel(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
+    # try:  # 트래블로그 부 메세지 송신
+    #     if not is_test:
+    #         for message in travellog_messages:
+    #             post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
+    #         logger.info(f"Sent Travellog Message to channel {TRAVELLOG_CHANNEL_ID}")
+    # except Exception as e:
+    #     logger.warning(
+    #         f"Failed to send travellog message to {TRAVELLOG_CHANNEL_ID} {e}"
+    #     )
+    #     post_message_to_channel(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
 
-    try:  # Compare 트래블카드 메시지 생성
-        travelcard_messages = get_compare_travel_message()
-        logger.info("Message ready: travelcard_messages")
-    except Exception as e:
-        logger.error(f"Failed to generate travelcard message: {e}")
-        raise
+    # try:  # Compare 트래블카드 메시지 생성
+    #     travelcard_messages = get_compare_travel_message()
+    #     logger.info("Message ready: travelcard_messages")
+    # except Exception as e:
+    #     logger.error(f"Failed to generate travelcard message: {e}")
+    #     raise
 
-    try:  # 보안 모니터링 메시지 생성
-        logger.info("Generating security issue message")
-        security_df = pd.read_csv(
-            SECURITY_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
-        )
-        security_messages = get_security_messages(security_df, tag=not is_test)
-        logger.info("Created security issue messages")
-    except Exception as e:
-        logger.error(f"Failed to generate security alerts: {e}")
-        raise
+    # try:  # 보안 모니터링 메시지 생성
+    #     logger.info("Generating security issue message")
+    #     security_df = pd.read_csv(
+    #         SECURITY_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
+    #     )
+    #     security_messages = get_security_messages(security_df, tag=not is_test)
+    #     logger.info("Created security issue messages")
+    # except Exception as e:
+    #     logger.error(f"Failed to generate security alerts: {e}")
+    #     raise
 
-    try:  # 보안 모니터링 메세지 송신
-        for message in security_messages:
-            post_message_to_channel(message, TEST_CHANNEL_ID)
+    # try:  # 보안 모니터링 메세지 송신
+    #     for message in security_messages:
+    #         post_message_to_channel(message, TEST_CHANNEL_ID)
 
-        if not is_test:
-            for message in security_messages:
-                post_message_to_channel(message, SECURITY_CHANNEL_ID)
-            logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
+    #     if not is_test:
+    #         for message in security_messages:
+    #             post_message_to_channel(message, SECURITY_CHANNEL_ID)
+    #         logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
 
-    except Exception as e:
-        logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
-        post_message_to_channel(f"Security error: {str(e)}", TEST_CHANNEL_ID)
+    # except Exception as e:
+    #     logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
+    #     post_message_to_channel(f"Security error: {str(e)}", TEST_CHANNEL_ID)
 
     try:
         product_messages = {
@@ -178,10 +161,10 @@ def make_message(is_test: bool = False):
         output_file = os.path.join(output_dir, f"message_{today_str}.json")
 
         data = {
-            "issue": issue_message,
-            "travellog": travellog_messages,
-            "travelcard": travelcard_messages,
-            "security": security_messages,
+            # "issue": issue_message,
+            # "travellog": travellog_messages,
+            # "travelcard": travelcard_messages,
+            # "security": security_messages,
             "product": product_messages,
         }
         with open(output_file, "w", encoding="utf-8") as f:
@@ -220,7 +203,7 @@ if __name__ == "__main__":
     make_message()  # 메시지 생성
     logger.info("Message created")
 
-    asyncio.run(send_message())  # 메시지 송신
+    asyncio.run(send_message(is_test=True))  # 메시지 송신
     logger.info("Message sent")
 
     logger.info("Batch completed")

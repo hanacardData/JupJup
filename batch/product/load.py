@@ -16,10 +16,12 @@ def load_competitor_issues(
     save_path: str,
     file_tag: str,
 ) -> None:
-    """경쟁사 신상품: 블로그만 수집"""
+    """경쟁사 신상품: 뉴스만 수집"""
     os.makedirs(save_path, exist_ok=True)
 
-    for source in ["blog"]:
+    _df_list: list[pd.DataFrame] = []
+
+    for source in ["news"]:
         file_name = f"{source}_{file_tag}.csv"
         file_path = os.path.join(save_path, file_name)
 
@@ -27,25 +29,24 @@ def load_competitor_issues(
         items: list[dict[str, str]] = []
 
         for keyword in tqdm(queries, desc=source, leave=False):
-            _data = fetch_data(type=source, query=keyword, sort="sim")
-            sleep(0.05)
-            if _data is None:
+            result = fetch_data(source, keyword, display=100, sort="sim")
+            sleep(0.1)
+            if result is None:
                 logger.error(f"Failed to fetch data for {keyword} from {source}")
                 continue
-
-            _items = _data.to_items(
-                query=keyword,
-                scrap_date=datetime.today().strftime("%Y%m%d"),
+            items.extend(
+                result.to_items(
+                    query=keyword, scrap_date=datetime.today().strftime("%Y%m%d")
+                )
             )
-            items.extend(_items)
 
-        raw_df = pd.concat(
+        df = pd.concat(
             [existing_data, pd.DataFrame(items).assign(source=source, is_posted=0)],
             ignore_index=True,
         ).drop_duplicates(subset=["link"])
 
-        selected_df = SOURCES_SELECT_MAP[source](raw_df)
-        selected_df.to_csv(file_path, index=False, encoding="utf-8")
+        df.to_csv(file_path, index=False, encoding="utf-8")
+        _df_list.append(SOURCES_SELECT_MAP[source](df))
         logger.info(f"{file_path} scrap completed")
 
 
@@ -57,6 +58,8 @@ def load_ourproduct_issues(
     """자사 원더/JADE: 뉴스+블로그 수집"""
     os.makedirs(save_path, exist_ok=True)
 
+    _df_list: list[pd.DataFrame] = []
+
     for source in ["news", "blog"]:
         file_name = f"{source}_{file_tag}.csv"
         file_path = os.path.join(save_path, file_name)
@@ -65,23 +68,22 @@ def load_ourproduct_issues(
         items: list[dict[str, str]] = []
 
         for keyword in tqdm(queries, desc=source, leave=False):
-            _data = fetch_data(type=source, query=keyword, sort="sim")
-            sleep(0.05)
-            if _data is None:
+            result = fetch_data(source, keyword, display=100, sort="sim")
+            sleep(0.1)
+            if result is None:
                 logger.error(f"Failed to fetch data for {keyword} from {source}")
                 continue
-
-            _items = _data.to_items(
-                query=keyword,
-                scrap_date=datetime.today().strftime("%Y%m%d"),
+            items.extend(
+                result.to_items(
+                    query=keyword, scrap_date=datetime.today().strftime("%Y%m%d")
+                )
             )
-            items.extend(_items)
 
-        raw_df = pd.concat(
+        df = pd.concat(
             [existing_data, pd.DataFrame(items).assign(source=source, is_posted=0)],
             ignore_index=True,
         ).drop_duplicates(subset=["link"])
 
-        selected_df = SOURCES_SELECT_MAP[source](raw_df)
-        selected_df.to_csv(file_path, index=False, encoding="utf-8")
+        df.to_csv(file_path, index=False, encoding="utf-8")
+        _df_list.append(SOURCES_SELECT_MAP[source](df))
         logger.info(f"{file_path} scrap completed")
