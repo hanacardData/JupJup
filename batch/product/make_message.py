@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from email.utils import parsedate_to_datetime
 
 import pandas as pd
@@ -39,6 +39,9 @@ def normalize_source_fields(df: pd.DataFrame) -> pd.DataFrame:
 
     is_news = df["source"].astype(str).str.lower().eq("news")
 
+    if "pubDate" not in df.columns:
+        return df
+
     def to_yyyymmdd(x):
         if pd.isna(x) or (isinstance(x, str) and x.strip() == ""):
             return pd.NA
@@ -72,12 +75,6 @@ def _handle_competitor_product(button_label: str) -> list[str]:
     refined_data = extract_high_score_data(
         data, keywords, CARD_COMPANIES, extracted_data_count
     )
-
-    yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-    refined_data["post_date"] = (
-        refined_data["post_date"].fillna(refined_data["scrap_date"]).astype(str)
-    )
-    refined_data = refined_data.loc[refined_data["post_date"] >= yesterday]
 
     if len(refined_data) == 0:
         logger.warning("No data found after filtering.")
@@ -120,11 +117,6 @@ def _handle_our_product(button_label: str) -> list[str]:
     refined_data = extract_high_score_data(
         data, keywords, CARD_COMPANIES, extracted_data_count
     )
-    yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-    refined_data["post_date"] = (
-        refined_data["post_date"].fillna(refined_data["scrap_date"]).astype(str)
-    )
-    refined_data = refined_data.loc[refined_data["post_date"] >= yesterday]
 
     if len(refined_data) == 0:
         logger.warning("No data found after filtering.")
@@ -156,15 +148,24 @@ def _handle_our_product(button_label: str) -> list[str]:
 
 def _load_dataframes(tag: str) -> list[pd.DataFrame]:
     sources = ["news", "blog"]
-    dfs = []
+    dfs: list[pd.DataFrame] = []
+
+    temp_dir = os.path.join(PRODUCT_SAVE_PATH, "temp")
+    os.makedirs(temp_dir, exist_ok=True)
+
     for source in sources:
         path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
+
+        if not os.path.exists(path):
+            logger.warning(f"[normalize] missing file: {path}")
+            continue
+
         df = read_csv(path)
+
         if df is not None and not df.empty:
             df = normalize_source_fields(df)
             dfs.append(df)
 
-            temp_dir = os.path.join(PRODUCT_SAVE_PATH, "temp")
             temp_path = os.path.join(temp_dir, f"{source}_{tag}_normalized.csv")
             df.to_csv(temp_path, index=False, encoding="utf-8")
 
