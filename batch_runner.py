@@ -220,7 +220,7 @@ if __name__ == "__main__":
     make_message()  # 메시지 생성
     logger.info("Message created")
 
-    asyncio.run(send_message(is_test=True))  # 메시지 송신
+    asyncio.run(send_message(is_test=False))  # 메시지 송신
     logger.info("Message sent")
 
     logger.info("Batch completed")
