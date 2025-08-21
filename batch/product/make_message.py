@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
+from email.utils import parsedate_to_datetime
 
 import pandas as pd
 
@@ -29,6 +30,30 @@ def load_and_send_message(button_label: str) -> list[str]:
         return _handle_our_product(button_label)
     else:
         return _handle_competitor_product(button_label)
+
+
+def normalize_source_fields(df: pd.DataFrame) -> pd.DataFrame:
+    """뉴스 데이터(pubDate)를 YYYYMMDD → postdate 컬럼으로 변환"""
+    if df is None or df.empty or "source" not in df.columns:
+        return df
+
+    is_news = df["source"].astype(str).str.lower().eq("news")
+
+    def to_yyyymmdd(x):
+        if pd.isna(x) or (isinstance(x, str) and x.strip() == ""):
+            return pd.NA
+        dt = pd.to_datetime(x, errors="coerce")
+        if pd.isna(dt):
+            try:
+                dt = parsedate_to_datetime(str(x))
+            except Exception:
+                return pd.NA
+        return dt.strftime("%Y%m%d")
+
+    df.loc[is_news, "pubDate"] = df.loc[is_news, "pubDate"].map(to_yyyymmdd)
+    df = df.rename(columns={"pubDate": "postdate"})
+
+    return df
 
 
 def _handle_competitor_product(button_label: str) -> list[str]:
@@ -136,7 +161,13 @@ def _load_dataframes(tag: str) -> list[pd.DataFrame]:
         path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
         df = read_csv(path)
         if df is not None and not df.empty:
+            df = normalize_source_fields(df)
             dfs.append(df)
+
+            temp_dir = os.path.join(PRODUCT_SAVE_PATH, "temp")
+            temp_path = os.path.join(temp_dir, f"{source}_{tag}_normalized.csv")
+            df.to_csv(temp_path, index=False, encoding="utf-8")
+
     return dfs
 
 
