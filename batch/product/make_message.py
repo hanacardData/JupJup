@@ -79,10 +79,6 @@ def _handle_competitor_product(button_label: str) -> list[str]:
     extracted_data_count = EXTRACTED_DATA_COUNT
     dfs = _load_dataframes(tag)
 
-    if not dfs:
-        logger.warning("No data collected.")
-        return [f"[{button_label}]\n오늘은 관련 소식이 없어요 😊"]
-
     data = pd.concat(dfs, ignore_index=True)
     data = _filter_last_n_days_postdate(data, 7)
 
@@ -100,7 +96,7 @@ def _handle_competitor_product(button_label: str) -> list[str]:
     if len(refined_data) == 0:
         logger.warning("No data found after filtering.")
         return [
-            "오늘은 보안과 관련한 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+            "오늘은 타사 신상품 관련 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
         ]
 
     refined_data["company"] = refined_data["title"].apply(identify_company)
@@ -128,10 +124,6 @@ def _handle_our_product(button_label: str) -> list[str]:
     extracted_data_count = 12
     dfs = _load_dataframes(tag)
 
-    if not dfs:
-        logger.warning("No data collected.")
-        return [f"[{button_label}]\n오늘은 관련 소식이 없어요 😊"]
-
     data = pd.concat(dfs, ignore_index=True)
 
     data = _filter_last_n_days_postdate(data, 7)
@@ -147,16 +139,10 @@ def _handle_our_product(button_label: str) -> list[str]:
         data, keywords, CARD_COMPANIES, extracted_data_count
     )
 
-    temp_dir = os.path.join(PRODUCT_SAVE_PATH, "temp")
-    os.makedirs(temp_dir, exist_ok=True)
-    out_path = os.path.join(temp_dir, f"refined_competitor_{tag}.csv")
-    refined_data.to_csv(out_path, index=False, encoding="utf-8")
-    logger.info(f"[refined] saved: {out_path} rows={len(refined_data)}")
-
     if len(refined_data) == 0:
         logger.warning("No data found after filtering.")
         return [
-            "오늘은 보안과 관련한 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+            "오늘은 자사 상품 반응 관련 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
         ]
 
     refined_data["company"] = refined_data["title"].apply(identify_company)
@@ -189,7 +175,6 @@ def _load_dataframes(tag: str) -> list[pd.DataFrame]:
         path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
 
         if not os.path.exists(path):
-            logger.warning(f"[normalize] missing file: {path}")
             continue
 
         df = read_csv(path)
