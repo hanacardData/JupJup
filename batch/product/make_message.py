@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
+from email.utils import parsedate_to_datetime
 
 import pandas as pd
 
@@ -31,33 +32,71 @@ def load_and_send_message(button_label: str) -> list[str]:
         return _handle_competitor_product(button_label)
 
 
+def normalize_source_fields(df: pd.DataFrame) -> pd.DataFrame:
+    """뉴스 데이터(pubDate)를 YYYYMMDD → postdate 컬럼으로 변환"""
+    if df is None or df.empty or "source" not in df.columns:
+        return df
+
+    is_news = df["source"].astype(str).str.lower().eq("news")
+
+    if "pubDate" not in df.columns:
+        return df
+
+    def to_yyyymmdd(x):
+        if pd.isna(x) or (isinstance(x, str) and x.strip() == ""):
+            return pd.NA
+        dt = pd.to_datetime(x, errors="coerce")
+        if pd.isna(dt):
+            try:
+                dt = parsedate_to_datetime(str(x))
+            except Exception:
+                return pd.NA
+        return dt.strftime("%Y%m%d")
+
+    df.loc[is_news, "pubDate"] = df.loc[is_news, "pubDate"].map(to_yyyymmdd)
+    df = df.rename(columns={"pubDate": "postdate"})
+
+    return df
+
+
+def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFrame:
+    if df is None or df.empty:
+        return df
+    if "postdate" not in df.columns:
+        return pd.DataFrame(columns=df.columns)
+
+    s = df["postdate"].astype(str).str.strip().str.replace(r"\D", "", regex=True)
+    dt = pd.to_datetime(s, format="%Y%m%d", errors="coerce")
+    cutoff = (datetime.now() - timedelta(days=days)).date()
+
+    mask = dt.notna() & (dt.dt.date >= cutoff)
+    return df.loc[mask].copy()
+
+
 def _handle_competitor_product(button_label: str) -> list[str]:
     keywords = KEYWORDS_BY_BUTTON[button_label]
     tag = BUTTON_TAG_MAP[button_label]
     extracted_data_count = EXTRACTED_DATA_COUNT
     dfs = _load_dataframes(tag)
 
-    if not dfs:
-        logger.warning("No data collected.")
-        return [f"[{button_label}]\n오늘은 관련 소식이 없어요 😊"]
-
     data = pd.concat(dfs, ignore_index=True)
+    data = _filter_last_n_days_postdate(data, 7)
+
+    if data.empty:
+        logger.warning("No data after 7-day postdate filter.")
+        return [f"[{button_label}]\n최근 7일 내 소식이 없어요 😊"]
     total_count = len(data)
+
+    data = data.rename(columns={"postdate": "post_date"})
 
     refined_data = extract_high_score_data(
         data, keywords, CARD_COMPANIES, extracted_data_count
     )
 
-    yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-    refined_data["post_date"] = (
-        refined_data["post_date"].fillna(refined_data["scrap_date"]).astype(str)
-    )
-    refined_data = refined_data.loc[refined_data["post_date"] >= yesterday]
-
     if len(refined_data) == 0:
         logger.warning("No data found after filtering.")
         return [
-            "오늘은 보안과 관련한 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+            "오늘은 타사 신상품 관련 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
         ]
 
     refined_data["company"] = refined_data["title"].apply(identify_company)
@@ -85,26 +124,25 @@ def _handle_our_product(button_label: str) -> list[str]:
     extracted_data_count = 12
     dfs = _load_dataframes(tag)
 
-    if not dfs:
-        logger.warning("No data collected.")
-        return [f"[{button_label}]\n오늘은 관련 소식이 없어요 😊"]
-
     data = pd.concat(dfs, ignore_index=True)
+
+    data = _filter_last_n_days_postdate(data, 7)
+
+    if data.empty:
+        logger.warning("No data after 7-day postdate filter.")
+        return [f"[{button_label}]\n최근 7일 내 소식이 없어요 😊"]
     total_count = len(data)
+
+    data = data.rename(columns={"postdate": "post_date"})
 
     refined_data = extract_high_score_data(
         data, keywords, CARD_COMPANIES, extracted_data_count
     )
-    yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-    refined_data["post_date"] = (
-        refined_data["post_date"].fillna(refined_data["scrap_date"]).astype(str)
-    )
-    refined_data = refined_data.loc[refined_data["post_date"] >= yesterday]
 
     if len(refined_data) == 0:
         logger.warning("No data found after filtering.")
         return [
-            "오늘은 보안과 관련한 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+            "오늘은 자사 상품 반응 관련 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
         ]
 
     refined_data["company"] = refined_data["title"].apply(identify_company)
@@ -131,12 +169,20 @@ def _handle_our_product(button_label: str) -> list[str]:
 
 def _load_dataframes(tag: str) -> list[pd.DataFrame]:
     sources = ["news", "blog"]
-    dfs = []
+    dfs: list[pd.DataFrame] = []
+
     for source in sources:
         path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
+
+        if not os.path.exists(path):
+            continue
+
         df = read_csv(path)
+
         if df is not None and not df.empty:
+            df = normalize_source_fields(df)
             dfs.append(df)
+
     return dfs
 
 

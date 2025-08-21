@@ -11,15 +11,17 @@ from batch.utils import read_csv
 from logger import logger
 
 
-def load_product_issues(
+def load_competitor_issues(
     queries: list[str],
     save_path: str,
     file_tag: str,
 ) -> None:
+    """경쟁사 신상품: 뉴스만 수집"""
     os.makedirs(save_path, exist_ok=True)
-    df_list: list[pd.DataFrame] = []
 
-    for source in tqdm(["news", "blog"], desc="source"):
+    _df_list: list[pd.DataFrame] = []
+
+    for source in ["news"]:
         file_name = f"{source}_{file_tag}.csv"
         file_path = os.path.join(save_path, file_name)
 
@@ -27,30 +29,61 @@ def load_product_issues(
         items: list[dict[str, str]] = []
 
         for keyword in tqdm(queries, desc=source, leave=False):
-            _data = fetch_data(
-                type=source,
-                query=keyword,
-                sort="sim",
-            )
-            sleep(0.05)
-
-            if _data is None:
+            result = fetch_data(source, keyword, display=100, sort="sim")
+            sleep(0.1)
+            if result is None:
                 logger.error(f"Failed to fetch data for {keyword} from {source}")
                 continue
-
-            _items = _data.to_items(
-                query=keyword,
-                scrap_date=datetime.today().strftime("%Y%m%d"),
+            items.extend(
+                result.to_items(
+                    query=keyword, scrap_date=datetime.today().strftime("%Y%m%d")
+                )
             )
-            items.extend(_items)
 
-        raw_df = pd.concat(
+        df = pd.concat(
             [existing_data, pd.DataFrame(items).assign(source=source, is_posted=0)],
             ignore_index=True,
         ).drop_duplicates(subset=["link"])
 
-        selected_df = SOURCES_SELECT_MAP[source](raw_df)
-        selected_df.to_csv(file_path, index=False, encoding="utf-8")
+        df.to_csv(file_path, index=False, encoding="utf-8")
+        _df_list.append(SOURCES_SELECT_MAP[source](df))
+        logger.info(f"{file_path} scrap completed")
 
-        df_list.append(selected_df)
+
+def load_ourproduct_issues(
+    queries: list[str],
+    save_path: str,
+    file_tag: str,
+) -> None:
+    """자사 원더/JADE: 뉴스+블로그 수집"""
+    os.makedirs(save_path, exist_ok=True)
+
+    _df_list: list[pd.DataFrame] = []
+
+    for source in ["news", "blog"]:
+        file_name = f"{source}_{file_tag}.csv"
+        file_path = os.path.join(save_path, file_name)
+
+        existing_data = read_csv(file_path)
+        items: list[dict[str, str]] = []
+
+        for keyword in tqdm(queries, desc=source, leave=False):
+            result = fetch_data(source, keyword, display=100, sort="sim")
+            sleep(0.1)
+            if result is None:
+                logger.error(f"Failed to fetch data for {keyword} from {source}")
+                continue
+            items.extend(
+                result.to_items(
+                    query=keyword, scrap_date=datetime.today().strftime("%Y%m%d")
+                )
+            )
+
+        df = pd.concat(
+            [existing_data, pd.DataFrame(items).assign(source=source, is_posted=0)],
+            ignore_index=True,
+        ).drop_duplicates(subset=["link"])
+
+        df.to_csv(file_path, index=False, encoding="utf-8")
+        _df_list.append(SOURCES_SELECT_MAP[source](df))
         logger.info(f"{file_path} scrap completed")
