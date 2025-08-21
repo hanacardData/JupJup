@@ -11,7 +11,7 @@ from batch.product.keywords import (
     WONDER_CARD_FEEDBACK_KEYWORDS,
 )
 from batch.product.load import load_competitor_issues, load_ourproduct_issues
-from batch.product.make_message import _load_dataframes, load_and_send_message
+from batch.product.make_message import load_and_send_message
 from batch.variables import (
     PRODUCT_CHANNEL_ID,
     PRODUCT_SAVE_PATH,
@@ -134,13 +134,6 @@ def make_message(is_test: bool = False):
     # except Exception as e:
     #     logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
     #     post_message_to_channel(f"Security error: {str(e)}", TEST_CHANNEL_ID)
-
-    for _tag in ("credit", "debit", "wonder", "jade"):
-        try:
-            logger.info(f"[normalize] run tag={_tag}")
-            _load_dataframes(_tag)  # 내부에서 temp 저장까지 수행
-        except Exception as e:
-            logger.warning(f"[normalize] failed tag={_tag}: {e}", exc_info=True)
 
     try:
         product_messages = {

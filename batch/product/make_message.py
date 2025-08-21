@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.utils import parsedate_to_datetime
 
 import pandas as pd
@@ -59,6 +59,20 @@ def normalize_source_fields(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFrame:
+    if df is None or df.empty:
+        return df
+    if "postdate" not in df.columns:
+        return pd.DataFrame(columns=df.columns)
+
+    s = df["postdate"].astype(str).str.strip().str.replace(r"\D", "", regex=True)
+    dt = pd.to_datetime(s, format="%Y%m%d", errors="coerce")
+    cutoff = (datetime.now() - timedelta(days=days)).date()
+
+    mask = dt.notna() & (dt.dt.date >= cutoff)
+    return df.loc[mask].copy()
+
+
 def _handle_competitor_product(button_label: str) -> list[str]:
     keywords = KEYWORDS_BY_BUTTON[button_label]
     tag = BUTTON_TAG_MAP[button_label]
@@ -70,7 +84,14 @@ def _handle_competitor_product(button_label: str) -> list[str]:
         return [f"[{button_label}]\n오늘은 관련 소식이 없어요 😊"]
 
     data = pd.concat(dfs, ignore_index=True)
+    data = _filter_last_n_days_postdate(data, 7)
+
+    if data.empty:
+        logger.warning("No data after 7-day postdate filter.")
+        return [f"[{button_label}]\n최근 7일 내 소식이 없어요 😊"]
     total_count = len(data)
+
+    data = data.rename(columns={"postdate": "post_date"})
 
     refined_data = extract_high_score_data(
         data, keywords, CARD_COMPANIES, extracted_data_count
@@ -112,11 +133,25 @@ def _handle_our_product(button_label: str) -> list[str]:
         return [f"[{button_label}]\n오늘은 관련 소식이 없어요 😊"]
 
     data = pd.concat(dfs, ignore_index=True)
+
+    data = _filter_last_n_days_postdate(data, 7)
+
+    if data.empty:
+        logger.warning("No data after 7-day postdate filter.")
+        return [f"[{button_label}]\n최근 7일 내 소식이 없어요 😊"]
     total_count = len(data)
+
+    data = data.rename(columns={"postdate": "post_date"})
 
     refined_data = extract_high_score_data(
         data, keywords, CARD_COMPANIES, extracted_data_count
     )
+
+    temp_dir = os.path.join(PRODUCT_SAVE_PATH, "temp")
+    os.makedirs(temp_dir, exist_ok=True)
+    out_path = os.path.join(temp_dir, f"refined_competitor_{tag}.csv")
+    refined_data.to_csv(out_path, index=False, encoding="utf-8")
+    logger.info(f"[refined] saved: {out_path} rows={len(refined_data)}")
 
     if len(refined_data) == 0:
         logger.warning("No data found after filtering.")
@@ -150,9 +185,6 @@ def _load_dataframes(tag: str) -> list[pd.DataFrame]:
     sources = ["news", "blog"]
     dfs: list[pd.DataFrame] = []
 
-    temp_dir = os.path.join(PRODUCT_SAVE_PATH, "temp")
-    os.makedirs(temp_dir, exist_ok=True)
-
     for source in sources:
         path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
 
@@ -165,9 +197,6 @@ def _load_dataframes(tag: str) -> list[pd.DataFrame]:
         if df is not None and not df.empty:
             df = normalize_source_fields(df)
             dfs.append(df)
-
-            temp_path = os.path.join(temp_dir, f"{source}_{tag}_normalized.csv")
-            df.to_csv(temp_path, index=False, encoding="utf-8")
 
     return dfs
 
