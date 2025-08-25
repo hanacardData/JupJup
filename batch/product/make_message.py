@@ -89,6 +89,9 @@ def _handle_competitor_product(button_label: str) -> list[str]:
 
     data = data.rename(columns={"postdate": "post_date"})
 
+    if "is_posted" in data.columns:
+        data = data.loc[data["is_posted"] != 1]
+
     refined_data = extract_high_score_data(
         data, keywords, CARD_COMPANIES, extracted_data_count
     )
@@ -102,6 +105,12 @@ def _handle_competitor_product(button_label: str) -> list[str]:
     refined_data["company"] = refined_data["title"].apply(identify_company)
     actual_count = len(refined_data)
     companies = ", ".join(sorted(set(refined_data["company"])))
+
+    data.loc[data["link"].isin(refined_data["link"]), "is_posted"] = 1
+    for source in ["news", "blog"]:
+        path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
+        if os.path.exists(path):
+            data.to_csv(path, index=False, encoding="utf-8")
 
     content = _to_json(refined_data)
     text_input = OTHER_TEXT_INPUT.format(
@@ -135,6 +144,9 @@ def _handle_our_product(button_label: str) -> list[str]:
 
     data = data.rename(columns={"postdate": "post_date"})
 
+    if "is_posted" in data.columns:
+        data = data.loc[data["is_posted"] != 1]
+
     refined_data = extract_high_score_data(
         data, keywords, CARD_COMPANIES, extracted_data_count
     )
@@ -148,6 +160,12 @@ def _handle_our_product(button_label: str) -> list[str]:
     refined_data["company"] = refined_data["title"].apply(identify_company)
     actual_count = len(refined_data)
     product_name = button_label.replace(" 고객반응", "")
+
+    data.loc[data["link"].isin(refined_data["link"]), "is_posted"] = 1
+    for source in ["news", "blog"]:
+        path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
+        if os.path.exists(path):
+            data.to_csv(path, index=False, encoding="utf-8")
 
     content = _to_json(refined_data)
     text_input = US_TEXT_INPUT.format(

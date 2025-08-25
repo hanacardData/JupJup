@@ -200,6 +200,7 @@ async def send_message(is_test: bool = False):
     try:
         await async_post_button_to_channel(JUPJUP_BUTTON, TEST_CHANNEL_ID)
         await async_post_button_to_channel(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
+        await async_post_button_to_channel(PRODUCT_BUTTON, TEST_CHANNEL_ID)
         if is_test:
             return
 
@@ -220,7 +221,7 @@ if __name__ == "__main__":
     make_message()  # 메시지 생성
     logger.info("Message created")
 
-    asyncio.run(send_message(is_test=False))  # 메시지 송신
+    asyncio.run(send_message(is_test=True))  # 메시지 송신
     logger.info("Message sent")
 
     logger.info("Batch completed")
