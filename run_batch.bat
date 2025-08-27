@@ -1,7 +1,7 @@
 setlocal
 
 @echo off
-set DIR=C:\Users\user\Desktop\main\trend_analysis
+set DIR=C:\Users\user\Desktop\trend_analysis
 set LOGDIR=%DIR%\logs
 set LOGFILE=%LOGDIR%\log_%date:~0,4%%date:~5,2%%date:~8,2%.log
 
@@ -12,7 +12,7 @@ if not exist %LOGDIR% (
 echo [%date% %time%] ==== Started ==== >> %LOGFILE%
 cd /d %DIR%
 
-call C:\Users\user\anaconda3\Scripts\activate.bat jupjup
+call C:\Users\user\miniconda3\Scripts\activate.bat jupjup
 echo [%date% %time%] ==== Conda setted ==== >> %LOGFILE%
 echo [%date% %time%] ==== Git setted ==== >> %LOGFILE%
 git checkout main >> %LOGFILE% 2>&1
