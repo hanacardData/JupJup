@@ -48,12 +48,13 @@ def load_competitor_issues(
         if source == "news":
             if "postdate" not in df.columns:
                 df["postdate"] = pd.NA
+            df["postdate"] = df["postdate"].astype("string")
             if "pubDate" in df.columns:
                 need_fill = df["postdate"].isna() | (
                     df["postdate"].astype(str).str.strip() == ""
                 )
 
-                def _to_yyyymmdd_safe(x):
+                def _to_yyyymmdd(x):
                     dt = pd.to_datetime(x, errors="coerce")
                     if pd.isna(dt):
                         from email.utils import parsedate_to_datetime
@@ -65,7 +66,7 @@ def load_competitor_issues(
                     return dt.strftime("%Y%m%d")
 
                 df.loc[need_fill, "postdate"] = df.loc[need_fill, "pubDate"].map(
-                    _to_yyyymmdd_safe
+                    _to_yyyymmdd
                 )
 
         if "is_posted" not in df.columns:
@@ -116,12 +117,13 @@ def load_ourproduct_issues(
         if source == "news":
             if "postdate" not in df.columns:
                 df["postdate"] = pd.NA
+            df["postdate"] = df["postdate"].astype("string")
             if "pubDate" in df.columns:
                 need_fill = df["postdate"].isna() | (
                     df["postdate"].astype(str).str.strip() == ""
                 )
 
-                def _to_yyyymmdd_safe(x):
+                def _to_yyyymmdd(x):
                     dt = pd.to_datetime(x, errors="coerce")
                     if pd.isna(dt):
                         from email.utils import parsedate_to_datetime
@@ -133,7 +135,7 @@ def load_ourproduct_issues(
                     return dt.strftime("%Y%m%d")
 
                 df.loc[need_fill, "postdate"] = df.loc[need_fill, "pubDate"].map(
-                    _to_yyyymmdd_safe
+                    _to_yyyymmdd
                 )
 
         if "is_posted" not in df.columns:

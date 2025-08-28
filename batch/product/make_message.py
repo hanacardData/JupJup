@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from email.utils import parsedate_to_datetime
 
 import pandas as pd
@@ -44,8 +44,14 @@ def normalize_source_fields(df: pd.DataFrame) -> pd.DataFrame:
 
     is_news = df["source"].astype(str).str.lower().eq("news")
 
+    if "postdate" not in df.columns:
+        df["postdate"] = pd.NA
+    df["postdate"] = df["postdate"].astype("string")
+
     if "pubDate" not in df.columns:
         return df
+
+    df["postdate"] = df["postdate"].astype("string")
 
     def to_yyyymmdd(x):
         if pd.isna(x) or (isinstance(x, str) and x.strip() == ""):
@@ -82,9 +88,9 @@ def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFram
 
     s = df["postdate"].astype(str).str.strip().str.replace(r"\D", "", regex=True)
     dt = pd.to_datetime(s, format="%Y%m%d", errors="coerce")
-    cutoff = (datetime.now() - timedelta(days=days)).date()
+    cutoff = pd.Timestamp.now().normalize() - pd.Timedelta(days=days)
 
-    mask = dt.notna() & (dt.dt.date >= cutoff)
+    mask = dt.notna() & (dt >= cutoff)
     return df.loc[mask].copy()
 
 
