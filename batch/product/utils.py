@@ -5,10 +5,6 @@ import pandas as pd
 
 
 def to_yyyymmdd_str(x: Optional[str]) -> Optional[str]:
-    if isinstance(x, (list, tuple)):
-        if not x:
-            return pd.NA
-        x = x[0]
     if x is None or (isinstance(x, str) and x.strip() == ""):
         return pd.NA
     dt = pd.to_datetime(x, errors="coerce")
