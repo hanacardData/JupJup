@@ -5,7 +5,7 @@ from time import sleep
 from tqdm import tqdm
 
 from batch.fetch import fetch_data
-from batch.product.common import (
+from batch.product.utils import (
     fill_postdate_from_pubdate,
     merge_and_dedupe,
 )
