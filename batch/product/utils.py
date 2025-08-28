@@ -1,11 +1,10 @@
-from __future__ import annotations
-
 from email.utils import parsedate_to_datetime
+from typing import Optional
 
 import pandas as pd
 
 
-def to_yyyymmdd_str(x):
+def to_yyyymmdd_str(x: Optional[str]) -> Optional[str]:
     if isinstance(x, (list, tuple)):
         if not x:
             return pd.NA
