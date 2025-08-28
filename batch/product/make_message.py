@@ -6,7 +6,12 @@ from email.utils import parsedate_to_datetime
 import pandas as pd
 
 from batch.product.keywords import BUTTON_TAG_MAP, CARD_COMPANIES, KEYWORDS_BY_BUTTON
-from batch.product.prompt import OTHER_TEXT_INPUT, PROMPT, US_TEXT_INPUT
+from batch.product.prompt import (
+    OTHER_PROMPT,
+    OTHER_TEXT_INPUT,
+    US_PROMPT,
+    US_TEXT_INPUT,
+)
 from batch.scorer import extract_high_score_data
 from batch.utils import read_csv
 from batch.variables import (
@@ -53,8 +58,18 @@ def normalize_source_fields(df: pd.DataFrame) -> pd.DataFrame:
                 return pd.NA
         return dt.strftime("%Y%m%d")
 
-    df.loc[is_news, "pubDate"] = df.loc[is_news, "pubDate"].map(to_yyyymmdd)
-    df = df.rename(columns={"pubDate": "postdate"})
+    has_postdate = "postdate" in df.columns
+
+    if "pubDate" in df.columns:
+        if not has_postdate:
+            df.loc[is_news, "postdate"] = df.loc[is_news, "pubDate"].map(to_yyyymmdd)
+        else:
+            need_fill = is_news & (
+                df["postdate"].isna() | (df["postdate"].astype(str).str.strip() == "")
+            )
+            df.loc[need_fill, "postdate"] = df.loc[need_fill, "pubDate"].map(
+                to_yyyymmdd
+            )
 
     return df
 
@@ -71,6 +86,44 @@ def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFram
 
     mask = dt.notna() & (dt.dt.date >= cutoff)
     return df.loc[mask].copy()
+
+
+def _update_is_posted(tag: str, used_links: list[str]) -> None:
+    import os
+
+    from batch.utils import read_csv
+    from batch.variables import PRODUCT_SAVE_PATH
+
+    if not used_links:
+        return
+
+    total_changed = 0
+    for source in ("news", "blog"):
+        fpath = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
+        if not os.path.exists(fpath):
+            continue
+
+        df = read_csv(fpath)
+        if df is None or df.empty or "link" not in df.columns:
+            continue
+
+        if "is_posted" not in df.columns:
+            df["is_posted"] = 0
+
+        mask = df["link"].astype(str).isin([str(u) for u in used_links])
+        changed = int(mask.sum())
+        if changed:
+            df.loc[mask, "is_posted"] = 1
+            try:
+                df["is_posted"] = df["is_posted"].astype(int)
+            except Exception:
+                pass
+            df.to_csv(fpath, index=False, encoding="utf-8")
+            logger.info(f"{os.path.basename(fpath)}: is_posted updated {changed} rows")
+            total_changed += changed
+
+    if total_changed == 0:
+        logger.info(f"_update_is_posted({tag}): no rows updated")
 
 
 def _handle_competitor_product(button_label: str) -> list[str]:
@@ -114,7 +167,14 @@ def _handle_competitor_product(button_label: str) -> list[str]:
         actual=actual_count,
     )
 
-    result = openai_response(prompt=PROMPT, input=text_input)
+    result = openai_response(prompt=OTHER_PROMPT, input=text_input)
+
+    used_links = refined_data["link"].dropna().astype(str).unique().tolist()
+    try:
+        _update_is_posted(tag, used_links)
+    except Exception as e:
+        logger.warning(f"update_is_posted failed ({tag}): {e}")
+
     return [f"[{button_label}]\n{header}\n{result}"]
 
 
@@ -163,7 +223,13 @@ def _handle_our_product(button_label: str) -> list[str]:
         actual=actual_count,
     )
 
-    result = openai_response(prompt=US_TEXT_INPUT, input=text_input)
+    result = openai_response(prompt=US_PROMPT, input=text_input)
+    used_links = refined_data["link"].dropna().astype(str).unique().tolist()
+    try:
+        _update_is_posted(tag, used_links)
+    except Exception as e:
+        logger.warning(f"update_is_posted failed ({tag}): {e}")
+
     return [f"[{button_label}]\n{header}\n{result}"]
 
 

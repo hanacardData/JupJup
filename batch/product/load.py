@@ -45,6 +45,35 @@ def load_competitor_issues(
             ignore_index=True,
         ).drop_duplicates(subset=["link"])
 
+        if source == "news":
+            if "postdate" not in df.columns:
+                df["postdate"] = pd.NA
+            if "pubDate" in df.columns:
+                need_fill = df["postdate"].isna() | (
+                    df["postdate"].astype(str).str.strip() == ""
+                )
+
+                def _to_yyyymmdd_safe(x):
+                    dt = pd.to_datetime(x, errors="coerce")
+                    if pd.isna(dt):
+                        from email.utils import parsedate_to_datetime
+
+                        try:
+                            dt = parsedate_to_datetime(str(x))
+                        except Exception:
+                            return pd.NA
+                    return dt.strftime("%Y%m%d")
+
+                df.loc[need_fill, "postdate"] = df.loc[need_fill, "pubDate"].map(
+                    _to_yyyymmdd_safe
+                )
+
+        if "is_posted" not in df.columns:
+            df["is_posted"] = 0
+        df["is_posted"] = (
+            pd.to_numeric(df["is_posted"], errors="coerce").fillna(0).astype(int)
+        )
+
         df.to_csv(file_path, index=False, encoding="utf-8")
         _df_list.append(SOURCES_SELECT_MAP[source](df))
         logger.info(f"{file_path} scrap completed")
@@ -83,6 +112,35 @@ def load_ourproduct_issues(
             [existing_data, pd.DataFrame(items).assign(source=source, is_posted=0)],
             ignore_index=True,
         ).drop_duplicates(subset=["link"])
+
+        if source == "news":
+            if "postdate" not in df.columns:
+                df["postdate"] = pd.NA
+            if "pubDate" in df.columns:
+                need_fill = df["postdate"].isna() | (
+                    df["postdate"].astype(str).str.strip() == ""
+                )
+
+                def _to_yyyymmdd_safe(x):
+                    dt = pd.to_datetime(x, errors="coerce")
+                    if pd.isna(dt):
+                        from email.utils import parsedate_to_datetime
+
+                        try:
+                            dt = parsedate_to_datetime(str(x))
+                        except Exception:
+                            return pd.NA
+                    return dt.strftime("%Y%m%d")
+
+                df.loc[need_fill, "postdate"] = df.loc[need_fill, "pubDate"].map(
+                    _to_yyyymmdd_safe
+                )
+
+        if "is_posted" not in df.columns:
+            df["is_posted"] = 0
+        df["is_posted"] = (
+            pd.to_numeric(df["is_posted"], errors="coerce").fillna(0).astype(int)
+        )
 
         df.to_csv(file_path, index=False, encoding="utf-8")
         _df_list.append(SOURCES_SELECT_MAP[source](df))
