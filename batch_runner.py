@@ -217,7 +217,7 @@ if __name__ == "__main__":
     data_collect()  # 데이터 수집
     logger.info("Data collection completed")
 
-    make_message()  # 메시지 생성
+    make_message(is_test=False)  # 메시지 생성
     logger.info("Message created")
 
     asyncio.run(send_message(is_test=False))  # 메시지 송신
