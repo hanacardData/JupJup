@@ -59,7 +59,7 @@ def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFram
     dt = pd.to_datetime(s, format="%Y%m%d", errors="coerce")
     cutoff = (datetime.now() - timedelta(days=days)).date()
 
-    mask = dt.notna() & (dt.dt.date >= cutoff)
+    mask = dt.dt.date >= cutoff
     return df.loc[mask].copy()
 
 
@@ -93,7 +93,12 @@ def _handle_competitor_product(button_label: str) -> list[str]:
     actual_count = len(refined_data)
     companies = ", ".join(sorted(set(refined_data["company"])))
 
-    content = _to_json(refined_data)
+    content = json.dumps(
+        refined_data[["company", "title", "link", "description"]].to_dict(
+            orient="records"
+        ),
+        ensure_ascii=False,
+    )
     text_input = OTHER_TEXT_INPUT.format(
         count=actual_count, companies=companies, content=content
     )
@@ -139,7 +144,12 @@ def _handle_our_product(button_label: str) -> list[str]:
     actual_count = len(refined_data)
     product_name = button_label.replace(" 고객반응", "")
 
-    content = _to_json(refined_data)
+    content = json.dumps(
+        refined_data[["company", "title", "link", "description"]].to_dict(
+            orient="records"
+        ),
+        ensure_ascii=False,
+    )
     text_input = US_TEXT_INPUT.format(
         date=datetime.today().strftime("%Y년 %m월 %d일"),
         product_name=product_name,
@@ -174,13 +184,6 @@ def _load_dataframes(tag: str) -> list[pd.DataFrame]:
             dfs.append(df)
 
     return dfs
-
-
-def _to_json(df: pd.DataFrame) -> str:
-    return json.dumps(
-        df[["company", "title", "link", "description"]].to_dict(orient="records"),
-        ensure_ascii=False,
-    )
 
 
 def _make_header(button_label: str, expected: int, actual: int) -> str:
