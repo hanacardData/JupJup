@@ -34,23 +34,13 @@ def load_and_send_message(button_label: str) -> list[str]:
 
 def normalize_source_fields(df: pd.DataFrame) -> pd.DataFrame:
     """뉴스 데이터(pubDate)를 YYYYMMDD → postdate 컬럼으로 변환"""
-    if (
-        df is None
-        or df.empty
-        or "source" not in df.columns
-        or "pubDate" not in df.columns
-    ):
+    if "pubDate" not in df.columns:
         return df
 
     def to_yyyymmdd(x):
-        if pd.isna(x) or (isinstance(x, str) and x.strip() == ""):
-            return pd.NA
         dt = pd.to_datetime(x, errors="coerce")
         if pd.isna(dt):
-            try:
-                dt = parsedate_to_datetime(str(x))
-            except Exception:
-                return pd.NA
+            dt = parsedate_to_datetime(str(x))
         return dt.strftime("%Y%m%d")
 
     df["postdate"] = df["pubDate"].map(to_yyyymmdd)
