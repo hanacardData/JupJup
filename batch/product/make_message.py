@@ -8,7 +8,7 @@ import pandas as pd
 from batch.product.keywords import BUTTON_TAG_MAP, CARD_COMPANIES, KEYWORDS_BY_BUTTON
 from batch.product.prompt import OTHER_TEXT_INPUT, PROMPT, US_TEXT_INPUT
 from batch.scorer import extract_high_score_data
-from batch.utils import read_csv
+from batch.utils import extract_urls, read_csv
 from batch.variables import (
     EXTRACTED_DATA_COUNT,
     PRODUCT_SAVE_PATH,
@@ -110,6 +110,17 @@ def _handle_competitor_product(button_label: str) -> list[str]:
     )
 
     result = openai_response(prompt=PROMPT, input=text_input)
+    urls = extract_urls(result)
+
+    for source in ["news"]:
+        path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
+        if os.path.exists(path) and urls:
+            df_csv = pd.read_csv(path, encoding="utf-8")
+            if "is_posted" not in df_csv.columns:
+                df_csv["is_posted"] = 0
+            df_csv.loc[df_csv["link"].isin(urls), "is_posted"] = 1
+            df_csv.to_csv(path, index=False, encoding="utf-8")
+
     return [f"[{button_label}]\n{header}\n{result}"]
 
 
@@ -164,6 +175,17 @@ def _handle_our_product(button_label: str) -> list[str]:
     )
 
     result = openai_response(prompt=US_TEXT_INPUT, input=text_input)
+    urls = extract_urls(result)
+
+    for source in ["news", "blog"]:
+        path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
+        if os.path.exists(path) and urls:
+            df_csv = pd.read_csv(path, encoding="utf-8")
+            if "is_posted" not in df_csv.columns:
+                df_csv["is_posted"] = 0
+            df_csv.loc[df_csv["link"].isin(urls), "is_posted"] = 1
+            df_csv.to_csv(path, index=False, encoding="utf-8")
+
     return [f"[{button_label}]\n{header}\n{result}"]
 
 
