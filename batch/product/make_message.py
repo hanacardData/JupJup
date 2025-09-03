@@ -8,7 +8,7 @@ import pandas as pd
 from batch.product.keywords import BUTTON_TAG_MAP, CARD_COMPANIES, KEYWORDS_BY_BUTTON
 from batch.product.prompt import OTHER_TEXT_INPUT, PROMPT, US_TEXT_INPUT
 from batch.scorer import extract_high_score_data
-from batch.utils import read_csv
+from batch.utils import extract_urls, read_csv
 from batch.variables import (
     EXTRACTED_DATA_COUNT,
     PRODUCT_SAVE_PATH,
@@ -34,23 +34,13 @@ def load_and_send_message(button_label: str) -> list[str]:
 
 def normalize_source_fields(df: pd.DataFrame) -> pd.DataFrame:
     """뉴스 데이터(pubDate)를 YYYYMMDD → postdate 컬럼으로 변환"""
-    if (
-        df is None
-        or df.empty
-        or "source" not in df.columns
-        or "pubDate" not in df.columns
-    ):
+    if "pubDate" not in df.columns:
         return df
 
     def to_yyyymmdd(x):
-        if pd.isna(x) or (isinstance(x, str) and x.strip() == ""):
-            return pd.NA
         dt = pd.to_datetime(x, errors="coerce")
         if pd.isna(dt):
-            try:
-                dt = parsedate_to_datetime(str(x))
-            except Exception:
-                return pd.NA
+            dt = parsedate_to_datetime(str(x))
         return dt.strftime("%Y%m%d")
 
     df["postdate"] = df["pubDate"].map(to_yyyymmdd)
@@ -69,7 +59,7 @@ def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFram
     dt = pd.to_datetime(s, format="%Y%m%d", errors="coerce")
     cutoff = (datetime.now() - timedelta(days=days)).date()
 
-    mask = dt.notna() & (dt.dt.date >= cutoff)
+    mask = dt.dt.date >= cutoff
     return df.loc[mask].copy()
 
 
@@ -103,7 +93,12 @@ def _handle_competitor_product(button_label: str) -> list[str]:
     actual_count = len(refined_data)
     companies = ", ".join(sorted(set(refined_data["company"])))
 
-    content = _to_json(refined_data)
+    content = json.dumps(
+        refined_data[["company", "title", "link", "description"]].to_dict(
+            orient="records"
+        ),
+        ensure_ascii=False,
+    )
     text_input = OTHER_TEXT_INPUT.format(
         count=actual_count, companies=companies, content=content
     )
@@ -115,6 +110,17 @@ def _handle_competitor_product(button_label: str) -> list[str]:
     )
 
     result = openai_response(prompt=PROMPT, input=text_input)
+    urls = extract_urls(result)
+
+    for source in ["news"]:
+        path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
+        if os.path.exists(path) and urls:
+            df_csv = pd.read_csv(path, encoding="utf-8")
+            if "is_posted" not in df_csv.columns:
+                df_csv["is_posted"] = 0
+            df_csv.loc[df_csv["link"].isin(urls), "is_posted"] = 1
+            df_csv.to_csv(path, index=False, encoding="utf-8")
+
     return [f"[{button_label}]\n{header}\n{result}"]
 
 
@@ -149,7 +155,12 @@ def _handle_our_product(button_label: str) -> list[str]:
     actual_count = len(refined_data)
     product_name = button_label.replace(" 고객반응", "")
 
-    content = _to_json(refined_data)
+    content = json.dumps(
+        refined_data[["company", "title", "link", "description"]].to_dict(
+            orient="records"
+        ),
+        ensure_ascii=False,
+    )
     text_input = US_TEXT_INPUT.format(
         date=datetime.today().strftime("%Y년 %m월 %d일"),
         product_name=product_name,
@@ -164,6 +175,17 @@ def _handle_our_product(button_label: str) -> list[str]:
     )
 
     result = openai_response(prompt=US_TEXT_INPUT, input=text_input)
+    urls = extract_urls(result)
+
+    for source in ["news", "blog"]:
+        path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
+        if os.path.exists(path) and urls:
+            df_csv = pd.read_csv(path, encoding="utf-8")
+            if "is_posted" not in df_csv.columns:
+                df_csv["is_posted"] = 0
+            df_csv.loc[df_csv["link"].isin(urls), "is_posted"] = 1
+            df_csv.to_csv(path, index=False, encoding="utf-8")
+
     return [f"[{button_label}]\n{header}\n{result}"]
 
 
@@ -184,13 +206,6 @@ def _load_dataframes(tag: str) -> list[pd.DataFrame]:
             dfs.append(df)
 
     return dfs
-
-
-def _to_json(df: pd.DataFrame) -> str:
-    return json.dumps(
-        df[["company", "title", "link", "description"]].to_dict(orient="records"),
-        ensure_ascii=False,
-    )
 
 
 def _make_header(button_label: str, expected: int, actual: int) -> str:
