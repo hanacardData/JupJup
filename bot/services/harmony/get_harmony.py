@@ -22,16 +22,22 @@ async def get_harmony_comment(input1: str, input2: str) -> str:
     except ValueError:
         return "존재하지 않는 날짜예요. 올바른 날짜를 입력해주세요 (예: 20230230은 잘못된 날짜입니다)."
 
+    today = datetime.today()
     user1_manse = await calculate_four_pillars_with_elements(
         year=year1, month=month1, day=day1
     )
     user2_manse = await calculate_four_pillars_with_elements(
         year=year2, month=month2, day=day2
     )
+    today_manse = await calculate_four_pillars_with_elements(
+        year=today.year, month=today.month, day=today.day
+    )
     text_input = TEXT_INPUT.format(
         user1_birthday=input1,
         user1_manse=user1_manse,
         user2_bitrhday=input2,
         user2_manse=user2_manse,
+        today=today.strftime("%Y%m%d"),
+        today_manse=today_manse,
     )
     return await async_openai_response(prompt=PROMPT_FORTUNE, input=text_input)
