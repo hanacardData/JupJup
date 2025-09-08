@@ -175,7 +175,7 @@ async def handle_fortune_command(channel_id: str, argument: str) -> JSONResponse
 async def handle_harmony_command(
     channel_id: str, argument: str, sub_argument: str
 ) -> JSONResponse:
-    """운세를 요청했을 때 호출되는 핸들러입니다."""
+    """궁합을 요청했을 때 호출되는 핸들러입니다."""
     if not argument or not argument:
         await async_post_message_to_channel(
             NoneArgumentMessage.HARMONY.value,
