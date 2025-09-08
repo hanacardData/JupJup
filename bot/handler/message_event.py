@@ -16,6 +16,7 @@ from bot.services.core.post_button import async_post_button_to_channel
 from bot.services.core.post_flexible import async_post_flexible_to_channel
 from bot.services.core.post_message import async_post_message_to_channel
 from bot.services.fortune.get_fortune import get_fortune_comment
+from bot.services.harmony.get_harmony import get_harmony_comment
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
 from bot.services.review.get_review import get_review_comment
 from bot.services.scheduler.register import register_schedule
@@ -171,6 +172,25 @@ async def handle_fortune_command(channel_id: str, argument: str) -> JSONResponse
     )
 
 
+async def handle_harmony_command(
+    channel_id: str, argument: str, sub_argument: str
+) -> JSONResponse:
+    """운세를 요청했을 때 호출되는 핸들러입니다."""
+    if not argument or not argument:
+        await async_post_message_to_channel(
+            NoneArgumentMessage.HARMONY.value,
+            channel_id,
+        )
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
+        )
+    result = await get_harmony_comment(argument, sub_argument)
+    await async_post_message_to_channel(result, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
 async def handle_jupjup_command(channel_id: str) -> JSONResponse:
     """줍줍 핸들러"""
     await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
@@ -215,6 +235,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/리뷰": handle_review_command,
     "/운세": handle_fortune_command,
     "/도움": handle_help_command,
+    "/궁합": handle_harmony_command,
 }
 
 
@@ -223,6 +244,7 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
     command_parts = text.split(maxsplit=1)
     command = command_parts[0]
     argument = command_parts[1] if len(command_parts) > 1 else ""
+    sub_argument = command_parts[2] if len(command_parts) > 2 else ""
     if not command.startswith("/"):
         return JSONResponse(status_code=200, content={"status": BotStatus.IGNORED})
 
@@ -230,6 +252,8 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
     if handler:
         if command in ("/아우야", "/리뷰", "/운세", "/스케줄등록"):
             await handler(channel_id, argument)
+        elif command == "/궁합":
+            await handler(channel_id, argument, sub_argument)
         else:
             await handler(channel_id)
         return JSONResponse(
