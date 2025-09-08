@@ -241,19 +241,21 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
 
 async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
     """메시지를 처리하는 핸들러입니다."""
+    if not text.startswith("/"):
+        return JSONResponse(status_code=200, content={"status": BotStatus.IGNORED})
+
     command_parts = text.split(maxsplit=1)
     command = command_parts[0]
     argument = command_parts[1] if len(command_parts) > 1 else ""
-    sub_argument = command_parts[2] if len(command_parts) > 2 else ""
-    if not command.startswith("/"):
-        return JSONResponse(status_code=200, content={"status": BotStatus.IGNORED})
-
     handler = COMMAND_HANDLERS.get(command)
     if handler:
         if command in ("/아우야", "/리뷰", "/운세", "/스케줄등록"):
             await handler(channel_id, argument)
         elif command == "/궁합":
-            await handler(channel_id, argument, sub_argument)
+            argument_parts = argument.split(maxsplit=1)
+            argument1 = argument_parts[0]
+            argument2 = argument_parts[1]
+            await handler(channel_id, argument1, argument2)
         else:
             await handler(channel_id)
         return JSONResponse(
