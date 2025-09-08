@@ -241,7 +241,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
 
 async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
     """메시지를 처리하는 핸들러입니다."""
-    command_parts = text.split(maxsplit=1)
+    command_parts = text.split(maxsplit=2)
     command = command_parts[0]
     argument = command_parts[1] if len(command_parts) > 1 else ""
     sub_argument = command_parts[2] if len(command_parts) > 2 else ""
