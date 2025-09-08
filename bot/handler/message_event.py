@@ -252,9 +252,13 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
         if command in ("/아우야", "/리뷰", "/운세", "/스케줄등록"):
             await handler(channel_id, argument)
         elif command == "/궁합":
-            argument_parts = argument.split(maxsplit=1)
-            argument1 = argument_parts[0]
-            argument2 = argument_parts[1]
+            try:
+                argument_parts = argument.split(maxsplit=1)
+                argument1 = argument_parts[0]
+                argument2 = argument_parts[1]
+            except Exception:
+                argument1 = ""
+                argument2 = ""
             await handler(channel_id, argument1, argument2)
         else:
             await handler(channel_id)
