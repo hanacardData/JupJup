@@ -17,7 +17,7 @@ from batch.product.keywords import (
     WONDER_CARD_FEEDBACK_KEYWORDS,
 )
 from batch.product.load import load_competitor_issues, load_ourproduct_issues
-from batch.product.make_message import load_and_send_message
+from batch.product.make_message import load_and_make_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
 from batch.security_monitor.load import load_security_issues
 from batch.security_monitor.make_message import get_security_messages
@@ -155,10 +155,10 @@ def make_message(is_test: bool = False):
 
     try:
         product_messages = {
-            "/경쟁사신용": load_and_send_message("신용카드 신상품"),
-            "/경쟁사체크": load_and_send_message("체크카드 신상품"),
-            "/원더카드": load_and_send_message("원더카드 고객반응"),
-            "/JADE": load_and_send_message("JADE 고객반응"),
+            "/경쟁사신용": load_and_make_message("신용카드 신상품"),
+            "/경쟁사체크": load_and_make_message("체크카드 신상품"),
+            "/원더카드": load_and_make_message("원더카드 고객반응"),
+            "/JADE": load_and_make_message("JADE 고객반응"),
         }
         logger.info("Created product messages")
     except Exception as e:

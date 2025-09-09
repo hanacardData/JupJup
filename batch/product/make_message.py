@@ -1,7 +1,6 @@
 import json
 import os
 from datetime import datetime, timedelta
-from email.utils import parsedate_to_datetime
 
 import pandas as pd
 
@@ -17,14 +16,7 @@ from bot.services.core.openai_client import openai_response
 from logger import logger
 
 
-def identify_company(text: str) -> str:
-    for company in CARD_COMPANIES:
-        if company in text:
-            return company
-    return "기타"
-
-
-def load_and_send_message(button_label: str) -> list[str]:
+def load_and_make_message(button_label: str) -> list[str]:
     """버튼 라벨에 따라 분기 처리"""
     if button_label in ["원더카드 고객반응", "JADE 고객반응"]:
         return _handle_our_product(button_label)
@@ -32,115 +24,18 @@ def load_and_send_message(button_label: str) -> list[str]:
         return _handle_competitor_product(button_label)
 
 
-def normalize_source_fields(df: pd.DataFrame) -> pd.DataFrame:
-    """뉴스 데이터(pubDate)를 YYYYMMDD → postdate 컬럼으로 변환"""
-    if "pubDate" not in df.columns:
-        return df
-
-    def to_yyyymmdd(x):
-        dt = pd.to_datetime(x, errors="coerce")
-        if pd.isna(dt):
-            dt = parsedate_to_datetime(str(x))
-        return dt.strftime("%Y%m%d")
-
-    df["postdate"] = df["pubDate"].map(to_yyyymmdd)
-    df = df.drop(columns=["pubDate"])
-
-    return df
-
-
-def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFrame:
-    if df is None or df.empty:
-        return df
-    if "postdate" not in df.columns:
-        return pd.DataFrame(columns=df.columns)
-
-    s = df["postdate"].astype(str).str.strip().str.replace(r"\D", "", regex=True)
-    dt = pd.to_datetime(s, format="%Y%m%d", errors="coerce")
-    cutoff = (datetime.now() - timedelta(days=days)).date()
-
-    mask = dt.dt.date >= cutoff
-    return df.loc[mask].copy()
-
-
-def _handle_competitor_product(button_label: str) -> list[str]:
-    keywords = KEYWORDS_BY_BUTTON[button_label]
-    tag = BUTTON_TAG_MAP[button_label]
-    extracted_data_count = EXTRACTED_DATA_COUNT
-    dfs = _load_dataframes(tag)
-
-    data = pd.concat(dfs, ignore_index=True)
-    data = _filter_last_n_days_postdate(data, 7)
-
-    if data.empty:
-        logger.warning("No data after 7-day postdate filter.")
-        return [f"[{button_label}]\n최근 7일 내 소식이 없어요 😊"]
-    total_count = len(data)
-
-    data = data.rename(columns={"postdate": "post_date"})
-
-    refined_data = extract_high_score_data(
-        data, keywords, CARD_COMPANIES, extracted_data_count
-    )
-
-    if len(refined_data) == 0:
-        logger.warning("No data found after filtering.")
-        return [
-            "오늘은 타사 신상품 관련 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
-        ]
-
-    refined_data["company"] = refined_data["title"].apply(identify_company)
-    actual_count = len(refined_data)
-    companies = ", ".join(sorted(set(refined_data["company"])))
-
-    content = json.dumps(
-        refined_data[["company", "title", "link", "description"]].to_dict(
-            orient="records"
-        ),
-        ensure_ascii=False,
-    )
-    text_input = OTHER_TEXT_INPUT.format(
-        count=actual_count, companies=companies, content=content
-    )
-
-    header = _make_header(
-        button_label=button_label,
-        expected=total_count,
-        actual=actual_count,
-    )
-
-    result = openai_response(prompt=PROMPT, input=text_input)
-    urls = extract_urls(result)
-
-    for source in ["news"]:
-        path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
-        if os.path.exists(path) and urls:
-            df_csv = pd.read_csv(path, encoding="utf-8")
-            if "is_posted" not in df_csv.columns:
-                df_csv["is_posted"] = 0
-            df_csv.loc[df_csv["link"].isin(urls), "is_posted"] = 1
-            df_csv.to_csv(path, index=False, encoding="utf-8")
-
-    return [f"[{button_label}]\n{header}\n{result}"]
-
-
 def _handle_our_product(button_label: str) -> list[str]:
     keywords = KEYWORDS_BY_BUTTON[button_label]
     tag = BUTTON_TAG_MAP[button_label]
     extracted_data_count = 12
-    dfs = _load_dataframes(tag)
-
-    data = pd.concat(dfs, ignore_index=True)
-
+    file_name = os.path.join(PRODUCT_SAVE_PATH, f"{tag}.csv")
+    data = read_csv(file_name)
     data = _filter_last_n_days_postdate(data, 7)
 
     if data.empty:
         logger.warning("No data after 7-day postdate filter.")
         return [f"[{button_label}]\n최근 7일 내 소식이 없어요 😊"]
     total_count = len(data)
-
-    data = data.rename(columns={"postdate": "post_date"})
-
     refined_data = extract_high_score_data(
         data, keywords, CARD_COMPANIES, extracted_data_count
     )
@@ -151,7 +46,7 @@ def _handle_our_product(button_label: str) -> list[str]:
             "오늘은 자사 상품 반응 관련 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
         ]
 
-    refined_data["company"] = refined_data["title"].apply(identify_company)
+    refined_data["company"] = refined_data["title"].apply(_identify_company)
     actual_count = len(refined_data)
     product_name = button_label.replace(" 고객반응", "")
 
@@ -176,36 +71,75 @@ def _handle_our_product(button_label: str) -> list[str]:
 
     result = openai_response(prompt=US_TEXT_INPUT, input=text_input)
     urls = extract_urls(result)
-
-    for source in ["news", "blog"]:
-        path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
-        if os.path.exists(path) and urls:
-            df_csv = pd.read_csv(path, encoding="utf-8")
-            if "is_posted" not in df_csv.columns:
-                df_csv["is_posted"] = 0
-            df_csv.loc[df_csv["link"].isin(urls), "is_posted"] = 1
-            df_csv.to_csv(path, index=False, encoding="utf-8")
-
+    data.loc[data["link"].isin(urls), "is_posted"] = 1
+    data.to_csv(file_name, index=False, encoding="utf-8")
     return [f"[{button_label}]\n{header}\n{result}"]
 
 
-def _load_dataframes(tag: str) -> list[pd.DataFrame]:
-    sources = ["news", "blog"]
-    dfs: list[pd.DataFrame] = []
+def _handle_competitor_product(button_label: str) -> list[str]:
+    keywords = KEYWORDS_BY_BUTTON[button_label]
+    tag = BUTTON_TAG_MAP[button_label]
+    extracted_data_count = EXTRACTED_DATA_COUNT
+    file_name = os.path.join(PRODUCT_SAVE_PATH, f"{tag}.csv")
+    data = read_csv(file_name)
+    data = _filter_last_n_days_postdate(data, 7)
 
-    for source in sources:
-        path = os.path.join(PRODUCT_SAVE_PATH, f"{source}_{tag}.csv")
+    if data.empty:
+        logger.warning("No data after 7-day postdate filter.")
+        return [f"[{button_label}]\n최근 7일 내 소식이 없어요 😊"]
+    total_count = len(data)
+    refined_data = extract_high_score_data(
+        data, keywords, CARD_COMPANIES, extracted_data_count
+    )
 
-        if not os.path.exists(path):
-            continue
+    if len(refined_data) == 0:
+        logger.warning("No data found after filtering.")
+        return [
+            "오늘은 타사 신상품 관련 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+        ]
 
-        df = read_csv(path)
+    refined_data["company"] = refined_data["title"].apply(_identify_company)
+    actual_count = len(refined_data)
+    companies = ", ".join(sorted(set(refined_data["company"])))
 
-        if df is not None and not df.empty:
-            df = normalize_source_fields(df)
-            dfs.append(df)
+    content = json.dumps(
+        refined_data[["company", "title", "link", "description"]].to_dict(
+            orient="records"
+        ),
+        ensure_ascii=False,
+    )
+    text_input = OTHER_TEXT_INPUT.format(
+        count=actual_count, companies=companies, content=content
+    )
 
-    return dfs
+    header = _make_header(
+        button_label=button_label,
+        expected=total_count,
+        actual=actual_count,
+    )
+
+    result = openai_response(prompt=PROMPT, input=text_input)
+    urls = extract_urls(result)
+    data.loc[data["link"].isin(urls), "is_posted"] = 1
+    data.to_csv(file_name, index=False, encoding="utf-8")
+    return [f"[{button_label}]\n{header}\n{result}"]
+
+
+def _identify_company(text: str) -> str:
+    for company in CARD_COMPANIES:
+        if company in text:
+            return company
+    return "기타"
+
+
+def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFrame:
+    if df is None or df.empty or "post_date" not in df.columns:
+        logger.error("post_date not in column!")
+        raise Exception("post_date not in column!")
+    dt = pd.to_datetime(df["post_date"], format="%Y%m%d", errors="coerce")
+    cutoff = (datetime.now() - timedelta(days=days)).date()
+    mask = dt.dt.date >= cutoff
+    return df.loc[mask].copy()
 
 
 def _make_header(button_label: str, expected: int, actual: int) -> str:

@@ -1,6 +1,7 @@
 import re
+from datetime import datetime
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 
 def remove_html_tags(text: str) -> str:
@@ -62,7 +63,17 @@ class NewsItem(BaseItem):
     description: str = Field(
         ..., title="기사 요약", description="검색어와 일치하는 부분은 <b> 태그로 감싸짐"
     )
-    pubDate: str = Field(..., title="기사 제공 시간")
+    post_date: str = Field(..., alias="pubDate", title="기사 제공일 (YYYYMMDD)")
+
+    @field_validator("post_date", mode="before")
+    def normalize_post_date(cls, v):
+        if not v:
+            return v
+        try:
+            dt = datetime.strptime(v, "%a, %d %b %Y %H:%M:%S %z")
+            return dt.strftime("%Y%m%d")
+        except Exception:
+            return v  # 실패 시 원본 그대로
 
 
 class NewsResponse(AbstractResponse):
