@@ -15,8 +15,7 @@ SCHEMA: list[str] = [
 
 
 def _select_news_data(data: pd.DataFrame) -> pd.DataFrame:
-    df = data.assign(post_date="")
-    return df[SCHEMA]
+    return data[SCHEMA]
 
 
 def _select_blog_data(data: pd.DataFrame) -> pd.DataFrame:
