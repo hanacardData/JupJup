@@ -12,8 +12,10 @@ from bot.services.batch_message.get_message import (
 )
 from bot.services.brother.get_answer import get_brother_answer
 from bot.services.cafeteria.menu import get_weekly_menu_message
+from bot.services.core.openai_client import async_generate_image
 from bot.services.core.post_button import async_post_button_to_channel
 from bot.services.core.post_flexible import async_post_flexible_to_channel
+from bot.services.core.post_images import async_post_image_to_channel
 from bot.services.core.post_message import async_post_message_to_channel
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.harmony.get_harmony import get_harmony_comment
@@ -176,7 +178,7 @@ async def handle_harmony_command(
     channel_id: str, argument: str, sub_argument: str
 ) -> JSONResponse:
     """궁합을 요청했을 때 호출되는 핸들러입니다."""
-    if not argument or not argument:
+    if not argument or not sub_argument:
         await async_post_message_to_channel(
             NoneArgumentMessage.HARMONY.value,
             channel_id,
@@ -186,6 +188,27 @@ async def handle_harmony_command(
         )
     result = await get_harmony_comment(argument, sub_argument)
     await async_post_message_to_channel(result, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
+async def handle_generate_image_command(channel_id: str, argument: str) -> JSONResponse:
+    """이미지 생성을 요청했을 때 호출"""
+    if not argument:
+        await async_post_message_to_channel(
+            NoneArgumentMessage.IMAGE_GENERATION_REPLY.value, channel_id
+        )
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
+        )
+    image_url = await async_generate_image(argument)
+    if image_url:
+        await async_post_image_to_channel(image_url, channel_id)
+    else:
+        await async_post_message_to_channel(
+            "이미지 생성에 실패했습니다. 다시 시도해주세요.", channel_id
+        )
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -236,6 +259,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/운세": handle_fortune_command,
     "/도움": handle_help_command,
     "/궁합": handle_harmony_command,
+    "/이미지": handle_generate_image_command,
 }
 
 
@@ -249,7 +273,7 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
     argument = command_parts[1] if len(command_parts) > 1 else ""
     handler = COMMAND_HANDLERS.get(command)
     if handler:
-        if command in ("/아우야", "/리뷰", "/운세", "/스케줄등록"):
+        if command in ("/아우야", "/리뷰", "/운세", "/스케줄등록", "/이미지"):
             await handler(channel_id, argument)
         elif command == "/궁합":
             try:
