@@ -5,11 +5,6 @@ LAB_BUTTON = {
         "actions": [
             {
                 "type": "message",
-                "label": "IMC 가이드에 맞춘 메시지 리뷰",
-                "text": "/리뷰",
-            },
-            {
-                "type": "message",
                 "label": "근처 식당 추천",
                 "text": "/식당",
             },
@@ -27,6 +22,11 @@ LAB_BUTTON = {
                 "type": "message",
                 "label": "사주팔자 기반의 운세",
                 "text": "/운세",
+            },
+            {
+                "type": "message",
+                "label": "사주팔자 기반의 두 사람의 궁합",
+                "text": "/궁합",
             },
             {
                 "type": "message",
