@@ -43,7 +43,7 @@ async def async_openai_response(
 
 
 @retry(tries=3, delay=1, backoff=2, exceptions=APIConnectionError)
-async def async_generate_image(prompt: str) -> str:
+async def async_generate_image(prompt: str) -> str | None:
     try:
         response = await async_client.images.generate(
             model="dall-e-3",
@@ -52,6 +52,6 @@ async def async_generate_image(prompt: str) -> str:
             size="1024x1024",
         )
         return response.data[0].url
-    except APIConnectionError as e:
+    except (APIConnectionError, Exception) as e:
         logger.error(e)
         return
