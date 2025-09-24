@@ -30,3 +30,4 @@ class NoneArgumentMessage(Enum):
     HARMONY: str = (
         "생년월일과 상대의 생년월일을 입력해주세요! 예: /궁합 19900101 19900101"
     )
+    IMAGE_GENERATION_REPLY: str = "생성할 이미지에 대한 설명을 입력해주세요! 예: /이미지 귀여운 고양이가 우주복을 입고 있는 모습"
