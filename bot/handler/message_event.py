@@ -2,6 +2,7 @@ from typing import Callable
 
 from fastapi.responses import JSONResponse
 
+from batch.utils import extract_urls
 from bot.enums.button_templates import JUPJUP_BUTTON, LAB_BUTTON, PRODUCT_BUTTON
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
@@ -186,7 +187,13 @@ async def handle_generate_image_command(channel_id: str, argument: str) -> JSONR
         )
     image_url = await async_generate_image(argument)
     if image_url:
-        await async_post_image_to_channel(image_url, channel_id)
+        if extract_urls(image_url):
+            await async_post_image_to_channel(image_url, channel_id)
+        else:
+            await async_post_message_to_channel(
+                f"이미지 생성에 실패했습니다. 다시 시도해주세요. 에러 정보: {image_url}",
+                channel_id,
+            )
     else:
         await async_post_message_to_channel(
             "이미지 생성에 실패했습니다. 다시 시도해주세요.", channel_id
