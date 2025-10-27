@@ -33,14 +33,32 @@ def get_app_reviews() -> tuple[set[str], set[str]]:
         [
             r["content"]
             for r in hanamoney_results
-            if r["at"] >= datetime.now() - timedelta(days=1)
+            if r["at"] >= datetime.now() - timedelta(days=3)
+            and r["score"] != 5
+            and len(r["content"]) > 10
         ]
     )
     hanapay_results = set(
         [
             r["content"]
             for r in hanapay_results
-            if r["at"] >= datetime.now() - timedelta(days=1)
+            if r["at"] >= datetime.now() - timedelta(days=3)
+            and r["score"] != 5
+            and len(r["content"]) > 10
         ]
     )
     return hanamoney_results, hanapay_results
+
+
+if __name__ == "__main__":
+    hanamoney_reviews, hanapay_reviews = get_app_reviews()
+
+    if hanamoney_reviews:
+        print("하나머니 최신 앱 리뷰입니다:")
+        for review in hanamoney_reviews:
+            print(review)
+
+    if hanapay_reviews:
+        print("하나페이 최신 앱 리뷰입니다:")
+        for review in hanapay_reviews:
+            print(review)
