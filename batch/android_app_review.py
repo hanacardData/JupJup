@@ -17,14 +17,14 @@ def get_app_reviews() -> tuple[set[str], set[str]]:
             lang=lang,
             country="kr",
             sort=Sort.NEWEST,
-            count=10,
+            count=20,
         )
         _hanapay_results, _ = reviews(
             hanacard_id,
             lang=lang,
             country="kr",
             sort=Sort.NEWEST,
-            count=10,
+            count=20,
         )
         hanamoney_results.extend(_hanamoney_results)
         hanapay_results.extend(_hanapay_results)
