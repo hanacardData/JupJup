@@ -6,6 +6,7 @@ from datetime import datetime
 import pandas as pd
 from holidayskr import is_holiday
 
+from batch.android_app_review import get_app_reviews
 from batch.compare_travel.make_message import get_compare_travel_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
@@ -152,6 +153,20 @@ def make_message(is_test: bool = False):
     except Exception as e:
         logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
         post_message_to_channel(f"Security error: {str(e)}", TEST_CHANNEL_ID)
+
+    try:
+        hanamoney_reviews, hanapay_reviews = get_app_reviews()
+        if hanamoney_reviews:
+            post_message_to_channel("하나머니 최신 앱 리뷰입니다:", TEST_CHANNEL_ID)
+            for review in hanamoney_reviews:
+                post_message_to_channel(review, TEST_CHANNEL_ID)
+        if hanapay_reviews:
+            post_message_to_channel("하나페이 최신 앱 리뷰입니다:", TEST_CHANNEL_ID)
+            for review in hanapay_reviews:
+                post_message_to_channel(review, TEST_CHANNEL_ID)
+    except Exception as e:
+        logger.warning(f"Failed to send message at {TEST_CHANNEL_ID} {e}")
+        post_message_to_channel(f"app_review error: {str(e)}", TEST_CHANNEL_ID)
 
     try:
         product_messages = {
