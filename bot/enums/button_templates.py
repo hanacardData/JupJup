@@ -57,6 +57,16 @@ JUPJUP_BUTTON = {
                 "label": "트래블카드 트렌드 비교",
                 "text": "/트래블카드",
             },
+            {
+                "type": "message",
+                "label": "하나페이 앱 리뷰",
+                "text": "/하나페이",
+            },
+            {
+                "type": "message",
+                "label": "하나머니 앱 리뷰",
+                "text": "/하나머니",
+            },
         ],
     }
 }

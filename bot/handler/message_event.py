@@ -8,6 +8,7 @@ from bot.enums.status import BotStatus
 from bot.services.batch_message.get_message import (
     get_batch_message,
     get_product_batch_message,
+    make_app_review_flexible_payload,
     make_travellog_flexible_payload,
 )
 from bot.services.brother.get_answer import get_brother_answer
@@ -196,6 +197,32 @@ async def handle_generate_image_command(channel_id: str, argument: str) -> JSONR
     )
 
 
+async def handle_hanamoney_command(channel_id: str) -> JSONResponse:
+    """하나머니를 요청했을 때 호출되는 핸들러입니다."""
+    messages = get_batch_message("hanamoney")
+    if len(messages) == 1:
+        await async_post_message_to_channel(messages[0], channel_id)
+
+    payload = make_app_review_flexible_payload(messages)
+    await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
+async def handle_hanapay_command(channel_id: str) -> JSONResponse:
+    """하나페이를 요청했을 때 호출되는 핸들러입니다."""
+    messages = get_batch_message("hanapay")
+    if len(messages) == 1:
+        await async_post_message_to_channel(messages[0], channel_id)
+
+    payload = make_app_review_flexible_payload(messages)
+    await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
 async def handle_jupjup_command(channel_id: str) -> JSONResponse:
     """줍줍 핸들러"""
     await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
@@ -221,9 +248,11 @@ async def handle_product_command(channel_id: str) -> JSONResponse:
 
 
 COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
-    # Argument 필요 없는 커맨드
+    # 명령 커맨드
+    "/도움": handle_help_command,
     "/줍줍": handle_jupjup_command,
     "/실험실": handle_lab_command,
+    # Argument 없는 커맨드
     "/트래블로그": handle_travellog_command,
     "/이슈": handle_issue_command,
     "/트래블카드": handle_travelcard_command,
@@ -235,10 +264,11 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/구내식당": handle_cafeteria_command,
     "/스케줄등록": handle_schedule_command,
     "/신상품": handle_product_command,
+    "/하나머니": handle_hanamoney_command,
+    "/하나페이": handle_hanapay_command,
     # Argument 필요한 커맨드
     "/아우야": handle_brother_command,
     "/운세": handle_fortune_command,
-    "/도움": handle_help_command,
     "/궁합": handle_harmony_command,
     "/이미지": handle_generate_image_command,
 }

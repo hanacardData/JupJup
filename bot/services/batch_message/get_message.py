@@ -6,7 +6,7 @@ from typing import Literal
 
 
 def get_batch_message(
-    type_: Literal["issue", "travellog", "travelcard"],
+    type_: Literal["issue", "travellog", "travelcard", "hanamoney", "hanapay"],
 ) -> list[str]:
     today_str = datetime.now().strftime("%Y-%m-%d")
     output_file = os.path.join("data", "messages", f"message_{today_str}.json")
@@ -85,6 +85,33 @@ def make_travellog_flexible_payload(
         "content": {
             "type": "flex",
             "altText": "TravelLog",
+            "contents": carousel_payload,
+        }
+    }
+
+
+def make_app_review_flexible_payload(
+    messages: list[str],
+) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
+    carousel_payload = {"type": "carousel", "contents": []}
+
+    for message in messages:
+        text = message.strip('"{}').strip()
+        content = {
+            "type": "bubble",
+            "size": "kilo",
+            "body": {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [{"type": "text", "text": text, "wrap": True}],
+            },
+        }
+        carousel_payload["contents"].append(content)
+
+    return {
+        "content": {
+            "type": "flex",
+            "altText": "App Reviews",
             "contents": carousel_payload,
         }
     }
