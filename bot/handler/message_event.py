@@ -34,7 +34,9 @@ async def handle_travellog_command(channel_id: str) -> JSONResponse:
     messages = get_batch_message("travellog")
     if len(messages) == 1:
         await async_post_message_to_channel(messages[0], channel_id)
-
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+        )
     payload = make_travellog_flexible_payload(messages)
     await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
     return JSONResponse(
@@ -202,6 +204,9 @@ async def handle_hanamoney_command(channel_id: str) -> JSONResponse:
     messages = get_batch_message("hanamoney")
     if len(messages) == 1:
         await async_post_message_to_channel(messages[0], channel_id)
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+        )
 
     payload = make_app_review_flexible_payload(messages)
     await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
@@ -215,6 +220,9 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
     messages = get_batch_message("hanapay")
     if len(messages) == 1:
         await async_post_message_to_channel(messages[0], channel_id)
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+        )
 
     payload = make_app_review_flexible_payload(messages)
     await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
