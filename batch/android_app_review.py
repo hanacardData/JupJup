@@ -7,7 +7,7 @@ hanacard_id = "com.hanaskcard.paycla"
 langs = ["ko", "en"]
 
 
-def get_app_reviews() -> tuple[set[str], set[str]]:
+def get_app_reviews() -> tuple[list[str], list[str]]:
     hanamoney_results = []
     hanapay_results = []
 
@@ -47,7 +47,12 @@ def get_app_reviews() -> tuple[set[str], set[str]]:
             and len(r["content"]) > 10
         ]
     )
-    return hanamoney_results, hanapay_results
+    if not hanamoney_results:
+        hanamoney_results.add("최근 3일 이내에 하나머니 앱 리뷰가 없습니다.")
+    if not hanapay_results:
+        hanapay_results.add("최근 3일 이내에 하나페이 앱 리뷰가 없습니다.")
+
+    return list(hanamoney_results), list(hanapay_results)
 
 
 if __name__ == "__main__":

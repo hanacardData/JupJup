@@ -156,21 +156,10 @@ def make_message(is_test: bool = False):
 
     try:  # 앱 리뷰 메시지 송신
         hanamoney_reviews, hanapay_reviews = get_app_reviews()
-        if hanamoney_reviews:
-            post_message_to_channel(
-                "=====하나머니 최신 앱 리뷰입니다:=====", TEST_CHANNEL_ID
-            )
-            for review in hanamoney_reviews:
-                post_message_to_channel(review, TEST_CHANNEL_ID)
-        if hanapay_reviews:
-            post_message_to_channel(
-                "=====하나페이 최신 앱 리뷰입니다:====", TEST_CHANNEL_ID
-            )
-            for review in hanapay_reviews:
-                post_message_to_channel(review, TEST_CHANNEL_ID)
+        logger.info("App review messages ready")
     except Exception as e:
-        logger.warning(f"Failed to send message at {TEST_CHANNEL_ID} {e}")
-        post_message_to_channel(f"app_review error: {str(e)}", TEST_CHANNEL_ID)
+        logger.error(f"Failed to send messag scrap app review: {e}")
+        raise
 
     try:
         product_messages = {
@@ -202,6 +191,8 @@ def make_message(is_test: bool = False):
             "travelcard": travelcard_messages,
             "security": security_messages,
             "product": product_messages,
+            "hanamoney": hanamoney_reviews,
+            "hanapay": hanapay_reviews,
         }
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
