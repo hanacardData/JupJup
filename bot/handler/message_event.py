@@ -14,10 +14,11 @@ from bot.services.batch_message.get_message import (
 from bot.services.brother.get_answer import get_brother_answer
 from bot.services.cafeteria.menu import get_weekly_menu_message
 from bot.services.core.openai_client import async_generate_image
-from bot.services.core.post_button import async_post_button_to_channel
-from bot.services.core.post_flexible import async_post_flexible_to_channel
-from bot.services.core.post_images import async_post_image_to_channel
-from bot.services.core.post_message import async_post_message_to_channel
+from bot.services.core.post_payload import (
+    async_post_image_to_channel,
+    async_post_message_to_channel,
+    async_post_payload_to_channel,
+)
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.harmony.get_harmony import get_harmony_comment
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
@@ -38,7 +39,7 @@ async def handle_travellog_command(channel_id: str) -> JSONResponse:
             status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
         )
     payload = make_travellog_flexible_payload(messages)
-    await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
+    await async_post_payload_to_channel(payload=payload, channel_id=channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -211,7 +212,7 @@ async def handle_hanamoney_command(channel_id: str) -> JSONResponse:
         )
 
     payload = make_app_review_flexible_payload(messages)
-    await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
+    await async_post_payload_to_channel(payload=payload, channel_id=channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -229,7 +230,7 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
         )
 
     payload = make_app_review_flexible_payload(messages)
-    await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
+    await async_post_payload_to_channel(payload=payload, channel_id=channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -237,7 +238,7 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
 
 async def handle_jupjup_command(channel_id: str) -> JSONResponse:
     """줍줍 핸들러"""
-    await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
+    await async_post_payload_to_channel(JUPJUP_BUTTON, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -245,7 +246,7 @@ async def handle_jupjup_command(channel_id: str) -> JSONResponse:
 
 async def handle_lab_command(channel_id: str) -> JSONResponse:
     """실험실 핸들러"""
-    await async_post_button_to_channel(LAB_BUTTON, channel_id)
+    await async_post_payload_to_channel(LAB_BUTTON, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -253,7 +254,7 @@ async def handle_lab_command(channel_id: str) -> JSONResponse:
 
 async def handle_product_command(channel_id: str) -> JSONResponse:
     """신규 상품 핸들러"""
-    await async_post_button_to_channel(PRODUCT_BUTTON, channel_id)
+    await async_post_payload_to_channel(PRODUCT_BUTTON, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )

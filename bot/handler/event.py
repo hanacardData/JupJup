@@ -4,7 +4,7 @@ from bot.enums.default_messages import Message
 from bot.enums.status import BotStatus
 from bot.handler.join_event import handle_join_event
 from bot.handler.message_event import handle_message_event
-from bot.services.core.post_message import async_post_message_to_user
+from bot.services.core.post_payload import async_post_message_to_user
 from logger import logger
 
 

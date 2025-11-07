@@ -2,7 +2,7 @@ from fastapi.responses import JSONResponse
 
 from bot.enums.default_messages import Message
 from bot.enums.status import BotStatus
-from bot.services.core.post_message import async_post_message_to_channel
+from bot.services.core.post_payload import async_post_message_to_channel
 
 
 async def handle_join_event(channel_id: str) -> JSONResponse:
