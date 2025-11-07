@@ -37,8 +37,10 @@ from batch.variables import (
     TRAVELLOG_DATA_PATH,
 )
 from bot.enums.button_templates import JUPJUP_BUTTON, PRODUCT_BUTTON
-from bot.services.core.post_button import async_post_button_to_channel
-from bot.services.core.post_message import post_message_to_channel
+from bot.services.core.post_payload import (
+    async_post_payload_to_channel,
+    post_message_to_channel,
+)
 from logger import logger
 
 
@@ -208,14 +210,14 @@ async def send_message(is_test: bool = False):
         logger.info(f"Not post today: {today_timestamp}")
         return
     try:
-        await async_post_button_to_channel(JUPJUP_BUTTON, TEST_CHANNEL_ID)
-        await async_post_button_to_channel(PRODUCT_BUTTON, TEST_CHANNEL_ID)
-        await async_post_button_to_channel(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
+        await async_post_payload_to_channel(JUPJUP_BUTTON, TEST_CHANNEL_ID)
+        await async_post_payload_to_channel(PRODUCT_BUTTON, TEST_CHANNEL_ID)
+        await async_post_payload_to_channel(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
         if is_test:
             return
 
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
-            await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
+            await async_post_payload_to_channel(JUPJUP_BUTTON, channel_id)
 
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
