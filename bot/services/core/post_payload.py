@@ -58,11 +58,12 @@ def post_message_to_channel(message: str, channel_id: str) -> None:  # FIXME: de
 
 
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
-async def async_post_message(message: str, id: str, is_user: str = False) -> None:
+async def async_post_message(message: str, id: str, is_user: bool = False) -> None:
     message_payload = _set_messge_payload(message)
     await async_post_payload(
         message_payload, id, base=USER_POST_URL if is_user else CHANNEL_POST_URL
     )
+    return
 
 
 def _set_image_payload(image_path: str) -> dict[str, dict[str, str]]:
@@ -76,7 +77,9 @@ def _set_image_payload(image_path: str) -> dict[str, dict[str, str]]:
 
 
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
-async def async_post_image_to_channel(image_path: str, channel_id: str) -> None:
+async def async_post_image(image_path: str, id: str, is_user: bool = False) -> None:
     image_payload = _set_image_payload(image_path)
-    await async_post_payload(image_payload, channel_id)
+    await async_post_payload(
+        image_payload, id, base=USER_POST_URL if is_user else CHANNEL_POST_URL
+    )
     return

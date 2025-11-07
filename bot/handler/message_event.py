@@ -15,7 +15,7 @@ from bot.services.brother.get_answer import get_brother_answer
 from bot.services.cafeteria.menu import get_weekly_menu_message
 from bot.services.core.openai_client import async_generate_image
 from bot.services.core.post_payload import (
-    async_post_image_to_channel,
+    async_post_image,
     async_post_message,
     async_post_payload,
 )
@@ -190,7 +190,7 @@ async def handle_generate_image_command(channel_id: str, argument: str) -> JSONR
         )
     image_url = await async_generate_image(argument)
     if image_url:
-        await async_post_image_to_channel(image_url, channel_id)
+        await async_post_image(image_url, channel_id)
     else:
         await async_post_message(
             "이미지 생성에 실패했습니다. 다시 시도해주세요.", channel_id
