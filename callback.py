@@ -11,7 +11,7 @@ from uvicorn.config import LOGGING_CONFIG
 
 from batch.variables import TEST_CHANNEL_ID
 from bot.handler.event import process_event
-from bot.services.core.post_payload import async_post_message_to_channel
+from bot.services.core.post_payload import async_post_message
 from bot.services.scheduler.apscheduler_setup import scheduler
 from bot.utils.signature import verify_signature
 from logger import logger
@@ -25,7 +25,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         logger.info("줍줍이 서버 종료")
-        await async_post_message_to_channel(
+        await async_post_message(
             f"줍줍이 종료: {datetime.now().isoformat()}",
             TEST_CHANNEL_ID,
         )

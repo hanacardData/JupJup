@@ -4,18 +4,21 @@ import httpx
 import requests
 from retry import retry
 
-from bot.services.core.variables import CHANNEL_POST_URL, USER_POST_URL
 from bot.utils.access_token import set_headers
 from logger import logger
 
+CHANNEL_POST_URL = "https://www.worksapis.com/v1.0/bots/9881957/channels/{id}/messages"
+USER_POST_URL = "https://www.worksapis.com/v1.0/bots/9881957/users/{id}/messages"
+
 
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
-async def async_post_payload_to_channel(
+async def async_post_payload(
     payload: dict[str, Any],
-    channel_id: str,
+    id: str,
+    base: str = CHANNEL_POST_URL,
 ) -> None:
     headers = set_headers()
-    url = CHANNEL_POST_URL.format(channel_id=channel_id)
+    url = base.format(id=id)
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(url, headers=headers, json=payload)
@@ -41,10 +44,10 @@ def _set_messge_payload(message: str) -> dict[str, dict[str, str]]:
     backoff=2,
     exceptions=(requests.RequestException, requests.HTTPError),
 )
-def post_message_to_channel(message: str, channel_id: str) -> None:
+def post_message_to_channel(message: str, channel_id: str) -> None:  # FIXME: deprecated
     message_payload = _set_messge_payload(message)
     headers = set_headers()
-    url = CHANNEL_POST_URL.format(channel_id=channel_id)
+    url = CHANNEL_POST_URL.format(id=channel_id)
     try:
         response = requests.post(url, headers=headers, json=message_payload)
         response.raise_for_status()
@@ -55,25 +58,11 @@ def post_message_to_channel(message: str, channel_id: str) -> None:
 
 
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
-async def async_post_message_to_channel(message: str, channel_id: str) -> None:
+async def async_post_message(message: str, id: str, is_user: str = False) -> None:
     message_payload = _set_messge_payload(message)
-    await async_post_payload_to_channel(message_payload, channel_id)
-    return
-
-
-@retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
-async def async_post_message_to_user(message: str, user_id: str) -> None:
-    message_payload = _set_messge_payload(message)
-    headers = set_headers()
-    url = USER_POST_URL.format(user_id=user_id)
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(url, headers=headers, json=message_payload)
-            response.raise_for_status()
-            return
-        except (httpx.RequestError, httpx.HTTPStatusError) as e:
-            logger.error(e)
-            raise
+    await async_post_payload(
+        message_payload, id, base=USER_POST_URL if is_user else CHANNEL_POST_URL
+    )
 
 
 def _set_image_payload(image_path: str) -> dict[str, dict[str, str]]:
@@ -89,5 +78,5 @@ def _set_image_payload(image_path: str) -> dict[str, dict[str, str]]:
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
 async def async_post_image_to_channel(image_path: str, channel_id: str) -> None:
     image_payload = _set_image_payload(image_path)
-    await async_post_payload_to_channel(image_payload, channel_id)
+    await async_post_payload(image_payload, channel_id)
     return
