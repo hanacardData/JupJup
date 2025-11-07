@@ -33,25 +33,16 @@ def get_app_reviews() -> tuple[list[str], list[str]]:
         [
             r["content"]
             for r in hanamoney_results
-            if r["at"] >= datetime.now() - timedelta(days=3)
-            and r["score"] != 5
-            and len(r["content"]) > 10
+            if r["at"] >= datetime.now() - timedelta(days=3) and len(r["content"]) > 10
         ]
     )
     hanapay_results = set(
         [
             r["content"]
             for r in hanapay_results
-            if r["at"] >= datetime.now() - timedelta(days=3)
-            and r["score"] != 5
-            and len(r["content"]) > 10
+            if r["at"] >= datetime.now() - timedelta(days=3) and len(r["content"]) > 10
         ]
     )
-    if not hanamoney_results:
-        hanamoney_results.add("최근 3일 이내에 하나머니 앱 리뷰가 없습니다.")
-    if not hanapay_results:
-        hanapay_results.add("최근 3일 이내에 하나페이 앱 리뷰가 없습니다.")
-
     return list(hanamoney_results), list(hanapay_results)
 
 

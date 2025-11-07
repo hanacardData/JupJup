@@ -202,8 +202,10 @@ async def handle_generate_image_command(channel_id: str, argument: str) -> JSONR
 async def handle_hanamoney_command(channel_id: str) -> JSONResponse:
     """하나머니를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("hanamoney")
-    if len(messages) == 1:
-        await async_post_message_to_channel(messages[0], channel_id)
+    if len(messages) == 0:
+        await async_post_message_to_channel(
+            "최근 3일 이내에 하나머니 앱 리뷰가 없습니다.", channel_id
+        )
         return JSONResponse(
             status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
         )
@@ -218,8 +220,10 @@ async def handle_hanamoney_command(channel_id: str) -> JSONResponse:
 async def handle_hanapay_command(channel_id: str) -> JSONResponse:
     """하나페이를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("hanapay")
-    if len(messages) == 1:
-        await async_post_message_to_channel(messages[0], channel_id)
+    if len(messages) == 0:
+        await async_post_message_to_channel(
+            "최근 3일 이내에 하나페이 앱 리뷰가 없습니다.", channel_id
+        )
         return JSONResponse(
             status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
         )
