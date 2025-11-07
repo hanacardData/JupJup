@@ -33,14 +33,18 @@ def get_app_reviews() -> tuple[list[str], list[str]]:
         [
             r["content"]
             for r in hanamoney_results
-            if r["at"] >= datetime.now() - timedelta(days=3) and len(r["content"]) > 10
+            if r["at"] >= datetime.now() - timedelta(days=3)
+            and r["score"] < 5
+            and len(r["content"]) > 10
         ]
     )
     hanapay_results = set(
         [
             r["content"]
             for r in hanapay_results
-            if r["at"] >= datetime.now() - timedelta(days=3) and len(r["content"]) > 10
+            if r["at"] >= datetime.now() - timedelta(days=3)
+            and r["score"] < 5
+            and len(r["content"]) > 10
         ]
     )
     return list(hanamoney_results), list(hanapay_results)
