@@ -14,10 +14,11 @@ from bot.services.batch_message.get_message import (
 from bot.services.brother.get_answer import get_brother_answer
 from bot.services.cafeteria.menu import get_weekly_menu_message
 from bot.services.core.openai_client import async_generate_image
-from bot.services.core.post_button import async_post_button_to_channel
-from bot.services.core.post_flexible import async_post_flexible_to_channel
-from bot.services.core.post_images import async_post_image_to_channel
-from bot.services.core.post_message import async_post_message_to_channel
+from bot.services.core.post_payload import (
+    async_post_image,
+    async_post_message,
+    async_post_payload,
+)
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.harmony.get_harmony import get_harmony_comment
 from bot.services.menu.get_menu import select_random_menu_based_on_weather
@@ -26,19 +27,19 @@ from bot.services.scheduler.register import register_schedule
 
 async def handle_help_command(channel_id: str) -> JSONResponse:
     """도움에 호출되는 핸들러입니다."""
-    await async_post_message_to_channel(Message.GREETINGS_REPLY.value, channel_id)
+    await async_post_message(Message.GREETINGS_REPLY.value, channel_id)
 
 
 async def handle_travellog_command(channel_id: str) -> JSONResponse:
     """트래블로그를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("travellog")
     if len(messages) == 1:
-        await async_post_message_to_channel(messages[0], channel_id)
+        await async_post_message(messages[0], channel_id)
         return JSONResponse(
             status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
         )
     payload = make_travellog_flexible_payload(messages)
-    await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
+    await async_post_payload(payload, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -48,7 +49,7 @@ async def handle_issue_command(channel_id: str) -> JSONResponse:
     """이슈를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("issue")
     for message in messages:
-        await async_post_message_to_channel(message, channel_id)
+        await (message, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -58,7 +59,7 @@ async def handle_travelcard_command(channel_id: str) -> JSONResponse:
     """트래블카드를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("travelcard")
     for message in messages:
-        await async_post_message_to_channel(message, channel_id)
+        await async_post_message(message, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -67,7 +68,7 @@ async def handle_travelcard_command(channel_id: str) -> JSONResponse:
 async def _handle_product_command(channel_id: str, subkey: str) -> JSONResponse:
     messages = get_product_batch_message(subkey=subkey)
     for msg in messages:
-        await async_post_message_to_channel(msg, channel_id)
+        await async_post_message(msg, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -92,7 +93,7 @@ async def handle_product_jade_command(channel_id: str) -> JSONResponse:
 async def handle_menu_command(channel_id: str) -> JSONResponse:
     """식당 추천을 요청했을 때 호출되는 핸들러입니다."""
     result = await select_random_menu_based_on_weather()
-    await async_post_message_to_channel(result, channel_id)
+    await async_post_message(result, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -101,7 +102,7 @@ async def handle_menu_command(channel_id: str) -> JSONResponse:
 async def handle_cafeteria_command(channel_id: str) -> JSONResponse:
     """구내식당 식단을 요청했을 때 호출되는 핸들러입니다."""
     message = get_weekly_menu_message()
-    await async_post_message_to_channel(message, channel_id)
+    await async_post_message(message, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -110,7 +111,7 @@ async def handle_cafeteria_command(channel_id: str) -> JSONResponse:
 async def handle_schedule_command(channel_id: str, argument: str) -> JSONResponse:
     """스케줄 등록 요청을 처리하는 핸들러입니다."""
     if not argument:
-        await async_post_message_to_channel(
+        await async_post_message(
             NoneArgumentMessage.SCHEDULE.value,
             channel_id,
         )
@@ -118,7 +119,7 @@ async def handle_schedule_command(channel_id: str, argument: str) -> JSONRespons
             status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
         )
     result = register_schedule(channel_id, argument)
-    await async_post_message_to_channel(result, channel_id)
+    await async_post_message(result, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -127,7 +128,7 @@ async def handle_schedule_command(channel_id: str, argument: str) -> JSONRespons
 async def handle_brother_command(channel_id: str, argument: str) -> JSONResponse:
     """아우야를 요청했을 때 호출되는 핸들러입니다."""
     if not argument:
-        await async_post_message_to_channel(
+        await async_post_message(
             NoneArgumentMessage.BROTHER.value,
             channel_id,
         )
@@ -136,7 +137,7 @@ async def handle_brother_command(channel_id: str, argument: str) -> JSONResponse
         )
 
     result = await get_brother_answer(argument)
-    await async_post_message_to_channel(result, channel_id)
+    await async_post_message(result, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -145,7 +146,7 @@ async def handle_brother_command(channel_id: str, argument: str) -> JSONResponse
 async def handle_fortune_command(channel_id: str, argument: str) -> JSONResponse:
     """운세를 요청했을 때 호출되는 핸들러입니다."""
     if not argument:
-        await async_post_message_to_channel(
+        await async_post_message(
             NoneArgumentMessage.FORTUNE.value,
             channel_id,
         )
@@ -153,7 +154,7 @@ async def handle_fortune_command(channel_id: str, argument: str) -> JSONResponse
             status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
         )
     result = await get_fortune_comment(argument)
-    await async_post_message_to_channel(result, channel_id)
+    await async_post_message(result, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -164,7 +165,7 @@ async def handle_harmony_command(
 ) -> JSONResponse:
     """궁합을 요청했을 때 호출되는 핸들러입니다."""
     if not argument or not sub_argument:
-        await async_post_message_to_channel(
+        await async_post_message(
             NoneArgumentMessage.HARMONY.value,
             channel_id,
         )
@@ -172,7 +173,7 @@ async def handle_harmony_command(
             status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
         )
     result = await get_harmony_comment(argument, sub_argument)
-    await async_post_message_to_channel(result, channel_id)
+    await async_post_message(result, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -181,7 +182,7 @@ async def handle_harmony_command(
 async def handle_generate_image_command(channel_id: str, argument: str) -> JSONResponse:
     """이미지 생성을 요청했을 때 호출"""
     if not argument:
-        await async_post_message_to_channel(
+        await async_post_message(
             NoneArgumentMessage.IMAGE_GENERATION_REPLY.value, channel_id
         )
         return JSONResponse(
@@ -189,9 +190,9 @@ async def handle_generate_image_command(channel_id: str, argument: str) -> JSONR
         )
     image_url = await async_generate_image(argument)
     if image_url:
-        await async_post_image_to_channel(image_url, channel_id)
+        await async_post_image(image_url, channel_id)
     else:
-        await async_post_message_to_channel(
+        await async_post_message(
             "이미지 생성에 실패했습니다. 다시 시도해주세요.", channel_id
         )
     return JSONResponse(
@@ -203,7 +204,7 @@ async def handle_hanamoney_command(channel_id: str) -> JSONResponse:
     """하나머니를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("hanamoney")
     if len(messages) == 0:
-        await async_post_message_to_channel(
+        await async_post_message(
             "최근 3일 이내에 하나머니 앱 리뷰가 없습니다.", channel_id
         )
         return JSONResponse(
@@ -211,7 +212,7 @@ async def handle_hanamoney_command(channel_id: str) -> JSONResponse:
         )
 
     payload = make_app_review_flexible_payload(messages)
-    await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
+    await async_post_payload(payload, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -221,7 +222,7 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
     """하나페이를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("hanapay")
     if len(messages) == 0:
-        await async_post_message_to_channel(
+        await async_post_message(
             "최근 3일 이내에 하나페이 앱 리뷰가 없습니다.", channel_id
         )
         return JSONResponse(
@@ -229,7 +230,7 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
         )
 
     payload = make_app_review_flexible_payload(messages)
-    await async_post_flexible_to_channel(payload=payload, channel_id=channel_id)
+    await async_post_payload(payload, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -237,7 +238,7 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
 
 async def handle_jupjup_command(channel_id: str) -> JSONResponse:
     """줍줍 핸들러"""
-    await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
+    await async_post_payload(JUPJUP_BUTTON, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -245,7 +246,7 @@ async def handle_jupjup_command(channel_id: str) -> JSONResponse:
 
 async def handle_lab_command(channel_id: str) -> JSONResponse:
     """실험실 핸들러"""
-    await async_post_button_to_channel(LAB_BUTTON, channel_id)
+    await async_post_payload(LAB_BUTTON, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -253,7 +254,7 @@ async def handle_lab_command(channel_id: str) -> JSONResponse:
 
 async def handle_product_command(channel_id: str) -> JSONResponse:
     """신규 상품 핸들러"""
-    await async_post_button_to_channel(PRODUCT_BUTTON, channel_id)
+    await async_post_payload(PRODUCT_BUTTON, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -313,5 +314,5 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
             status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
         )
 
-    await async_post_message_to_channel(Message.UNKNOWN_COMMAND_REPLY.value, channel_id)
+    await async_post_message(Message.UNKNOWN_COMMAND_REPLY.value, channel_id)
     return JSONResponse(status_code=200, content={"status": BotStatus.NO_COMMAND})

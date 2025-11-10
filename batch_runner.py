@@ -37,8 +37,10 @@ from batch.variables import (
     TRAVELLOG_DATA_PATH,
 )
 from bot.enums.button_templates import JUPJUP_BUTTON, PRODUCT_BUTTON
-from bot.services.core.post_button import async_post_button_to_channel
-from bot.services.core.post_message import post_message_to_channel
+from bot.services.core.post_payload import (
+    async_post_message,
+    async_post_payload,
+)
 from logger import logger
 
 
@@ -86,7 +88,7 @@ def data_collect():
     logger.info("Product Data Collection Completed")
 
 
-def make_message(is_test: bool = False):
+async def make_message(is_test: bool = False):
     today_timestamp = datetime.now()
     if is_skip_batch(today_timestamp):
         logger.info(f"Not post today: {today_timestamp}")
@@ -115,13 +117,13 @@ def make_message(is_test: bool = False):
     try:  # 트래블로그 부 메세지 송신
         if not is_test:
             for message in travellog_messages:
-                post_message_to_channel(message, TRAVELLOG_CHANNEL_ID)
+                await async_post_message(message, TRAVELLOG_CHANNEL_ID)
             logger.info(f"Sent Travellog Message to channel {TRAVELLOG_CHANNEL_ID}")
     except Exception as e:
         logger.warning(
             f"Failed to send travellog message to {TRAVELLOG_CHANNEL_ID} {e}"
         )
-        post_message_to_channel(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
+        await async_post_message(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
 
     try:  # Compare 트래블카드 메시지 생성
         travelcard_messages = get_compare_travel_message()
@@ -143,16 +145,16 @@ def make_message(is_test: bool = False):
 
     try:  # 보안 모니터링 메세지 송신
         for message in security_messages:
-            post_message_to_channel(message, TEST_CHANNEL_ID)
+            await async_post_message(message, TEST_CHANNEL_ID)
 
         if not is_test:
             for message in security_messages:
-                post_message_to_channel(message, SECURITY_CHANNEL_ID)
+                await async_post_message(message, SECURITY_CHANNEL_ID)
             logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
 
     except Exception as e:
         logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
-        post_message_to_channel(f"Security error: {str(e)}", TEST_CHANNEL_ID)
+        await async_post_message(f"Security error: {str(e)}", TEST_CHANNEL_ID)
 
     try:  # 앱 리뷰 메시지 송신
         hanamoney_reviews, hanapay_reviews = get_app_reviews()
@@ -208,14 +210,14 @@ async def send_message(is_test: bool = False):
         logger.info(f"Not post today: {today_timestamp}")
         return
     try:
-        await async_post_button_to_channel(JUPJUP_BUTTON, TEST_CHANNEL_ID)
-        await async_post_button_to_channel(PRODUCT_BUTTON, TEST_CHANNEL_ID)
-        await async_post_button_to_channel(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
+        await async_post_payload(JUPJUP_BUTTON, TEST_CHANNEL_ID)
+        await async_post_payload(PRODUCT_BUTTON, TEST_CHANNEL_ID)
+        await async_post_payload(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
         if is_test:
             return
 
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
-            await async_post_button_to_channel(JUPJUP_BUTTON, channel_id)
+            await async_post_payload(JUPJUP_BUTTON, channel_id)
 
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
@@ -228,7 +230,7 @@ if __name__ == "__main__":
     data_collect()  # 데이터 수집
     logger.info("Data collection completed")
 
-    make_message(is_test=False)  # 메시지 생성
+    asyncio.run(make_message(is_test=False))  # 메시지 생성
     logger.info("Message created")
 
     asyncio.run(send_message(is_test=False))  # 메시지 송신

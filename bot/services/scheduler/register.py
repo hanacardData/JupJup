@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytz
 
-from bot.services.core.post_message import post_message_to_channel
+from bot.services.core.post_payload import post_message_to_channel
 from bot.services.scheduler.apscheduler_setup import scheduler
 
 
