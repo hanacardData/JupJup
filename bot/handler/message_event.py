@@ -21,7 +21,6 @@ from bot.services.core.post_payload import (
 )
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.harmony.get_harmony import get_harmony_comment
-from bot.services.menu.get_menu import select_random_menu_based_on_weather
 from bot.services.scheduler.register import register_schedule
 
 
@@ -88,15 +87,6 @@ async def handle_product_wonder_command(channel_id: str) -> JSONResponse:
 
 async def handle_product_jade_command(channel_id: str) -> JSONResponse:
     return await _handle_product_command(channel_id, "/JADE")
-
-
-async def handle_menu_command(channel_id: str) -> JSONResponse:
-    """식당 추천을 요청했을 때 호출되는 핸들러입니다."""
-    result = await select_random_menu_based_on_weather()
-    await async_post_message(result, channel_id)
-    return JSONResponse(
-        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
-    )
 
 
 async def handle_cafeteria_command(channel_id: str) -> JSONResponse:
@@ -273,7 +263,6 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/경쟁사체크": handle_product_debit_command,
     "/원더카드": handle_product_wonder_command,
     "/JADE": handle_product_jade_command,
-    "/식당": handle_menu_command,
     "/구내식당": handle_cafeteria_command,
     "/스케줄등록": handle_schedule_command,
     "/신상품": handle_product_command,
