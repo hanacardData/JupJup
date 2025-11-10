@@ -21,7 +21,6 @@ from bot.services.core.post_payload import (
 )
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.harmony.get_harmony import get_harmony_comment
-from bot.services.scheduler.register import register_schedule
 
 
 async def handle_help_command(channel_id: str) -> JSONResponse:
@@ -93,23 +92,6 @@ async def handle_cafeteria_command(channel_id: str) -> JSONResponse:
     """구내식당 식단을 요청했을 때 호출되는 핸들러입니다."""
     message = get_weekly_menu_message()
     await async_post_message(message, channel_id)
-    return JSONResponse(
-        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
-    )
-
-
-async def handle_schedule_command(channel_id: str, argument: str) -> JSONResponse:
-    """스케줄 등록 요청을 처리하는 핸들러입니다."""
-    if not argument:
-        await async_post_message(
-            NoneArgumentMessage.SCHEDULE.value,
-            channel_id,
-        )
-        return JSONResponse(
-            status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
-        )
-    result = register_schedule(channel_id, argument)
-    await async_post_message(result, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -264,7 +246,6 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/원더카드": handle_product_wonder_command,
     "/JADE": handle_product_jade_command,
     "/구내식당": handle_cafeteria_command,
-    "/스케줄등록": handle_schedule_command,
     "/신상품": handle_product_command,
     "/하나머니": handle_hanamoney_command,
     "/하나페이": handle_hanapay_command,
@@ -286,7 +267,7 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
     argument = command_parts[1] if len(command_parts) > 1 else ""
     handler = COMMAND_HANDLERS.get(command)
     if handler:
-        if command in ("/아우야", "/운세", "/스케줄등록", "/이미지"):
+        if command in ("/아우야", "/운세", "/이미지"):
             await handler(channel_id, argument)
         elif command == "/궁합":
             try:
