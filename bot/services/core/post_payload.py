@@ -1,7 +1,6 @@
 from typing import Any
 
 import httpx
-import requests
 from retry import retry
 
 from bot.utils.access_token import set_headers
@@ -36,25 +35,6 @@ def _set_messge_payload(message: str) -> dict[str, dict[str, str]]:
             "text": message,
         }
     }
-
-
-@retry(
-    tries=3,
-    delay=1,
-    backoff=2,
-    exceptions=(requests.RequestException, requests.HTTPError),
-)
-def post_message_to_channel(message: str, channel_id: str) -> None:  # FIXME: deprecated
-    message_payload = _set_messge_payload(message)
-    headers = set_headers()
-    url = CHANNEL_POST_URL.format(id=channel_id)
-    try:
-        response = requests.post(url, headers=headers, json=message_payload)
-        response.raise_for_status()
-        return
-    except (requests.RequestException, requests.HTTPError) as e:
-        logger.error(e)
-        raise
 
 
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
