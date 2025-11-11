@@ -11,12 +11,6 @@ from batch.compare_travel.make_message import get_compare_travel_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
-from batch.product.keywords import (
-    CREDIT_CARD_KEYWORDS,
-    DEBIT_CARD_KEYWORDS,
-    JADE_CARD_FEEDBACK_KEYWORDS,
-    WONDER_CARD_FEEDBACK_KEYWORDS,
-)
 from batch.product.load import load_competitor_issues, load_ourproduct_issues
 from batch.product.make_message import load_and_make_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
@@ -28,7 +22,6 @@ from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
     DATA_PATH,
     PRODUCT_CHANNEL_ID,
-    PRODUCT_SAVE_PATH,
     SECURITY_CHANNEL_ID,
     SECURITY_DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
@@ -49,51 +42,23 @@ def is_skip_batch(date: datetime) -> bool:
 
 
 def data_collect():
-    logger.info("Issue Data Collection Strarted")
     collect_load_data(QUERIES)
     logger.info("Issue Data Collection Completed")
 
-    logger.info("Travellog Data Collection Started")
     collect_load_travellog_data(TRAVELLOG_QUERIES)
     logger.info("Travellog Data Collection Completed")
 
-    logger.info("Security Data Collection Started")
     load_security_issues(SECURITY_QUERIES)
     logger.info("Security Data Collection Completed")
 
-    logger.info("Product Data Collection Started")
-    load_competitor_issues(
-        queries=CREDIT_CARD_KEYWORDS,
-        save_path=PRODUCT_SAVE_PATH,
-        file_tag="credit",  # news_credit.csv, blog_credit.csv
-    )
-
-    load_competitor_issues(
-        queries=DEBIT_CARD_KEYWORDS,
-        save_path=PRODUCT_SAVE_PATH,
-        file_tag="debit",  # news_debit.csv, blog_debit.csv
-    )
-
-    load_ourproduct_issues(
-        queries=WONDER_CARD_FEEDBACK_KEYWORDS,
-        save_path=PRODUCT_SAVE_PATH,
-        file_tag="wonder",  # news_wonder.csv, blog_wonder.csv
-    )
-
-    load_ourproduct_issues(
-        queries=JADE_CARD_FEEDBACK_KEYWORDS,
-        save_path=PRODUCT_SAVE_PATH,
-        file_tag="jade",  # news_jade.csv, blog_jade.csv
-    )
+    load_competitor_issues(file_tag="credit")
+    load_competitor_issues(file_tag="debit")
+    load_ourproduct_issues(file_tag="wonder")
+    load_ourproduct_issues(file_tag="jade")
     logger.info("Product Data Collection Completed")
 
 
-async def make_message(is_test: bool = False):
-    today_timestamp = datetime.now()
-    if is_skip_batch(today_timestamp):
-        logger.info(f"Not post today: {today_timestamp}")
-        return
-
+async def make_message(today_str: str, is_test: bool = False):
     try:  # Issue 메시지 생성
         logger.info("Generating issue message")
         issue_df = pd.read_csv(DATA_PATH, dtype={"post_date": object}, encoding="utf-8")
@@ -110,20 +75,16 @@ async def make_message(is_test: bool = False):
         )
         travellog_messages = get_travellog_message(travellog_df, tag=not is_test)
         logger.info("Created travellog message")
-    except Exception as e:
-        logger.error(f"Failed to generate travellog message: {e}")
-        raise
 
-    try:  # 트래블로그 부 메세지 송신
+        # 트래블로그 부 메세지 송신
         if not is_test:
             for message in travellog_messages:
                 await async_post_message(message, TRAVELLOG_CHANNEL_ID)
             logger.info(f"Sent Travellog Message to channel {TRAVELLOG_CHANNEL_ID}")
     except Exception as e:
-        logger.warning(
-            f"Failed to send travellog message to {TRAVELLOG_CHANNEL_ID} {e}"
-        )
+        logger.error(f"Failed to generate and send travellog message: {e}")
         await async_post_message(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
+        raise
 
     try:  # Compare 트래블카드 메시지 생성
         travelcard_messages = get_compare_travel_message()
@@ -139,22 +100,18 @@ async def make_message(is_test: bool = False):
         )
         security_messages = get_security_messages(security_df, tag=not is_test)
         logger.info("Created security issue messages")
-    except Exception as e:
-        logger.error(f"Failed to generate security alerts: {e}")
-        raise
-
-    try:  # 보안 모니터링 메세지 송신
         for message in security_messages:
             await async_post_message(message, TEST_CHANNEL_ID)
-
+        # 보안 모니터링 메세지 송신
         if not is_test:
             for message in security_messages:
                 await async_post_message(message, SECURITY_CHANNEL_ID)
             logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
 
     except Exception as e:
-        logger.warning(f"Failed to send message at {SECURITY_CHANNEL_ID} {e}")
+        logger.error(f"Failed to generate and send security alerts: {e}")
         await async_post_message(f"Security error: {str(e)}", TEST_CHANNEL_ID)
+        raise
 
     try:  # 앱 리뷰 메시지 송신
         hanamoney_reviews, hanapay_reviews = get_app_reviews()
@@ -173,21 +130,15 @@ async def make_message(is_test: bool = False):
         logger.info("Created product messages")
     except Exception as e:
         logger.warning(f"Failed to generate product messages: {e}")
-        product_messages = {
-            "/경쟁사신용": ["경쟁사신용 메시지 생성 실패"],
-            "/경쟁사체크": ["경쟁사체크 메시지 생성 실패"],
-            "/원더카드": ["원더카드 메시지 생성 실패"],
-            "/JADE": ["JADE 메시지 생성 실패"],
-        }
+        raise
 
     ## 메세지 저장 로직
     try:
-        today_str = today_timestamp.strftime("%Y-%m-%d")
         output_dir = os.path.join("data", "messages")
         os.makedirs(output_dir, exist_ok=True)
         output_file = os.path.join(output_dir, f"message_{today_str}.json")
 
-        data = {
+        data: dict[str, list[str] | dict[str, list[str]]] = {
             "issue": issue_message,
             "travellog": travellog_messages,
             "travelcard": travelcard_messages,
@@ -205,17 +156,13 @@ async def make_message(is_test: bool = False):
 
 
 async def send_message(is_test: bool = False):
-    today_timestamp = datetime.now()
-    if is_skip_batch(today_timestamp):
-        logger.info(f"Not post today: {today_timestamp}")
-        return
     try:
         await async_post_payload(JUPJUP_BUTTON, TEST_CHANNEL_ID)
         await async_post_payload(PRODUCT_BUTTON, TEST_CHANNEL_ID)
-        await async_post_payload(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
         if is_test:
             return
 
+        await async_post_payload(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
             await async_post_payload(JUPJUP_BUTTON, channel_id)
 
@@ -230,10 +177,14 @@ if __name__ == "__main__":
     data_collect()  # 데이터 수집
     logger.info("Data collection completed")
 
-    asyncio.run(make_message(is_test=False))  # 메시지 생성
-    logger.info("Message created")
-
-    asyncio.run(send_message(is_test=False))  # 메시지 송신
-    logger.info("Message sent")
-
+    today_timestamp = datetime.now()
+    if is_skip_batch(today_timestamp):
+        logger.info(f"Not post today: {today_timestamp}")
+    else:
+        asyncio.run(
+            make_message(today_str=today_timestamp.strftime("%Y-%m-%d"), is_test=False)
+        )  # 메시지 생성
+        logger.info("Message created")
+        asyncio.run(send_message(is_test=False))  # 메시지 송신
+        logger.info("Message sent")
     logger.info("Batch completed")
