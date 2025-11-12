@@ -18,10 +18,16 @@ from logger import logger
 
 def load_and_make_message(button_label: str) -> list[str]:
     """버튼 라벨에 따라 분기 처리"""
-    if button_label in ["원더카드 고객반응", "JADE 고객반응"]:
-        return _handle_our_product(button_label)
-    else:
-        return _handle_competitor_product(button_label)
+    try:
+        if button_label in ["원더카드 고객반응", "JADE 고객반응"]:
+            return _handle_our_product(button_label)
+        else:
+            return _handle_competitor_product(button_label)
+    except Exception as e:
+        logger.error(f"Error in load_and_make_message for {button_label}: {e}")
+        return [
+            f"[{button_label}]\n 메시지 생성 중 오류가 발생했어요. 관리자에게 문의해주세요."
+        ]
 
 
 def _handle_our_product(button_label: str) -> list[str]:
