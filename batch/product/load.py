@@ -21,8 +21,8 @@ from logger import logger
 FILE_TAG_QUERIES_MAP = {
     "credit": CREDIT_CARD_KEYWORDS,
     "debit": DEBIT_CARD_KEYWORDS,
-    "wonder": JADE_CARD_FEEDBACK_KEYWORDS,
-    "jade": WONDER_CARD_FEEDBACK_KEYWORDS,
+    "wonder": WONDER_CARD_FEEDBACK_KEYWORDS,
+    "jade": JADE_CARD_FEEDBACK_KEYWORDS,
 }
 
 
