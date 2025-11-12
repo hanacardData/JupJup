@@ -5,18 +5,8 @@ LAB_BUTTON = {
         "actions": [
             {
                 "type": "message",
-                "label": "근처 식당 추천",
-                "text": "/식당",
-            },
-            {
-                "type": "message",
                 "label": "구내식당 메뉴 알리미",
                 "text": "/구내식당",
-            },
-            {
-                "type": "message",
-                "label": "일정 알리미",
-                "text": "/스케줄등록",
             },
             {
                 "type": "message",
