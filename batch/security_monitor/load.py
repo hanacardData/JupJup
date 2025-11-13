@@ -12,7 +12,7 @@ from batch.variables import SAVE_PATH, SECURITY_DATA_PATH, SOURCES
 from logger import logger
 
 
-def load_security_issues(queries: list[str]) -> None:
+def collect_load_security_issues(queries: list[str]) -> None:
     os.makedirs(SAVE_PATH, exist_ok=True)
 
     _df_list: list[pd.DataFrame] = [read_csv(SECURITY_DATA_PATH)]

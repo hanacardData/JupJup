@@ -11,10 +11,10 @@ from batch.compare_travel.make_message import get_compare_travel_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
-from batch.product.load import load_competitor_issues, load_ourproduct_issues
+from batch.product.load import collect_load_product_issues
 from batch.product.make_message import load_and_make_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
-from batch.security_monitor.load import load_security_issues
+from batch.security_monitor.load import collect_load_security_issues
 from batch.security_monitor.make_message import get_security_messages
 from batch.travellog.keywords import TRAVELLOG_QUERIES
 from batch.travellog.load import collect_load_travellog_data
@@ -48,13 +48,11 @@ def data_collect():
     collect_load_travellog_data(TRAVELLOG_QUERIES)
     logger.info("Travellog Data Collection Completed")
 
-    load_security_issues(SECURITY_QUERIES)
+    collect_load_security_issues(SECURITY_QUERIES)
     logger.info("Security Data Collection Completed")
 
-    load_competitor_issues(file_tag="credit")
-    load_competitor_issues(file_tag="debit")
-    load_ourproduct_issues(file_tag="wonder")
-    load_ourproduct_issues(file_tag="jade")
+    for file_tag in ["credit", "debit", "wonder", "jade"]:
+        collect_load_product_issues(file_tag=file_tag)
     logger.info("Product Data Collection Completed")
 
 
