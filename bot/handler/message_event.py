@@ -47,7 +47,7 @@ async def handle_issue_command(channel_id: str) -> JSONResponse:
     """이슈를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("issue")
     for message in messages:
-        await (message, channel_id)
+        await async_post_message(message, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
