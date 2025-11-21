@@ -6,7 +6,7 @@ from datetime import datetime
 import pandas as pd
 from holidayskr import is_holiday
 
-from batch.android_app_review import get_app_reviews
+from batch.app_review.android import get_app_reviews
 from batch.compare_travel.make_message import get_compare_travel_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data

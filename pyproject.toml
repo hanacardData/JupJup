@@ -1,24 +1,23 @@
-[tool.poetry]
-name = "scrapcompetitor"
-version = "0.0.1"
-description = ""
-authors = ["RektPunk <rektpunk@gmail.com>"]
+[project]
+name = "jupjup"
+version = "0.1.0"
+description = "Add your description here"
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.12"
-pandas = "^2.2.3"
-openai = "^1.75.0"
-dotenv = "^0.9.9"
-pydantic = "^2.11.3"
-pyjwt = "^2.10.1"
-cryptography = "^44.0.2"
-requests = "^2.32.3"
-pre-commit = "^4.2.0"
-fastapi = "^0.115.12"
-uvicorn = {extras = ["standard"], version = "^0.34.2"}
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=46.0.3",
+    "dotenv>=0.9.9",
+    "fastapi>=0.121.3",
+    "google-play-scraper>=1.2.7",
+    "holidayskr>=0.2.0",
+    "openai>=2.8.1",
+    "pandas>=2.3.3",
+    "pre-commit>=4.4.0",
+    "pydantic>=2.12.4",
+    "pyjwt>=2.10.1",
+    "pytz>=2025.2",
+    "requests>=2.32.5",
+    "retry>=0.9.2",
+    "tqdm>=4.67.1",
+    "uvicorn[standard]>=0.38.0",
+]
