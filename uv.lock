@@ -306,6 +306,19 @@ wheels = [
 ]
 
 [[package]]
+name = "holidayskr"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "korean-lunar-calendar" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/11/43/f56386a7cbd4cdde461a8b3e21b1c921202a41eff252ccff4da7b05bb478/holidayskr-0.2.0.tar.gz", hash = "sha256:4061c7464eb3eb4f72e56ca205304432d76a521bfb63c0bae7e90fee09bdae8c", size = 7175, upload-time = "2024-02-28T09:47:52.221Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2f/83/a70a9d3c86843e2f37ae8e1cfa3a775d07a06678e145a0072ee00056f8ce/holidayskr-0.2.0-py3-none-any.whl", hash = "sha256:b647bb7b37144eec49c6813d2ae7e3f2a0166d0088227c92d0b5e38e91450ebe", size = 7973, upload-time = "2024-02-28T09:47:50.626Z" },
+]
+
+[[package]]
 name = "httpcore"
 version = "1.0.9"
 source = { registry = "https://pypi.org/simple" }
@@ -456,12 +469,15 @@ dependencies = [
     { name = "cryptography" },
     { name = "dotenv" },
     { name = "fastapi" },
+    { name = "holidayskr" },
     { name = "openai" },
     { name = "pandas" },
     { name = "pre-commit" },
     { name = "pydantic" },
     { name = "pyjwt" },
+    { name = "pytz" },
     { name = "requests" },
+    { name = "tqdm" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -470,13 +486,25 @@ requires-dist = [
     { name = "cryptography", specifier = ">=46.0.3" },
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "fastapi", specifier = ">=0.121.3" },
+    { name = "holidayskr", specifier = ">=0.2.0" },
     { name = "openai", specifier = ">=2.8.1" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "pre-commit", specifier = ">=4.4.0" },
     { name = "pydantic", specifier = ">=2.12.4" },
     { name = "pyjwt", specifier = ">=2.10.1" },
+    { name = "pytz", specifier = ">=2025.2" },
     { name = "requests", specifier = ">=2.32.5" },
+    { name = "tqdm", specifier = ">=4.67.1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.38.0" },
+]
+
+[[package]]
+name = "korean-lunar-calendar"
+version = "0.3.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5a/93/a0bd2bd53ab19330e83ecc5652b7774ae86fd2fee19bc05ad220cf9db08b/korean_lunar_calendar-0.3.1.tar.gz", hash = "sha256:eb2c485124a061016926bdea6d89efdf9b9fdbf16db55895b6cf1e5bec17b857", size = 9877, upload-time = "2022-09-16T10:53:25.713Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9c/96/30f3fe51b336bb6da4714f4fdad7bbdce8f13af79af2eb75e22908f3f9f4/korean_lunar_calendar-0.3.1-py3-none-any.whl", hash = "sha256:392757135c492c4f42a604e6038042953c35c6f449dda5f27e3f86a7f9c943e5", size = 9033, upload-time = "2022-09-16T10:53:23.771Z" },
 ]
 
 [[package]]
