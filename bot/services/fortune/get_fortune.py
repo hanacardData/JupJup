@@ -80,9 +80,15 @@ async def calculate_four_pillars_with_elements(
     return result
 
 
+def is_valid_date_input(input: str) -> bool:
+    if re.match(r"^\d{8}$|^\d{10}$|^\d{12}$", input):
+        return True
+    return False
+
+
 async def get_fortune_comment(input: str) -> str:
-    if not re.match(r"^\d{8}$|^\d{10}$", input):
-        return "날짜 형식이 잘못되었어요! YYYYMMDDHH 형식으로 다시 입력해주세요."
+    if not is_valid_date_input(input):
+        return "날짜 형식이 잘못되었어요! YYYYMMDDHH 혹은 YYYYMMDDHHmm 형식으로 다시 입력해주세요."
     try:
         year = int(input[:4])
         month = int(input[4:6])

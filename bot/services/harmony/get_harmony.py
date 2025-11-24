@@ -1,16 +1,16 @@
-import re
 from datetime import datetime
 
 from bot.services.core.openai_client import async_openai_response
-from bot.services.fortune.get_fortune import calculate_four_pillars_with_elements
+from bot.services.fortune.get_fortune import (
+    calculate_four_pillars_with_elements,
+    is_valid_date_input,
+)
 from bot.services.harmony.prompt import PROMPT_FORTUNE, TEXT_INPUT
 
 
 async def get_harmony_comment(input1: str, input2: str) -> str:
-    if not re.match(r"^\d{8}$|^\d{10}$", input1) or not re.match(
-        r"^\d{8}$|^\d{10}$", input2
-    ):
-        return "날짜 형식이 잘못되었어요! YYYYMMDD 형식으로 다시 입력해주세요."
+    if not is_valid_date_input(input1) or not is_valid_date_input(input2):
+        return "날짜 형식이 잘못되었어요! YYYYMMDD 혹은 YYYYMMDDHHmm 형식으로 다시 입력해주세요."
     try:
         year1 = int(input1[:4])
         month1 = int(input1[4:6])
