@@ -93,7 +93,7 @@ async def get_fortune_comment(input: str) -> str:
         year = int(input[:4])
         month = int(input[4:6])
         day = int(input[6:8])
-        hour = int(input[8:10]) if len(input) == 10 else None
+        hour = int(input[8:10]) if len(input) >= 10 else None
         datetime(year, month, day)
         today = datetime.today()
     except ValueError:
