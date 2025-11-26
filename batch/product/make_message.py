@@ -6,7 +6,12 @@ from typing import Literal
 import pandas as pd
 
 from batch.product.keywords import BUTTON_TAG_MAP, CARD_COMPANIES, KEYWORDS_BY_BUTTON
-from batch.product.prompt import OTHER_TEXT_INPUT, PROMPT, US_TEXT_INPUT
+from batch.product.prompt import (
+    OTHER_PROMPT,
+    OTHER_TEXT_INPUT,
+    US_PROMPT,
+    US_TEXT_INPUT,
+)
 from batch.scorer import extract_high_score_data
 from batch.utils import extract_urls, read_csv
 from batch.variables import (
@@ -34,7 +39,9 @@ async def load_and_make_message(
         ]
 
 
-async def _handle_our_product(button_label: str) -> list[str]:
+async def _handle_our_product(
+    button_label: Literal["원더카드 고객반응", "JADE 고객반응"],
+) -> list[str]:
     keywords = KEYWORDS_BY_BUTTON[button_label]
     tag = BUTTON_TAG_MAP[button_label]
     extracted_data_count = 12
@@ -50,16 +57,15 @@ async def _handle_our_product(button_label: str) -> list[str]:
         data, keywords, CARD_COMPANIES, extracted_data_count
     )
 
-    if len(refined_data) == 0:
+    actual_count = len(refined_data)
+    if actual_count == 0:
         logger.warning("No data found after filtering.")
         return [
-            "오늘은 자사 상품 반응 관련 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+            f"오늘은 {button_label} 반응 관련 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
         ]
 
     refined_data["company"] = refined_data["title"].apply(_identify_company)
-    actual_count = len(refined_data)
     product_name = button_label.replace(" 고객반응", "")
-
     content = json.dumps(
         refined_data[["company", "title", "link", "description"]].to_dict(
             orient="records"
@@ -79,7 +85,7 @@ async def _handle_our_product(button_label: str) -> list[str]:
         actual=actual_count,
     )
 
-    result = await async_openai_response(prompt=US_TEXT_INPUT, input=text_input)
+    result = await async_openai_response(prompt=US_PROMPT, input=text_input)
     urls = extract_urls(result)
     data.loc[data["link"].isin(urls), "is_posted"] = 1
     data.to_csv(file_name, index=False, encoding="utf-8")
@@ -128,7 +134,7 @@ async def _handle_competitor_product(button_label: str) -> list[str]:
         actual=actual_count,
     )
 
-    result = await async_openai_response(prompt=PROMPT, input=text_input)
+    result = await async_openai_response(prompt=OTHER_PROMPT, input=text_input)
     urls = extract_urls(result)
     data.loc[data["link"].isin(urls), "is_posted"] = 1
     data.to_csv(file_name, index=False, encoding="utf-8")
