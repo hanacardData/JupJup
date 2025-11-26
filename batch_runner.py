@@ -60,7 +60,7 @@ async def make_message(today_str: str, is_test: bool = False):
     try:  # Issue 메시지 생성
         logger.info("Generating issue message")
         issue_df = pd.read_csv(DATA_PATH, dtype={"post_date": object}, encoding="utf-8")
-        issue_message = get_issue_message(issue_df, tag=not is_test)
+        issue_message = await get_issue_message(issue_df, tag=not is_test)
         logger.info("Created issue message")
     except Exception as e:
         logger.error(f"Failed to generate issue message: {e}")

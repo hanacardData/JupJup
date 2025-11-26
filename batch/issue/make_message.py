@@ -8,11 +8,11 @@ from batch.issue.prompt import PROMPT, TEXT_INPUT
 from batch.scorer import extract_high_score_data
 from batch.utils import extract_urls
 from batch.variables import DATA_PATH, EXTRACTED_DATA_COUNT
-from bot.services.core.openai_client import openai_response
+from bot.services.core.openai_client import async_openai_response
 from logger import logger
 
 
-def get_issue_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
+async def get_issue_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
     refined_data = extract_high_score_data(
         data=data,
         issue_keywords=ISSUE_KEYWORDS,
@@ -27,7 +27,7 @@ def get_issue_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
         ensure_ascii=False,
     )
-    result = openai_response(
+    result = await async_openai_response(
         prompt=PROMPT,
         input=TEXT_INPUT.format(
             card_products=", ".join(CARD_PRODUCTS),
