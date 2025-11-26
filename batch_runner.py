@@ -12,7 +12,7 @@ from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
 from batch.product.load import collect_load_product_issues
-from batch.product.make_message import load_and_make_message
+from batch.product.make_message import process_generate_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
 from batch.security_monitor.load import collect_load_security_issues
 from batch.security_monitor.make_message import get_security_messages
@@ -120,10 +120,10 @@ async def make_message(today_str: str, is_test: bool = False):
 
     try:
         product_messages = {
-            "/경쟁사신용": await load_and_make_message("신용카드 신상품"),
-            "/경쟁사체크": await load_and_make_message("체크카드 신상품"),
-            "/원더카드": await load_and_make_message("원더카드 고객반응"),
-            "/JADE": await load_and_make_message("JADE 고객반응"),
+            "/경쟁사신용": await process_generate_message("신용카드 신상품"),
+            "/경쟁사체크": await process_generate_message("체크카드 신상품"),
+            "/원더카드": await process_generate_message("원더카드 고객반응"),
+            "/JADE": await process_generate_message("JADE 고객반응"),
         }
         logger.info("Created product messages")
     except Exception as e:
