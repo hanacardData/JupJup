@@ -71,7 +71,7 @@ async def make_message(today_str: str, is_test: bool = False):
         travellog_df = pd.read_csv(
             TRAVELLOG_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
         )
-        travellog_messages = get_travellog_message(travellog_df, tag=not is_test)
+        travellog_messages = await get_travellog_message(travellog_df, tag=not is_test)
         logger.info("Created travellog message")
 
         # 트래블로그 부 메세지 송신

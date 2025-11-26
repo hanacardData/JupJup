@@ -9,11 +9,11 @@ from batch.travellog.keywords import TRAVELLOG_ISSUE_KEYWORDS, TRAVELLOG_KEYWORD
 from batch.travellog.prompt import PROMPT, TEXT_INPUT
 from batch.utils import extract_urls
 from batch.variables import EXTRACTED_DATA_COUNT, TRAVELLOG_DATA_PATH
-from bot.services.core.openai_client import openai_response
+from bot.services.core.openai_client import async_openai_response
 from logger import logger
 
 
-def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
+async def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
     refined_data = extract_high_score_data(
         data=data,
         issue_keywords=TRAVELLOG_ISSUE_KEYWORDS,
@@ -37,7 +37,7 @@ def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
         ),
         ensure_ascii=False,
     )
-    result = openai_response(
+    result = await async_openai_response(
         prompt=PROMPT,
         input=TEXT_INPUT.format(
             card_products=", ".join(TRAVELLOG_KEYWORDS),
