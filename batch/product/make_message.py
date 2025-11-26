@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
+from typing import Literal
 
 import pandas as pd
 
@@ -12,17 +13,20 @@ from batch.variables import (
     EXTRACTED_DATA_COUNT,
     PRODUCT_SAVE_PATH,
 )
-from bot.services.core.openai_client import openai_response
+from bot.services.core.openai_client import async_openai_response
 from logger import logger
 
 
-def load_and_make_message(button_label: str) -> list[str]:
+async def load_and_make_message(
+    button_label: Literal[
+        "원더카드 고객반응", "JADE 고객반응", "경쟁사신용", "경쟁사체크"
+    ],
+) -> list[str]:
     """버튼 라벨에 따라 분기 처리"""
     try:
         if button_label in ["원더카드 고객반응", "JADE 고객반응"]:
-            return _handle_our_product(button_label)
-        else:
-            return _handle_competitor_product(button_label)
+            return await _handle_our_product(button_label)
+        return await _handle_competitor_product(button_label)
     except Exception as e:
         logger.error(f"Error in load_and_make_message for {button_label}: {e}")
         return [
@@ -30,7 +34,7 @@ def load_and_make_message(button_label: str) -> list[str]:
         ]
 
 
-def _handle_our_product(button_label: str) -> list[str]:
+async def _handle_our_product(button_label: str) -> list[str]:
     keywords = KEYWORDS_BY_BUTTON[button_label]
     tag = BUTTON_TAG_MAP[button_label]
     extracted_data_count = 12
@@ -75,14 +79,14 @@ def _handle_our_product(button_label: str) -> list[str]:
         actual=actual_count,
     )
 
-    result = openai_response(prompt=US_TEXT_INPUT, input=text_input)
+    result = await async_openai_response(prompt=US_TEXT_INPUT, input=text_input)
     urls = extract_urls(result)
     data.loc[data["link"].isin(urls), "is_posted"] = 1
     data.to_csv(file_name, index=False, encoding="utf-8")
     return [f"[{button_label}]\n{header}\n{result}"]
 
 
-def _handle_competitor_product(button_label: str) -> list[str]:
+async def _handle_competitor_product(button_label: str) -> list[str]:
     keywords = KEYWORDS_BY_BUTTON[button_label]
     tag = BUTTON_TAG_MAP[button_label]
     extracted_data_count = EXTRACTED_DATA_COUNT
@@ -124,7 +128,7 @@ def _handle_competitor_product(button_label: str) -> list[str]:
         actual=actual_count,
     )
 
-    result = openai_response(prompt=PROMPT, input=text_input)
+    result = await async_openai_response(prompt=PROMPT, input=text_input)
     urls = extract_urls(result)
     data.loc[data["link"].isin(urls), "is_posted"] = 1
     data.to_csv(file_name, index=False, encoding="utf-8")

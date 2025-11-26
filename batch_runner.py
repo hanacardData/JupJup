@@ -120,10 +120,10 @@ async def make_message(today_str: str, is_test: bool = False):
 
     try:
         product_messages = {
-            "/경쟁사신용": load_and_make_message("신용카드 신상품"),
-            "/경쟁사체크": load_and_make_message("체크카드 신상품"),
-            "/원더카드": load_and_make_message("원더카드 고객반응"),
-            "/JADE": load_and_make_message("JADE 고객반응"),
+            "/경쟁사신용": await load_and_make_message("신용카드 신상품"),
+            "/경쟁사체크": await load_and_make_message("체크카드 신상품"),
+            "/원더카드": await load_and_make_message("원더카드 고객반응"),
+            "/JADE": await load_and_make_message("JADE 고객반응"),
         }
         logger.info("Created product messages")
     except Exception as e:
