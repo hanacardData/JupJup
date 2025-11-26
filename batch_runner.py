@@ -85,7 +85,7 @@ async def make_message(today_str: str, is_test: bool = False):
         raise
 
     try:  # Compare 트래블카드 메시지 생성
-        travelcard_messages = get_compare_travel_message()
+        travelcard_messages = await get_compare_travel_message()
         logger.info("Message ready: travelcard_messages")
     except Exception as e:
         logger.error(f"Failed to generate travelcard message: {e}")
