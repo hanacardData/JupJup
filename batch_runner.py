@@ -96,7 +96,7 @@ async def make_message(today_str: str, is_test: bool = False):
         security_df = pd.read_csv(
             SECURITY_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
         )
-        security_messages = get_security_messages(security_df, tag=not is_test)
+        security_messages = await get_security_messages(security_df, tag=not is_test)
         logger.info("Created security issue messages")
         for message in security_messages:
             await async_post_message(message, TEST_CHANNEL_ID)

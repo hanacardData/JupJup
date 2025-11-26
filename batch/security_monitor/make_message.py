@@ -9,11 +9,11 @@ from batch.security_monitor.keywords import ISSUE_KEYWORDS
 from batch.security_monitor.prompt import SECURITY_PROMPT, SECURITY_TEXT_INPUT
 from batch.utils import extract_urls
 from batch.variables import EXTRACTED_DATA_COUNT, SECURITY_DATA_PATH
-from bot.services.core.openai_client import openai_response
+from bot.services.core.openai_client import async_openai_response
 from logger import logger
 
 
-def get_security_messages(data: pd.DataFrame, tag: bool = True) -> list[str]:
+async def get_security_messages(data: pd.DataFrame, tag: bool = True) -> list[str]:
     refined_data = extract_high_score_data(
         data=data,
         issue_keywords=ISSUE_KEYWORDS,
@@ -46,7 +46,7 @@ def get_security_messages(data: pd.DataFrame, tag: bool = True) -> list[str]:
         ensure_ascii=False,
     )
 
-    result = openai_response(
+    result = await async_openai_response(
         prompt=SECURITY_PROMPT,
         input=SECURITY_TEXT_INPUT.format(
             issue_keywords=", ".join(ISSUE_KEYWORDS),
