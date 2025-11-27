@@ -65,8 +65,8 @@ async def handle_travelcard_command(channel_id: str) -> JSONResponse:
 
 async def _handle_product_command(channel_id: str, subkey: str) -> JSONResponse:
     messages = get_product_batch_message(subkey=subkey)
-    for msg in messages:
-        await async_post_message(msg, channel_id)
+    for message in messages:
+        await async_post_message(message, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
@@ -208,6 +208,16 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
     )
 
 
+async def handle_security_command(channel_id: str) -> JSONResponse:
+    """보안이슈를 요청했을 때 호출되는 핸들러입니다."""
+    messages = get_batch_message("securitys")
+    for message in messages:
+        await async_post_message(message, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
 async def handle_jupjup_command(channel_id: str) -> JSONResponse:
     """줍줍 핸들러"""
     await async_post_payload(JUPJUP_BUTTON, channel_id)
@@ -249,6 +259,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/신상품": handle_product_command,
     "/하나머니": handle_hanamoney_command,
     "/하나페이": handle_hanapay_command,
+    "/보안": handle_security_command,
     # Argument 필요한 커맨드
     "/아우야": handle_brother_command,
     "/운세": handle_fortune_command,

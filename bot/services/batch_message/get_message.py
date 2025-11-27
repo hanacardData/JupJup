@@ -6,7 +6,9 @@ from typing import Literal
 
 
 def get_batch_message(
-    type_: Literal["issue", "travellog", "travelcard", "hanamoney", "hanapay"],
+    type_: Literal[
+        "issue", "travellog", "travelcard", "hanamoney", "hanapay", "security"
+    ],
 ) -> list[str]:
     today_str = datetime.now().strftime("%Y-%m-%d")
     output_file = os.path.join("data", "messages", f"message_{today_str}.json")
