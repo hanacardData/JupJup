@@ -210,7 +210,7 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
 
 async def handle_security_command(channel_id: str) -> JSONResponse:
     """보안이슈를 요청했을 때 호출되는 핸들러입니다."""
-    messages = get_batch_message("securitys")
+    messages = get_batch_message("security")
     for message in messages:
         await async_post_message(message, channel_id)
     return JSONResponse(
