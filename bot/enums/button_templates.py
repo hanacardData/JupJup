@@ -57,6 +57,11 @@ JUPJUP_BUTTON = {
                 "label": "하나머니 앱 리뷰",
                 "text": "/하나머니",
             },
+            {
+                "type": "message",
+                "label": "보안 이슈 모니터링",
+                "text": "/보안",
+            },
         ],
     }
 }
