@@ -26,11 +26,13 @@ jobs:
       - name: run pr link post message
         run: |
           PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
           CHANNEL_ID="${{ secrets.TEST_CHANNEL_ID }}"
-          FINAL_MESSAGE="PR Created: ${PR_URL}"
+
+          FINAL_MESSAGE="[Pull Request 알림]\n제목: ${PR_TITLE}\n작성자: ${PR_AUTHOR}\n링크: ${PR_URL}\n---"
 
           echo "Full Message to Send: ${FINAL_MESSAGE}"
-
           uv run python -c "
           from bot.services.core.post_payload import async_post_message
           import asyncio
