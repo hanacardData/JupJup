@@ -32,14 +32,14 @@ jobs:
           echo "Full Message to Send: ${FINAL_MESSAGE}"
 
           uv run python -c "
-            from bot.services.core.post_payload import async_post_message
-            import asyncio
-            import sys
+          from bot.services.core.post_payload import async_post_message
+          import asyncio
+          import sys
 
-            test_message = sys.argv[1]
-            test_channel_id = sys.argv[2]
+          test_message = sys.argv[1]
+          test_channel_id = sys.argv[2]
 
-            asyncio.run(async_post_message(test_message, test_channel_id))
+          asyncio.run(async_post_message(test_message, test_channel_id))
           " "$FINAL_MESSAGE" "$CHANNEL_ID"
         shell: bash
         env:
