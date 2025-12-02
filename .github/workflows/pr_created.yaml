@@ -1,0 +1,52 @@
+name: Pull Request Created Event
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  uv-example:
+    name: python
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install the project
+        run: uv sync --locked
+
+      - name: run pr link post message
+        run: |
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          CHANNEL_ID="${{ secrets.TEST_CHANNEL_ID }}"
+          FINAL_MESSAGE="PR Created: ${PR_URL}"
+
+          echo "Full Message to Send: ${FINAL_MESSAGE}"
+
+          uv run python -c "
+            from bot.services.core.post_payload import async_post_message
+            import asyncio
+            import sys
+
+            test_message = sys.argv[1]
+            test_channel_id = sys.argv[2]
+
+            asyncio.run(async_post_message(test_message, test_channel_id))
+          " "$FINAL_MESSAGE" "$CHANNEL_ID"
+        shell: bash
+        env:
+          client_id: ${{ secrets.CLIENT_ID }}
+          client_secret: ${{ secrets.CLIENT_SECRET }}
+          works_client_id: ${{ secrets.WORKS_CLIENT_ID }}
+          works_client_secret: ${{ secrets.WORKS_CLIENT_SECRET }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+          private_key_path: ${{ secrets.PRIVATE_KEY_PATH }}
+          bot_secret: ${{ secrets.BOT_SECRET }}
