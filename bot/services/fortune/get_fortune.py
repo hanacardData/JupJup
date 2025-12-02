@@ -32,7 +32,7 @@ async def _calculate_hour_pillar(hour: int, day_stem: str) -> str:
             break
 
     # 일간에 따라 천간 결정
-    hour_stem_index = HOUR_BRANCHES.index((start, end, branch))  # 시지의 인덱스
+    hour_stem_index = HOUR_BRANCHES.index((start, end, hour_branch))  # 시지의 인덱스
     hour_stem = HOUR_STEM_TABLE[day_stem][hour_stem_index]
 
     # 시주 (천간 + 지지) 반환
@@ -88,7 +88,7 @@ def is_valid_date_input(input: str) -> bool:
 
 async def get_fortune_comment(input: str) -> str:
     if not is_valid_date_input(input):
-        return "날짜 형식이 잘못되었어요! YYYYMMDDHH 혹은 YYYYMMDDHHmm 형식으로 다시 입력해주세요."
+        return "날짜 형식이 잘못되었어요! YYYYMMDD, YYYYMMDDHH 혹은 YYYYMMDDHHmm 형식으로 다시 입력해주세요."
     try:
         year = int(input[:4])
         month = int(input[4:6])
