@@ -31,9 +31,9 @@ jobs:
           EVENT_ACTION="${{ github.event.action }}"
           CHANNEL_ID="${{ secrets.TEST_CHANNEL_ID }}"
 
-          MESSAGE_PREFIX="[Pull Request 알림]"
+          MESSAGE_PREFIX="[🚀 Pull Request 알림]"
           if [[ "$EVENT_ACTION" == "review_requested" || "$EVENT_ACTION" == "ready_for_review" ]]; then
-            MESSAGE_PREFIX="[검토 요청] 새로운 피드백 확인"
+            MESSAGE_PREFIX="[🔔 검토 요청] 새로운 피드백 확인"
           fi
 
           FINAL_MESSAGE="${MESSAGE_PREFIX}\\n제목: ${PR_TITLE}\\n작성자: ${PR_AUTHOR}\\n링크: ${PR_URL}"
