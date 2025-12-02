@@ -36,7 +36,7 @@ jobs:
             MESSAGE_PREFIX="[🔔 검토 요청] 새로운 피드백 확인"
           fi
 
-          FINAL_MESSAGE="${MESSAGE_PREFIX}\\n제목: ${PR_TITLE}\\n작성자: ${PR_AUTHOR}\\n링크: ${PR_URL}"
+          FINAL_MESSAGE="${MESSAGE_PREFIX}\r\n제목: ${PR_TITLE}\r\n작성자: ${PR_AUTHOR}\r\n링크: ${PR_URL}"
           echo "Full Message to Send: ${FINAL_MESSAGE}"
           uv run python -c "
           from bot.services.core.post_payload import async_post_message
