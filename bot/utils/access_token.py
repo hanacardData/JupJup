@@ -30,11 +30,9 @@ class TokenManager:
             "iat": now,
             "exp": exp,
         }
-
-        with open(PRIVATE_KEY_PATH, "r") as key_file:
-            private_key = serialization.load_pem_private_key(
-                key_file.read().encode(), password=None
-            )
+        private_key = serialization.load_pem_private_key(
+            PRIVATE_KEY_PATH.encode(), password=None
+        )
 
         encoded_jwt = jwt.encode(payload, private_key, algorithm="RS256")
 
