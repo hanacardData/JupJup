@@ -37,7 +37,25 @@ jobs:
             MESSAGE_PREFIX="🚀 [NEW PULL REQUEST]"
           fi
 
-          uv run python .github/workflows/post_pr.py "${MESSAGE_PREFIX}" "${PR_TITLE}" "${PR_AUTHOR}" "${PR_URL}" "${TEST_CHANNEL_ID}"
+          uv run python -c "
+          from bot.services.core.post_payload import async_post_message
+          import asyncio
+          import sys
+
+          prefix = sys.argv[1]
+          pr_title = sys.argv[2]
+          pr_author = sys.argv[3]
+          pr_url = sys.argv[4]
+          test_channel_id = sys.argv[5]
+
+          message = (
+            f'{prefix}\n'
+            f'제목: {pr_title}\n'
+            f'작성자: {pr_author}\n'
+            f'링크: {pr_url}'
+          )
+          asyncio.run(async_post_message(message, test_channel_id))
+          " "${MESSAGE_PREFIX}" "${PR_TITLE}" "${PR_AUTHOR}" "${PR_URL}" "${TEST_CHANNEL_ID}"
         shell: bash
         env:
           client_id: ${{ secrets.CLIENT_ID }}
