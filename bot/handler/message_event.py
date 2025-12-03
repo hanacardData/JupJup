@@ -257,8 +257,7 @@ async def handle_tarot_command(
             status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
         )
 
-    full_argument = f"{argument1} {argument2}"
-    full_result = await get_tarot_answer(full_argument)
+    full_result = await get_tarot_answer(argument1, argument2)
 
     parts = [
         part.strip() for part in re.split(r"\n(?=\d\))", full_result) if part.strip()
