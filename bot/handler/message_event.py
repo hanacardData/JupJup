@@ -244,9 +244,11 @@ async def handle_product_command(channel_id: str) -> JSONResponse:
     )
 
 
-async def handle_tarot_command(channel_id: str, argument: str) -> JSONResponse:
+async def handle_tarot_command(
+    channel_id: str, argument1: str, argument2: str
+) -> JSONResponse:
     """타로를 요청했을 때 호출되는 핸들러입니다."""
-    if not argument:
+    if not argument1 or not argument2:
         await async_post_message(
             NoneArgumentMessage.TAROT.value,
             channel_id,
@@ -255,7 +257,7 @@ async def handle_tarot_command(channel_id: str, argument: str) -> JSONResponse:
             status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
         )
 
-    full_result = await get_tarot_answer(argument)
+    full_result = await get_tarot_answer(argument1, argument2)
 
     parts = [
         part.strip() for part in re.split(r"\n(?=\d\))", full_result) if part.strip()
