@@ -1,3 +1,4 @@
+import re
 from typing import Callable
 
 from fastapi.responses import JSONResponse
@@ -21,6 +22,7 @@ from bot.services.core.post_payload import (
 )
 from bot.services.fortune.get_fortune import get_fortune_comment
 from bot.services.harmony.get_harmony import get_harmony_comment
+from bot.services.tarot.get_answer import get_tarot_answer
 
 
 async def handle_help_command(channel_id: str) -> JSONResponse:
@@ -242,6 +244,31 @@ async def handle_product_command(channel_id: str) -> JSONResponse:
     )
 
 
+async def handle_tarot_command(channel_id: str, argument: str) -> JSONResponse:
+    """타로를 요청했을 때 호출되는 핸들러입니다."""
+    if not argument:
+        await async_post_message(
+            NoneArgumentMessage.TAROT.value,
+            channel_id,
+        )
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
+        )
+
+    full_result = await get_tarot_answer(argument)
+
+    parts = [
+        part.strip() for part in re.split(r"\n(?=\d\))", full_result) if part.strip()
+    ]
+
+    for part in parts:
+        await async_post_message(part, channel_id)
+
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
 COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     # 명령 커맨드
     "/도움": handle_help_command,
@@ -265,6 +292,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/운세": handle_fortune_command,
     "/궁합": handle_harmony_command,
     "/이미지": handle_generate_image_command,
+    "/타로": handle_tarot_command,
 }
 
 
@@ -278,7 +306,7 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
     argument = command_parts[1] if len(command_parts) > 1 else ""
     handler = COMMAND_HANDLERS.get(command)
     if handler:
-        if command in ("/아우야", "/운세", "/이미지"):
+        if command in ("/아우야", "/운세", "/이미지", "/타로"):
             await handler(channel_id, argument)
         elif command == "/궁합":
             try:
