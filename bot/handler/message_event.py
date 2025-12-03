@@ -1,4 +1,4 @@
-import re
+import asyncio
 from typing import Callable
 
 from fastapi.responses import JSONResponse
@@ -257,14 +257,18 @@ async def handle_tarot_command(
             status_code=200, content={"status": BotStatus.MISSING_ARGUMENT}
         )
 
-    full_result = await get_tarot_answer(argument1, argument2)
+    async def send_progress_messages():
+        await async_post_message("🔮 기운을 모으는 중이에요", channel_id)
+        await asyncio.sleep(3)
+        await async_post_message("✨ 흐름이 잡혀가고 있어요", channel_id)
+        await asyncio.sleep(3)
+        await async_post_message("🌙 방향을 정리하고 있어요", channel_id)
 
-    parts = [
-        part.strip() for part in re.split(r"\n(?=\d\))", full_result) if part.strip()
-    ]
+    asyncio.create_task(send_progress_messages())
 
-    for part in parts:
-        await async_post_message(part, channel_id)
+    result = await get_tarot_answer(argument1, argument2)
+
+    await async_post_message(result, channel_id)
 
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
