@@ -29,25 +29,32 @@ jobs:
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_AUTHOR="${{ github.event.pull_request.user.login }}"
           EVENT_ACTION="${{ github.event.action }}"
-          CHANNEL_ID="${{ secrets.TEST_CHANNEL_ID }}"
+          TEST_CHANNEL_ID="${{ secrets.TEST_CHANNEL_ID }}"
 
-          MESSAGE_PREFIX="[🚀 Pull Request 알림]"
           if [[ "$EVENT_ACTION" == "review_requested" || "$EVENT_ACTION" == "ready_for_review" ]]; then
-            MESSAGE_PREFIX="[🔔 검토 요청] 새로운 피드백 확인"
-          fi
+            MESSAGE_PREFIX="🔔 [검토 요청]"
+          elif [[ "$EVENT_ACTION" == "opened" || "$EVENT_ACTION" == "reopened" ]]; then
+            MESSAGE_PREFIX="🚀 [NEW PULL REQUEST]"
 
-          FINAL_MESSAGE="${MESSAGE_PREFIX}\r\n제목: ${PR_TITLE}\r\n작성자: ${PR_AUTHOR}\r\n링크: ${PR_URL}"
-          echo "Full Message to Send: ${FINAL_MESSAGE}"
           uv run python -c "
           from bot.services.core.post_payload import async_post_message
           import asyncio
           import sys
 
-          test_message = sys.argv[1]
-          test_channel_id = sys.argv[2]
+          prefix = sys.argv[1]
+          pr_title = sys.argv[2]
+          pr_author = sys.argv[3]
+          pr_url = sys.argv[4]
+          test_channel_id = sys.argv[5]
 
-          asyncio.run(async_post_message(test_message, test_channel_id))
-          " "$FINAL_MESSAGE" "$CHANNEL_ID"
+          message = (
+            f'{prefix}\n'
+            f'제목: {pr_title}\n'
+            f'작성자: {pr_author}\n'
+            f'링크: {pr_url}'
+          )
+          asyncio.run(async_post_message(message, test_channel_id))
+          " "$MESSAGE_PREFIX" "$PR_TITLE" "$PR_AUTHOR" "$PR_URL" "$TEST_CHANNEL_ID"
         shell: bash
         env:
           client_id: ${{ secrets.CLIENT_ID }}
