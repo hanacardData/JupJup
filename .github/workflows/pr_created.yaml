@@ -35,6 +35,7 @@ jobs:
             MESSAGE_PREFIX="🔔 [검토 요청]"
           elif [[ "$EVENT_ACTION" == "opened" || "$EVENT_ACTION" == "reopened" ]]; then
             MESSAGE_PREFIX="🚀 [NEW PULL REQUEST]"
+          fi
 
           uv run python .github/workflows/post_pr.py "${MESSAGE_PREFIX}" "${PR_TITLE}" "${PR_AUTHOR}" "${PR_URL}" "${TEST_CHANNEL_ID}"
         shell: bash
