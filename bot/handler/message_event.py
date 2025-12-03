@@ -306,9 +306,9 @@ async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
     argument = command_parts[1] if len(command_parts) > 1 else ""
     handler = COMMAND_HANDLERS.get(command)
     if handler:
-        if command in ("/아우야", "/운세", "/이미지", "/타로"):
+        if command in ("/아우야", "/운세", "/이미지"):
             await handler(channel_id, argument)
-        elif command == "/궁합":
+        elif command in ("/궁합", "/타로"):
             try:
                 argument_parts = argument.split(maxsplit=1)
                 argument1 = argument_parts[0]
