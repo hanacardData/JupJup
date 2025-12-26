@@ -2,8 +2,9 @@ setlocal
 
 @echo off
 set DIR=C:\Users\user\Desktop\trend_analysis
-set LOGDIR=%DIR%\logs
-set LOGFILE=%LOGDIR%\log_%date:~0,4%%date:~5,2%%date:~8,2%.log
+set "LOGDIR=%DIR%\logs"
+for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd"') do set "TODAY=%%i"
+set "LOGFILE=%LOGDIR%\log_%TODAY%.log"
 
 if not exist %LOGDIR% (
     mkdir %LOGDIR%
