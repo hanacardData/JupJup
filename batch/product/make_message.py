@@ -99,7 +99,7 @@ async def process_generate_message(
 
 
 def _identify_companies(text: str) -> list[str]:
-    return [c for c in CARD_COMPANIES if c in (text or "")]
+    return [company for company in CARD_COMPANIES if company in (text or "")]
 
 
 def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFrame:
