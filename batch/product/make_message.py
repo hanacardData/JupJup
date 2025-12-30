@@ -51,9 +51,14 @@ async def process_generate_message(
             return [
                 f"오늘은 {button_label} 관련 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
             ]
-        refined_data["company"] = refined_data["title"].apply(_identify_company)
+        refined_data["companies"] = refined_data.apply(
+            lambda r: _identify_companies(
+                f"{r.get('title', '')} {r.get('description', '')}"
+            ),
+            axis=1,
+        )
         content = json.dumps(
-            refined_data[["company", "title", "link", "description"]].to_dict(
+            refined_data[["companies", "title", "link", "description"]].to_dict(
                 orient="records"
             ),
             ensure_ascii=False,
@@ -67,7 +72,9 @@ async def process_generate_message(
                 content=content,
             )
         else:
-            companies = ", ".join(sorted(set(refined_data["company"])))
+            companies = ", ".join(
+                sorted({c for xs in refined_data["companies"] for c in xs})
+            )
             text_input = OTHER_TEXT_INPUT.format(
                 count=actual_count, companies=companies, content=content
             )
@@ -91,11 +98,8 @@ async def process_generate_message(
         ]
 
 
-def _identify_company(text: str) -> str:
-    for company in CARD_COMPANIES:
-        if company in text:
-            return company
-    return "기타"
+def _identify_companies(text: str) -> list[str]:
+    return [c for c in CARD_COMPANIES if c in (text or "")]
 
 
 def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFrame:
