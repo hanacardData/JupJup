@@ -73,7 +73,13 @@ async def process_generate_message(
             )
         else:
             companies = ", ".join(
-                sorted({c for xs in refined_data["companies"] for c in xs})
+                sorted(
+                    {
+                        company
+                        for company_list in refined_data["companies"]
+                        for company in company_list
+                    }
+                )
             )
             text_input = OTHER_TEXT_INPUT.format(
                 count=actual_count, companies=companies, content=content
