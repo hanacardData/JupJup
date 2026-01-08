@@ -8,6 +8,9 @@ from holidayskr import is_holiday
 
 from batch.app_review.android import get_app_reviews
 from batch.compare_travel.make_message import get_compare_travel_message
+from batch.database import init_database
+from batch.geek_news.load import collect_load_geek_news
+from batch.geek_news.make_message import get_geeknews_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
@@ -54,6 +57,9 @@ def data_collect():
     for file_tag in ["credit", "debit", "wonder", "jade"]:
         collect_load_product_issues(file_tag=file_tag)
     logger.info("Product Data Collection Completed")
+
+    collect_load_geek_news()
+    logger.info("Geeknews Collection Completed")
 
 
 async def make_message(today_str: str, is_test: bool = False):
@@ -118,6 +124,17 @@ async def make_message(today_str: str, is_test: bool = False):
         logger.error(f"Failed to send messag scrap app review: {e}")
         raise
 
+    try:  # Geeknews 메시지 송신
+        geeknews_messages = get_geeknews_message()
+        logger.info("GeekNews messages ready")
+        for message in geeknews_messages:
+            await async_post_message(
+                message, TEST_CHANNEL_ID
+            )  # FIXME 테스트 용으로 채널에 송신
+    except Exception as e:
+        logger.error(f"Failed to send messag scrap geeknews: {e}")
+        raise
+
     try:
         product_messages = {
             "/경쟁사신용": await process_generate_message("신용카드 신상품"),
@@ -171,7 +188,7 @@ async def send_message(is_test: bool = False):
 
 if __name__ == "__main__":
     logger.info("Batch started")
-
+    init_database()  # db 초기화
     data_collect()  # 데이터 수집
     logger.info("Data collection completed")
 

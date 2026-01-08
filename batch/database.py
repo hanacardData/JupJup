@@ -9,6 +9,7 @@ def init_database():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 url TEXT UNIQUE NOT NULL,
+                is_posted INTEGER DEFAULT 0,
                 scrapped_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
