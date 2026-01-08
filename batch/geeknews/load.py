@@ -62,7 +62,6 @@ def collect_load_geeknews():
     root = ET.fromstring(response.content)
     ns = {"atom": "http://www.w3.org/2005/Atom"}
     entries = root.findall("atom:entry", ns)
-    # items: list[GeekNewsItem] = []
     for entry in reversed(entries):
         if (url := entry.find("atom:id", ns).text) >= last_url:
             logger.info(f"Insert {url}")
