@@ -64,7 +64,6 @@ def collect_load_geeknews():
     entries = root.findall("atom:entry", ns)
     for entry in reversed(entries):
         if (url := entry.find("atom:id", ns).text) >= last_url:
-            logger.info(f"Insert {url}")
             save_news_item(
                 GeekNewsItem(
                     title=remove_html(entry.find("atom:title", ns).text),
