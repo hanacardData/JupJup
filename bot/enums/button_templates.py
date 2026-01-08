@@ -67,6 +67,11 @@ JUPJUP_BUTTON = {
                 "label": "보안 이슈 모니터링",
                 "text": "/보안",
             },
+            {
+                "type": "message",
+                "label": "긱뉴스",
+                "text": "/긱뉴스",
+            },
         ],
     }
 }

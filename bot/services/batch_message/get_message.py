@@ -7,7 +7,13 @@ from typing import Literal
 
 def get_batch_message(
     type_: Literal[
-        "issue", "travellog", "travelcard", "hanamoney", "hanapay", "security"
+        "issue",
+        "travellog",
+        "travelcard",
+        "hanamoney",
+        "hanapay",
+        "security",
+        "geeknews",
     ],
 ) -> list[str]:
     today_str = datetime.now().strftime("%Y-%m-%d")
@@ -40,7 +46,7 @@ def get_product_batch_message(
         return [f"배치 메세지를 불러오는 중 오류가 발생했어요: {str(e)}"]
 
 
-def make_travellog_flexible_payload(
+def make_flexible_payload(
     messages: list[str],
 ) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
     carousel_payload = {"type": "carousel", "contents": []}

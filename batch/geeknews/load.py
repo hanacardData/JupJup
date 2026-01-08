@@ -1,3 +1,5 @@
+import html
+import re
 import sqlite3
 import xml.etree.ElementTree as ET
 
@@ -10,13 +12,20 @@ from logger import logger
 class GeekNewsItem(BaseModel):
     title: str
     url: str
+    content: str
+
+
+def remove_html(raw_html: str) -> str:
+    clean_text = re.sub("<.*?>", "", raw_html)
+    clean_text = html.unescape(clean_text)
+    return clean_text.strip()
 
 
 def get_latest_url_from_db() -> str:
     with sqlite3.connect("jupjup.db") as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT url FROM geek_news
+            SELECT url FROM geeknews
             ORDER BY url ASC
             LIMIT 1
         """)
@@ -30,17 +39,17 @@ def save_news_item(item: GeekNewsItem):
         try:
             cursor.execute(
                 """
-                INSERT OR IGNORE INTO geek_news (title, url)
-                VALUES (?, ?)
-            """,
-                (item.title, item.url),
+                INSERT OR IGNORE INTO geeknews (title, url, content)
+                VALUES (?, ?, ?)
+                """,
+                (item.title, item.url, item.content),
             )
             conn.commit()
         except sqlite3.Error as e:
             logger.error(f"DB save error: {e}")
 
 
-def collect_load_geek_news():
+def collect_load_geeknews():
     RSS_URL = "https://feeds.feedburner.com/geeknews-feed"
     try:
         response = requests.get(RSS_URL, timeout=10)
@@ -53,15 +62,18 @@ def collect_load_geek_news():
     root = ET.fromstring(response.content)
     ns = {"atom": "http://www.w3.org/2005/Atom"}
     entries = root.findall("atom:entry", ns)
+    # items: list[GeekNewsItem] = []
     for entry in reversed(entries):
         if (url := entry.find("atom:id", ns).text) >= last_url:
+            logger.info(f"Insert {url}")
             save_news_item(
                 GeekNewsItem(
-                    title=entry.find("atom:title", ns).text,
+                    title=remove_html(entry.find("atom:title", ns).text),
                     url=url,
+                    content=remove_html(entry.find("atom:content", ns).text),
                 )
             )
 
 
 if __name__ == "__main__":
-    collect_load_geek_news()
+    collect_load_geeknews()

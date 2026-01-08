@@ -10,7 +10,7 @@ from bot.services.batch_message.get_message import (
     get_batch_message,
     get_product_batch_message,
     make_app_review_flexible_payload,
-    make_travellog_flexible_payload,
+    make_flexible_payload,
 )
 from bot.services.brother.get_answer import get_brother_answer
 from bot.services.cafeteria.menu import get_weekly_menu_message
@@ -38,7 +38,7 @@ async def handle_travellog_command(channel_id: str) -> JSONResponse:
         return JSONResponse(
             status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
         )
-    payload = make_travellog_flexible_payload(messages)
+    payload = make_flexible_payload(messages)
     await async_post_payload(payload, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
@@ -220,6 +220,17 @@ async def handle_security_command(channel_id: str) -> JSONResponse:
     )
 
 
+async def handle_geeknews_command(channel_id: str) -> JSONResponse:
+    """긱뉴스를 요청했을 때 호출되는 핸들러입니다."""
+    messages = get_batch_message("geeknews")
+    if len(messages) > 1:
+        payload = make_flexible_payload(messages)
+        await async_post_payload(payload, channel_id)
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
 async def handle_jupjup_command(channel_id: str) -> JSONResponse:
     """줍줍 핸들러"""
     await async_post_payload(JUPJUP_BUTTON, channel_id)
@@ -293,6 +304,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/하나머니": handle_hanamoney_command,
     "/하나페이": handle_hanapay_command,
     "/보안": handle_security_command,
+    "/긱뉴스": handle_geeknews_command,
     # Argument 필요한 커맨드
     "/아우야": handle_brother_command,
     "/운세": handle_fortune_command,
