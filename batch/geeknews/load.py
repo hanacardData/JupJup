@@ -26,7 +26,7 @@ def get_latest_url_from_db() -> str:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT url FROM geeknews
-            ORDER BY url ASC
+            ORDER BY id DESC
             LIMIT 1
         """)
         result = cursor.fetchone()
@@ -63,7 +63,7 @@ def collect_load_geeknews():
     ns = {"atom": "http://www.w3.org/2005/Atom"}
     entries = root.findall("atom:entry", ns)
     for entry in reversed(entries):
-        if (url := entry.find("atom:id", ns).text) >= last_url:
+        if (url := entry.find("atom:id", ns).text) > last_url:
             save_news_item(
                 GeekNewsItem(
                     title=remove_html(entry.find("atom:title", ns).text),
