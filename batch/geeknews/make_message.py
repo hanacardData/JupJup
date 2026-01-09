@@ -18,7 +18,7 @@ def get_geeknews_message() -> list[str]:
         )
         unposted = cursor.fetchall()
         messages: list[str] = ["geeknews"]
-        for row in unposted:
+        for row in unposted[:10]:
             try:
                 message = (
                     f"제목:{row['title']}\n내용:{row['content']}\n링크:{row['url']}"
@@ -27,4 +27,5 @@ def get_geeknews_message() -> list[str]:
                 update_posted_status(row["id"])
             except Exception as e:
                 logger.error(f"Poster Error (ID {row['id']}): {e}")
+
     return messages

@@ -9,8 +9,10 @@ from holidayskr import is_holiday
 from batch.app_review.android import get_app_reviews
 from batch.compare_travel.make_message import get_compare_travel_message
 from batch.database import init_database
+from batch.geeknews.gpt_rank import gpt_score_and_update
 from batch.geeknews.load import collect_load_geeknews
 from batch.geeknews.make_message import get_geeknews_message
+from batch.geeknews.rank import _fetch_unposted, select_top_by_rule, update_rule_scores
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
@@ -60,6 +62,15 @@ def data_collect():
 
     collect_load_geeknews()
     logger.info("Geeknews Collection Completed")
+
+    rows = _fetch_unposted(limit=200)
+    updated = update_rule_scores(limit=2000)
+    logger.info(f"Geeknews rule_score updated: {updated} rows")
+
+    # rule_score 상위 30개만 GPT로 점수 매겨 DB 업데이트
+    top_30 = select_top_by_rule(rows, top_m=30)
+    asyncio.run(gpt_score_and_update(top_30, concurrency=5))
+    logger.info("Geeknews gpt_score updated")
 
 
 async def make_message(today_str: str, is_test: bool = False):
