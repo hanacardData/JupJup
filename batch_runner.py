@@ -63,6 +63,7 @@ def data_collect():
     collect_load_geeknews()
     logger.info("Geeknews Collection Completed")
 
+    # 자체 점수 계산 및 is_unposted 조정
     rows = _fetch_unposted(limit=200)
     updated = update_rule_scores(limit=2000)
     logger.info(f"Geeknews rule_score updated: {updated} rows")
