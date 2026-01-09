@@ -8,6 +8,9 @@ from holidayskr import is_holiday
 
 from batch.app_review.android import get_app_reviews
 from batch.compare_travel.make_message import get_compare_travel_message
+from batch.database import init_database
+from batch.geeknews.load import collect_load_geeknews
+from batch.geeknews.make_message import get_geeknews_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
@@ -54,6 +57,9 @@ def data_collect():
     for file_tag in ["credit", "debit", "wonder", "jade"]:
         collect_load_product_issues(file_tag=file_tag)
     logger.info("Product Data Collection Completed")
+
+    collect_load_geeknews()
+    logger.info("Geeknews Collection Completed")
 
 
 async def make_message(today_str: str, is_test: bool = False):
@@ -105,17 +111,23 @@ async def make_message(today_str: str, is_test: bool = False):
             for message in security_messages:
                 await async_post_message(message, SECURITY_CHANNEL_ID)
             logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
-
     except Exception as e:
         logger.error(f"Failed to generate and send security alerts: {e}")
         await async_post_message(f"Security error: {str(e)}", TEST_CHANNEL_ID)
         raise
 
-    try:  # 앱 리뷰 메시지 송신
+    try:  # 앱 리뷰 메시지 생성
         hanamoney_reviews, hanapay_reviews = get_app_reviews()
         logger.info("App review messages ready")
     except Exception as e:
         logger.error(f"Failed to send messag scrap app review: {e}")
+        raise
+
+    try:  # Geeknews 메시지 생성
+        geeknews_messages = get_geeknews_message()
+        logger.info("GeekNews messages ready")
+    except Exception as e:
+        logger.error(f"Failed to send messag scrap geeknews: {e}")
         raise
 
     try:
@@ -144,6 +156,7 @@ async def make_message(today_str: str, is_test: bool = False):
             "product": product_messages,
             "hanamoney": hanamoney_reviews,
             "hanapay": hanapay_reviews,
+            "geeknews": geeknews_messages,
         }
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -171,7 +184,7 @@ async def send_message(is_test: bool = False):
 
 if __name__ == "__main__":
     logger.info("Batch started")
-
+    init_database()  # db 초기화
     data_collect()  # 데이터 수집
     logger.info("Data collection completed")
 
