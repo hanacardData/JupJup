@@ -22,7 +22,7 @@ private_key_path = "****" # 1번의 경로를 붙여넣는다
 
 3. 의존성 설치
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 4. 실행 (Batch)
