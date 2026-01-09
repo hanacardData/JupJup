@@ -32,5 +32,5 @@ SUBSCRIBE_CHANNEL_IDS: list[str] = [
     "26a62def-63c3-7023-e08e-10610bc97e96",  # 감사부 이정욱
     "8e1d14fb-535d-174e-35f6-3a5b7cdd7bfe",  # 발급팀 조복엽
     "115639965",  # 감사부 이명주
-    "0ad1869f-18d0-ccca-418e-c2dbfcfb3d92",  # 디지털본부 박상준
+    "4b71ed8b-8024-6874-7bda-1b4035dab911",  # 디지털본부 박상준
 ]
