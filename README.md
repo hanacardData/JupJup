@@ -18,6 +18,7 @@ works_client_id = "****"
 works_client_secret = "****"
 service_account = "****"
 private_key_path = "****" # 1번의 경로를 붙여넣는다
+bot_secret = "****"
 ```
 
 3. 의존성 설치
