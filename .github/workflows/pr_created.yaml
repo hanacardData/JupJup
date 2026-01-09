@@ -24,40 +24,12 @@ jobs:
         run: uv sync --locked
 
       - name: run pr link post message
-        run: |
-          PR_URL="${{ github.event.pull_request.html_url }}"
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
-          EVENT_ACTION="${{ github.event.action }}"
-          TEST_CHANNEL_ID="${{ secrets.TEST_CHANNEL_ID }}"
-
-          if [[ "$EVENT_ACTION" == "review_requested" || "$EVENT_ACTION" == "ready_for_review" ]]; then
-            MESSAGE_PREFIX="🔔 [검토 요청]"
-          elif [[ "$EVENT_ACTION" == "opened" || "$EVENT_ACTION" == "reopened" ]]; then
-            MESSAGE_PREFIX="🚀 [NEW PULL REQUEST]"
-          fi
-
-          uv run python -c "
-          from bot.services.core.post_payload import async_post_message
-          import asyncio
-          import sys
-
-          prefix = sys.argv[1]
-          pr_title = sys.argv[2]
-          pr_author = sys.argv[3]
-          pr_url = sys.argv[4]
-          test_channel_id = sys.argv[5]
-
-          message = (
-            f'{prefix}\n'
-            f'제목: {pr_title}\n'
-            f'작성자: {pr_author}\n'
-            f'링크: {pr_url}'
-          )
-          asyncio.run(async_post_message(message, test_channel_id))
-          " "${MESSAGE_PREFIX}" "${PR_TITLE}" "${PR_AUTHOR}" "${PR_URL}" "${TEST_CHANNEL_ID}"
         shell: bash
         env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          TEST_CHANNEL_ID: ${{ secrets.TEST_CHANNEL_ID }}
           client_id: ${{ secrets.CLIENT_ID }}
           client_secret: ${{ secrets.CLIENT_SECRET }}
           works_client_id: ${{ secrets.WORKS_CLIENT_ID }}
@@ -65,3 +37,25 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           private_key_path: ${{ secrets.PRIVATE_KEY_PATH }}
           bot_secret: ${{ secrets.BOT_SECRET }}
+          PYTHON_SCRIPT: |
+            import asyncio, os
+            from bot.services.core.post_payload import async_post_message
+
+            message = (
+              f"{os.getenv('MESSAGE_PREFIX')}\n"
+              f"제목: {os.getenv('PR_TITLE')}\n"
+              f"작성자: {os.getenv('PR_AUTHOR')}\n"
+              f"링크: {os.getenv('PR_URL')}"
+            )
+            asyncio.run(async_post_message(message, os.getenv("TEST_CHANNEL_ID")))
+        run: |
+          EVENT_ACTION="${{ github.event.action }}"
+          TEST_CHANNEL_ID="${{ secrets.TEST_CHANNEL_ID }}"
+          if [[ "$EVENT_ACTION" == "review_requested" || "$EVENT_ACTION" == "ready_for_review" ]]; then
+            MESSAGE_PREFIX="🔔 [검토 요청]"
+          elif [[ "$EVENT_ACTION" == "opened" || "$EVENT_ACTION" == "reopened" ]]; then
+            MESSAGE_PREFIX="🚀 [NEW PULL REQUEST]"
+          fi
+          export MESSAGE_PREFIX
+
+          uv run python -c "$PYTHON_SCRIPT"
