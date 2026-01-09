@@ -58,4 +58,4 @@ jobs:
           fi
           export MESSAGE_PREFIX
 
-          uv run python $PYTHON_SCRIPT
+          uv run python -c "$PYTHON_SCRIPT"
