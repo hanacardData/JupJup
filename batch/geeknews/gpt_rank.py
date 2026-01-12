@@ -6,7 +6,7 @@ import sqlite3
 from dataclasses import dataclass
 
 from batch.geeknews.rank import DB_PATH, GeekRow
-from bot.services.core.openai_client import (  # 네 함수 위치에 맞게 import 수정
+from bot.services.core.openai_client import (
     async_openai_response,
 )
 from logger import logger
