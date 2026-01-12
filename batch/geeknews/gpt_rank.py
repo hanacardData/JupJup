@@ -1,21 +1,21 @@
-# batch/geeknews/gpt_rank.py
 from __future__ import annotations
 
 import asyncio
 import sqlite3
 from dataclasses import dataclass
 
-from batch.geeknews.rank import DB_PATH, GeekRow
-from bot.services.core.openai_client import (
-    async_openai_response,
-)
+from bot.services.core.openai_client import async_openai_response
 from logger import logger
+
+DB_PATH = "jupjup.db"
 
 
 @dataclass
-class GPTScored:
-    row: GeekRow
-    score: float
+class GeekRow:
+    id: int
+    title: str
+    content: str
+    url: str
 
 
 SCORING_PROMPT = """
@@ -103,39 +103,37 @@ async def score_one_with_gpt(row: GeekRow, semaphore: asyncio.Semaphore) -> floa
             return 0.0
 
 
-async def gpt_rerank(
-    rows: list[GeekRow],
-    top_k: int = 10,
-    concurrency: int = 5,
-) -> list[GeekRow]:
-    """
-    rows: 1차 규칙 점수로 줄여놓은 후보 리스트(예: 20개)
-    top_k: 최종 몇 개만 반환할지
-    concurrency: OpenAI 동시 호출 수 제한
-    """
-    if not rows:
-        return []
+def fetch_candidates_for_gpt(limit: int = 30) -> list[GeekRow]:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT id, title, content, url
+            FROM geeknews
+            WHERE is_posted = 0
+              AND rule_score IS NOT NULL
+              AND gpt_score IS NULL
+            ORDER BY rule_score DESC, id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
 
-    sem = asyncio.Semaphore(concurrency)
-    scores = await asyncio.gather(
-        *[score_one_with_gpt(r, sem) for r in rows],
-        return_exceptions=True,
-    )
-
-    scored: list[GPTScored] = []
-    for r, s in zip(rows, scores):
-        if isinstance(s, Exception):
-            logger.warning(f"[GeekNews] GPT score exception: {s}")
-            continue
-        scored.append(GPTScored(row=r, score=float(s)))
-
-    scored.sort(key=lambda x: x.score, reverse=True)
-    return [x.row for x in scored[:top_k]]
+    return [
+        GeekRow(
+            id=int(r["id"]),
+            title=str(r["title"]),
+            content=str(r["content"]),
+            url=str(r["url"]),
+        )
+        for r in rows
+    ]
 
 
-def update_gpt_scores(scored: list[tuple[int, float]]) -> None:
-    if not scored:
+def update_gpt_scores(ids_scores: list[tuple[int, float]]) -> None:
+    if not ids_scores:
         return
+
     with sqlite3.connect(DB_PATH) as conn:
         conn.executemany(
             """
@@ -143,37 +141,26 @@ def update_gpt_scores(scored: list[tuple[int, float]]) -> None:
             SET gpt_score = ?, scored_at = CURRENT_TIMESTAMP
             WHERE id = ?
             """,
-            [(float(score), int(id_)) for id_, score in scored],
+            [(float(score), int(id_)) for id_, score in ids_scores],
         )
         conn.commit()
 
 
-async def gpt_score_and_update(
-    rows: list[GeekRow],
+async def gpt_score_for_send(
+    candidates: list[GeekRow],
+    top_k: int = 10,
     concurrency: int = 5,
 ) -> list[tuple[int, float]]:
-    """
-    rows를 GPT로 스코어링하고, DB geeknews.gpt_score에 저장한다.
-    return: [(id, gpt_score), ...]
-    """
-    if not rows:
+    if not candidates:
         return []
 
     sem = asyncio.Semaphore(concurrency)
+    scores = await asyncio.gather(*[score_one_with_gpt(r, sem) for r in candidates])
 
-    async def _run(row: GeekRow) -> tuple[int, float]:
-        score = await score_one_with_gpt(row, sem)
-        return row.id, float(score)
+    scored = [(r.id, float(s)) for r, s in zip(candidates, scores)]
+    scored.sort(key=lambda x: x[1], reverse=True)
 
-    results = await asyncio.gather(*[_run(r) for r in rows], return_exceptions=True)
-
-    cleaned: list[tuple[int, float]] = []
-    for r in results:
-        if isinstance(r, Exception):
-            logger.warning(f"[GeekNews] GPT scoring exception: {r}")
-            continue
-        cleaned.append((int(r[0]), float(r[1])))
-
-    update_gpt_scores(cleaned)
-    logger.info(f"[GeekNews] Updated gpt_score rows={len(cleaned)}")
-    return cleaned
+    top = scored[:top_k]
+    update_gpt_scores(top)
+    logger.info(f"[GeekNews] Stored gpt_score only for send: {len(top)} rows")
+    return top
