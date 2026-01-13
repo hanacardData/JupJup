@@ -36,10 +36,17 @@ def save_news_item(item: GeekNewsItem) -> None:
         try:
             conn.execute(
                 """
-                INSERT OR IGNORE INTO geeknews (title, url, content, rule_score, gpt_score)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT OR IGNORE INTO geeknews (title, url, content, rule_score, gpt_score, topic)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (item.title, item.url, item.content, item.rule_score, item.gpt_score),
+                (
+                    item.title,
+                    item.url,
+                    item.content,
+                    item.rule_score,
+                    item.gpt_score,
+                    item.topic,
+                ),
             )
             conn.commit()
         except sqlite3.Error as e:
@@ -77,6 +84,7 @@ def collect_load_geeknews(rule_top_n: int = 30, gpt_concurrency: int = 5) -> Non
                     content=content,
                     rule_score=rule_score,
                     gpt_score=None,
+                    topic=None,
                 )
             )
 
@@ -86,10 +94,16 @@ def collect_load_geeknews(rule_top_n: int = 30, gpt_concurrency: int = 5) -> Non
     gpt_scores = asyncio.run(
         gpt_score_from_items(top_items, concurrency=gpt_concurrency)
     )
-    score_map = {it.url: float(s) for it, s in zip(top_items, gpt_scores)}
+    score_map = {
+        it.url: (float(score), topic)
+        for it, (score, topic) in zip(top_items, gpt_scores)
+    }
+
     for it in items:
         if it.url in score_map:
-            it.gpt_score = score_map[it.url]
+            s, tp = score_map[it.url]
+            it.gpt_score = s
+            it.topic = tp
         save_news_item(it)
 
     logger.info(

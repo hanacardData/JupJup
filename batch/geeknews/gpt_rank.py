@@ -1,4 +1,6 @@
 import asyncio
+import json
+import re
 
 from pydantic import BaseModel
 
@@ -12,11 +14,13 @@ class GeekNewsItem(BaseModel):
     content: str
     rule_score: float
     gpt_score: float | None = None
+    topic: str | None = None
 
 
 SCORING_PROMPT = """
 당신은 하나카드 관점의 '기술/이슈 뉴스' 우선순위 큐레이터입니다.
-아래 기사/글이 하나카드 업무에 얼마나 중요한지 0~100 점수로 평가하세요.
+1. 아래 기사/글이 하나카드 업무에 얼마나 중요한지 0~100 점수로 평가하세요.
+2. 아래 기사/글의 대주제를 공백 포함 8글자 이내의 한국어로 추출하세요.
 
 [최우선: 크게 가산]
 - 카드/결제/PG/지급결제, 금융권(은행/증권/보험) 인프라, 핀테크
@@ -43,8 +47,12 @@ SCORING_PROMPT = """
 - 0~39: 관련성 낮음
 
 출력 형식:
-- 반드시 숫자 하나만 출력 (예: 73)
-- 다른 설명/문장/기호 출력 금지
+- 반드시 JSON 한 줄로만 출력
+- keys: score, topic
+- score: 0~100 숫자
+- topic: 뉴스의 대주제(공백 포함 8글자 이내)
+- 예: {"score":73,"topic":"라우터 해킹"}
+- 다른 문장/설명 출력 금지
 """.strip()
 
 
@@ -64,46 +72,62 @@ def _make_prompt_input(row: GeekNewsItem) -> str:
 """.strip()
 
 
-def _parse_score_from_gpt_output(text: str) -> float:
+def _parse_score_topic(text: str) -> tuple[float, str]:
     if not text:
-        return 0.0
+        return 0.0, "기타"
+
     t = text.strip()
 
     try:
-        v = float(t)
-        return max(0.0, min(100.0, v))
+        obj = json.loads(t)
+        score = float(obj.get("score", 0.0))
+        topic = str(obj.get("topic", "")).strip()
+        score = max(0.0, min(100.0, score))
+        topic = topic if topic else "기타"
+        topic = topic[:10]
+        return score, topic
     except Exception:
         pass
 
-    digits = "".join(ch for ch in t if (ch.isdigit() or ch == "."))
-    try:
-        v = float(digits)
-        return max(0.0, min(100.0, v))
-    except Exception:
-        return 0.0
+    score = 0.0
+    topic = "기타"
+
+    m_score = re.search(r"(\d+(\.\d+)?)", t)
+    if m_score:
+        try:
+            score = float(m_score.group(1))
+            score = max(0.0, min(100.0, score))
+        except Exception:
+            score = 0.0
+
+    m_topic = re.search(r"topic\"?\s*[:=]\s*\"?([^\"}\n]+)", t, re.IGNORECASE)
+    if m_topic:
+        topic = m_topic.group(1).strip() or "기타"
+
+    return score, topic[:8]
 
 
 async def _gpt_score_one_item(
     item: GeekNewsItem, semaphore: asyncio.Semaphore
-) -> float:
+) -> tuple[float, str]:
     async with semaphore:
         try:
             out = await async_openai_response(
                 prompt=SCORING_PROMPT,
                 input=_make_prompt_input(item),
             )
-            return _parse_score_from_gpt_output(out)
+            return _parse_score_topic(out)
         except Exception as e:
             logger.warning(f"[GeekNews] GPT scoring failed (url={item.url}): {e}")
-            return 0.0
+            return 0.0, "기타"
 
 
 async def gpt_score_from_items(
     items: list[GeekNewsItem],
     concurrency: int = 5,
-) -> list[float]:
+) -> list[tuple[float, str]]:
     if not items:
         return []
     sem = asyncio.Semaphore(concurrency)
-    scores = await asyncio.gather(*[_gpt_score_one_item(it, sem) for it in items])
-    return [float(s) for s in scores]
+    results = await asyncio.gather(*[_gpt_score_one_item(it, sem) for it in items])
+    return [(float(s), str(tp)) for (s, tp) in results]

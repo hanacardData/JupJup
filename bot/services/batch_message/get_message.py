@@ -51,11 +51,66 @@ def make_flexible_payload(
 ) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
     carousel_payload = {"type": "carousel", "contents": []}
 
+    for msg in messages[1:]:  # 첫 줄은 무시 (인사말)
+        title_match = re.search(r"제목:\s*(.+)", msg)
+        text_match = re.search(r"내용:\s*(.+)", msg)
+        link_match = re.search(r"링크:\s*(.+)", msg)
+
+        if not (title_match and text_match and link_match):
+            continue
+        title = title_match.group(1).strip('"{}').strip()
+        text = text_match.group(1).strip('"{}').strip()
+        link = link_match.group(1).strip('"{}').strip()
+        content = {
+            "type": "bubble",
+            "size": "kilo",
+            "header": {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [{"type": "text", "text": title, "wrap": True}],
+            },
+            "body": {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [{"type": "text", "text": text, "wrap": True}],
+            },
+            "footer": {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [
+                    {
+                        "type": "button",
+                        "style": "primary",
+                        "action": {"type": "uri", "label": "link", "uri": link},
+                        "height": "sm",
+                    }
+                ],
+            },
+        }
+        carousel_payload["contents"].append(content)
+
+    return {
+        "content": {
+            "type": "flex",
+            "altText": "TravelLog",
+            "contents": carousel_payload,
+        }
+    }
+
+
+def make_geeknews_payload(
+    messages: list[str],
+) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
+    carousel_payload = {"type": "carousel", "contents": []}
+
     idx = 0
     for msg in messages[1:]:  # 첫 줄은 무시 (인사말)
         title_match = re.search(r"제목:\s*(.+)", msg)
         text_match = re.search(r"내용:\s*(.+)", msg)
         link_match = re.search(r"링크:\s*(.+)", msg)
+        topic_match = re.search(r"대주제:\s*(.+)", msg)
+        topic = topic_match.group(1).strip('"{}').strip() if topic_match else "기타"
+        topic = topic[:8]
 
         if not (title_match and text_match and link_match):
             continue
@@ -75,7 +130,7 @@ def make_flexible_payload(
                 "contents": [
                     {
                         "type": "text",
-                        "text": f"오늘의 기술 이슈 {idx}!",
+                        "text": f"{idx}. {topic}",
                         "color": "#FFFFFF",
                         "weight": "bold",
                         "size": "md",
@@ -114,6 +169,7 @@ def make_flexible_payload(
                     {
                         "type": "button",
                         "style": "primary",
+                        "color": "#0B8F6A",
                         "height": "sm",
                         "action": {"type": "uri", "label": "원문 보기", "uri": link},
                     }
@@ -126,7 +182,7 @@ def make_flexible_payload(
     return {
         "content": {
             "type": "flex",
-            "altText": "TravelLog",
+            "altText": "Flexible",
             "contents": carousel_payload,
         }
     }
