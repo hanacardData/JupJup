@@ -34,7 +34,7 @@ def remove_html(raw_html: str) -> str:
 def get_last_url() -> str:
     with sqlite3.connect(DB_PATH) as conn:
         row = conn.execute("SELECT MAX(url) FROM geeknews").fetchone()
-    return (row[0] or "").strip() if row else ""
+    return (row[0] or "").strip()
 
 
 def save_news_item(item: GeekNewsItem) -> None:
