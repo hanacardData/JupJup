@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import asyncio
-import sqlite3
 from dataclasses import dataclass
 
 from bot.services.core.openai_client import async_openai_response
 from logger import logger
-
-DB_PATH = "jupjup.db"
 
 
 @dataclass
@@ -90,77 +87,25 @@ def _parse_score(text: str) -> float:
         return 0.0
 
 
-async def score_one_with_gpt(row: GeekRow, semaphore: asyncio.Semaphore) -> float:
+async def score_one_with_gpt(item: GeekRow, semaphore: asyncio.Semaphore) -> float:
     async with semaphore:
         try:
             out = await async_openai_response(
                 prompt=SCORING_PROMPT,
-                input=_make_input(row),
+                input=_make_input(item),
             )
             return _parse_score(out)
         except Exception as e:
-            logger.warning(f"[GeekNews] GPT scoring failed (id={row.id}): {e}")
+            logger.warning(f"[GeekNews] GPT scoring failed (url={item.url}): {e}")
             return 0.0
 
 
-def fetch_candidates_for_gpt(limit: int = 30) -> list[GeekRow]:
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute(
-            """
-            SELECT id, title, content, url
-            FROM geeknews
-            WHERE is_posted = 0
-              AND rule_score IS NOT NULL
-              AND gpt_score IS NULL
-            ORDER BY rule_score DESC, id DESC
-            LIMIT ?
-            """,
-            (limit,),
-        ).fetchall()
-
-    return [
-        GeekRow(
-            id=int(r["id"]),
-            title=str(r["title"]),
-            content=str(r["content"]),
-            url=str(r["url"]),
-        )
-        for r in rows
-    ]
-
-
-def update_gpt_scores(ids_scores: list[tuple[int, float]]) -> None:
-    if not ids_scores:
-        return
-
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.executemany(
-            """
-            UPDATE geeknews
-            SET gpt_score = ?, scored_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-            """,
-            [(float(score), int(id_)) for id_, score in ids_scores],
-        )
-        conn.commit()
-
-
-async def gpt_score_for_send(
-    candidates: list[GeekRow],
-    top_k: int = 10,
+async def score_items(
+    items: list[GeekRow],
     concurrency: int = 5,
-) -> list[tuple[int, float]]:
-    if not candidates:
+) -> list[float]:
+    if not items:
         return []
-
     sem = asyncio.Semaphore(concurrency)
-    scores = await asyncio.gather(*[score_one_with_gpt(r, sem) for r in candidates])
-
-    scored = [(r.id, float(s)) for r, s in zip(candidates, scores)]
-    scored.sort(key=lambda x: x[1], reverse=True)
-
-    top = scored[:top_k]
-    update_gpt_scores(top)
-    logger.info(f"[GeekNews] Stored gpt_score only for send: {len(top)} rows")
-    return top
+    scores = await asyncio.gather(*[score_one_with_gpt(it, sem) for it in items])
+    return [float(s) for s in scores]

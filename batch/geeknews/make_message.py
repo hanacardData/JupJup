@@ -1,20 +1,26 @@
 import sqlite3
 
+from batch.database import DB_PATH
 from logger import logger
 
 
 def update_posted_status(id: str):
-    with sqlite3.connect("jupjup.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         conn.execute("UPDATE geeknews SET is_posted = 1 WHERE id = ?", (id,))
         conn.commit()
 
 
 def get_geeknews_message() -> list[str]:
     """DB에서 미발송건만 찾아 전달"""
-    with sqlite3.connect("jupjup.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
         cursor = conn.execute(
-            "SELECT id, title, content, url FROM geeknews WHERE is_posted = 0 ORDER BY id ASC"
+            """
+            SELECT id, title, content, url
+            FROM geeknews
+            WHERE is_posted = 0
+            ORDER BY gpt_score DESC
+            """
         )
         unposted = cursor.fetchall()
         messages: list[str] = ["geeknews"]

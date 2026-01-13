@@ -1,9 +1,3 @@
-from __future__ import annotations
-
-import re
-from dataclasses import dataclass
-
-# 1차(규칙) 키워드 가중치
 KEYWORD_WEIGHTS: dict[str, int] = {
     # ===== 최상위: 금융·보안·개인정보 =====
     "금융": 22,
@@ -48,16 +42,6 @@ KEYWORD_WEIGHTS: dict[str, int] = {
     "machine learning": 1,
     "업무": 1,
 }
-
-WORD_RE = re.compile(r"[A-Za-z0-9가-힣]+")
-
-
-@dataclass
-class GeekRow:
-    id: int
-    title: str
-    url: str
-    content: str
 
 
 def _keyword_score(text: str) -> float:

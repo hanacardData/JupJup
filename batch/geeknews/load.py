@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import html
 import re
 import sqlite3
@@ -8,10 +9,11 @@ import xml.etree.ElementTree as ET
 import requests
 from pydantic import BaseModel
 
+from batch.database import DB_PATH
+from batch.geeknews.gpt_rank import GeekRow, score_items
 from batch.geeknews.rank import rule_score_from_text
 from logger import logger
 
-DB_PATH = "jupjup.db"
 RSS_URL = "https://feeds.feedburner.com/geeknews-feed"
 
 
@@ -19,6 +21,8 @@ class GeekNewsItem(BaseModel):
     title: str
     url: str
     content: str
+    rule_score: float
+    gpt_score: float | None = None
 
 
 def remove_html(raw_html: str) -> str:
@@ -27,24 +31,28 @@ def remove_html(raw_html: str) -> str:
     return clean_text.strip()
 
 
-def save_news_item(item: GeekNewsItem) -> None:
-    score = float(rule_score_from_text(item.title, item.content))
+def get_last_url() -> str:
+    with sqlite3.connect(DB_PATH) as conn:
+        row = conn.execute("SELECT MAX(url) FROM geeknews").fetchone()
+    return (row[0] or "").strip() if row else ""
 
+
+def save_news_item(item: GeekNewsItem) -> None:
     with sqlite3.connect(DB_PATH) as conn:
         try:
             conn.execute(
                 """
-                INSERT OR IGNORE INTO geeknews (title, url, content, rule_score, scored_at)
-                VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+                INSERT OR IGNORE INTO geeknews (title, url, content, rule_score, gpt_score)
+                VALUES (?, ?, ?, ?, ?)
                 """,
-                (item.title, item.url, item.content, score),
+                (item.title, item.url, item.content, item.rule_score, item.gpt_score),
             )
             conn.commit()
         except sqlite3.Error as e:
             logger.error(f"DB save error: {e}")
 
 
-def collect_load_geeknews() -> None:
+def collect_load_geeknews(rule_top_n: int = 30, gpt_concurrency: int = 5) -> None:
     try:
         response = requests.get(RSS_URL, timeout=10)
         response.raise_for_status()
@@ -56,18 +64,47 @@ def collect_load_geeknews() -> None:
     ns = {"atom": "http://www.w3.org/2005/Atom"}
     entries = root.findall("atom:entry", ns)
 
+    last_url = get_last_url()
+
+    items: list[GeekNewsItem] = []
     for entry in reversed(entries):
-        url = (entry.find("atom:id", ns).text or "").strip()
-        title = remove_html(entry.find("atom:title", ns).text or "")
-        content = remove_html(entry.find("atom:content", ns).text or "")
+        if (url := entry.find("atom:id", ns).text) > last_url:
+            title = remove_html(entry.find("atom:title", ns).text)
+            content = remove_html(entry.find("atom:content", ns).text)
+            if not url or not title:
+                continue
 
-        if not url or not title:
-            continue
+            rule_score = rule_score_from_text(title, content)
 
-        save_news_item(
-            GeekNewsItem(
-                title=title,
-                url=url,
-                content=content,
+            items.append(
+                GeekNewsItem(
+                    title=title,
+                    url=url,
+                    content=content,
+                    rule_score=rule_score,
+                    gpt_score=None,
+                )
             )
-        )
+
+    items_sorted = sorted(items, key=lambda x: x.rule_score, reverse=True)
+    top_items = items_sorted[:rule_top_n]
+
+    to_score = [
+        GeekRow(title=it.title, content=it.content, url=it.url) for it in top_items
+    ]
+    gpt_scores = asyncio.run(score_items(to_score, concurrency=gpt_concurrency))
+
+    score_map = {it.url: float(s) for it, s in zip(top_items, gpt_scores)}
+    for it in items:
+        if it.url in score_map:
+            it.gpt_score = score_map[it.url]
+
+    saved = 0
+    for it in items:
+        save_news_item(it)
+        saved += 1
+
+    logger.info(
+        f"[GeekNews] saved new items (looped insert): {saved} "
+        f"(gpt_scored={len(score_map)}, rule_top_n={rule_top_n})"
+    )

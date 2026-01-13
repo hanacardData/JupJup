@@ -1,8 +1,10 @@
 import sqlite3
 
+DB_PATH = "jupjup.db"
+
 
 def init_database():
-    with sqlite3.connect("jupjup.db") as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS geeknews (
@@ -12,9 +14,7 @@ def init_database():
                 content TEXT NOT NULL,
                 is_posted INTEGER DEFAULT 0,
                 scrapped_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                rule_score REAL,
-                gpt_score REAL,
-                scored_at DATETIME
+                gpt_score REAL
             )
         """)
         conn.commit()
