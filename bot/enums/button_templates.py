@@ -69,7 +69,7 @@ JUPJUP_BUTTON = {
             },
             {
                 "type": "message",
-                "label": "긱뉴스",
+                "label": "새로운 기술 인사이트(긱뉴스)",
                 "text": "/긱뉴스",
             },
         ],
