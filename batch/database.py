@@ -14,7 +14,8 @@ def init_database():
                 content TEXT NOT NULL,
                 is_posted INTEGER DEFAULT 0,
                 scrapped_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                gpt_score REAL
+                gpt_score REAL,
+                topic TEXT
             )
         """)
         conn.commit()

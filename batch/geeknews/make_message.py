@@ -16,7 +16,7 @@ def get_geeknews_message() -> list[str]:
         conn.row_factory = sqlite3.Row
         cursor = conn.execute(
             """
-            SELECT id, title, content, url
+            SELECT id, title, content, url, topic
             FROM geeknews
             WHERE is_posted = 0
             ORDER BY gpt_score DESC
@@ -28,7 +28,10 @@ def get_geeknews_message() -> list[str]:
         for row in unposted:
             try:
                 message = (
-                    f"제목:{row['title']}\n내용:{row['content']}\n링크:{row['url']}"
+                    f"대주제:{row['topic']}\n"
+                    f"제목:{row['title']}\n"
+                    f"내용:{row['content']}\n"
+                    f"링크:{row['url']}"
                 )
                 messages.append(message)
                 update_posted_status(row["id"])

@@ -98,6 +98,96 @@ def make_flexible_payload(
     }
 
 
+def make_geeknews_payload(
+    messages: list[str],
+) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
+    carousel_payload = {"type": "carousel", "contents": []}
+
+    idx = 0
+    for msg in messages[1:]:  # 첫 줄은 무시 (인사말)
+        title_match = re.search(r"제목:\s*(.+)", msg)
+        text_match = re.search(r"내용:\s*(.+)", msg)
+        link_match = re.search(r"링크:\s*(.+)", msg)
+        topic_match = re.search(r"대주제:\s*(.+)", msg)
+        topic = topic_match.group(1).strip('"{}').strip() if topic_match else "기타"
+        topic = topic[:8]
+
+        if not (title_match and text_match and link_match):
+            continue
+
+        idx += 1
+        title = title_match.group(1).strip('"{}').strip()
+        text = text_match.group(1).strip('"{}').strip()
+        link = link_match.group(1).strip('"{}').strip()
+        bubble = {
+            "type": "bubble",
+            "size": "kilo",
+            "header": {
+                "type": "box",
+                "layout": "vertical",
+                "backgroundColor": "#0B8F6A",
+                "paddingAll": "12px",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": f"{idx}. {topic}",
+                        "color": "#FFFFFF",
+                        "weight": "bold",
+                        "size": "md",
+                        "align": "center",
+                        "wrap": True,
+                    }
+                ],
+            },
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "paddingAll": "14px",
+                "spacing": "10px",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": title,
+                        "weight": "bold",
+                        "size": "lg",
+                        "wrap": True,
+                    },
+                    {
+                        "type": "text",
+                        "text": text,
+                        "size": "sm",
+                        "wrap": True,
+                        "color": "#333333",
+                    },
+                ],
+            },
+            "footer": {
+                "type": "box",
+                "layout": "vertical",
+                "paddingAll": "12px",
+                "contents": [
+                    {
+                        "type": "button",
+                        "style": "primary",
+                        "color": "#0B8F6A",
+                        "height": "sm",
+                        "action": {"type": "uri", "label": "원문 보기", "uri": link},
+                    }
+                ],
+            },
+        }
+
+        carousel_payload["contents"].append(bubble)
+
+    return {
+        "content": {
+            "type": "flex",
+            "altText": "Flexible",
+            "contents": carousel_payload,
+        }
+    }
+
+
 def make_app_review_flexible_payload(
     messages: list[str],
 ) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
