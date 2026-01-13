@@ -23,7 +23,10 @@ def remove_html(raw_html: str) -> str:
 def get_last_url() -> str:
     with sqlite3.connect(DB_PATH) as conn:
         row = conn.execute("""
-            SELECT url FROM geeknews ORDER BY id DESC LIMIT 1
+            SELECT url
+            FROM geeknews
+            ORDER BY id DESC
+            LIMIT 1
             """).fetchone()
     return (row[0] or "").strip()
 
