@@ -87,24 +87,22 @@ def _parse_score_topic(text: str) -> tuple[float, str]:
         topic = topic[:10]
         return score, topic
     except Exception:
-        pass
+        score = 0.0
+        topic = "기타"
 
-    score = 0.0
-    topic = "기타"
+        m = re.search(r"\{.*\}", t, re.DOTALL)
+        if m:
+            try:
+                obj = json.loads(m.group(0))
+                score = float(obj.get("score", 0.0))
+                topic = str(obj.get("topic", "")).strip() or "기타"
+                score = max(0.0, min(100.0, score))
+                topic = topic[:10]
+                return score, topic
+            except Exception:
+                pass
 
-    m_score = re.search(r"(\d+(\.\d+)?)", t)
-    if m_score:
-        try:
-            score = float(m_score.group(1))
-            score = max(0.0, min(100.0, score))
-        except Exception:
-            score = 0.0
-
-    m_topic = re.search(r"topic\"?\s*[:=]\s*\"?([^\"}\n]+)", t, re.IGNORECASE)
-    if m_topic:
-        topic = m_topic.group(1).strip() or "기타"
-
-    return score, topic[:8]
+        return 0.0, "기타"
 
 
 async def _gpt_score_one_item(
