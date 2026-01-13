@@ -1,18 +1,17 @@
-from __future__ import annotations
-
 import asyncio
-from dataclasses import dataclass
+
+from pydantic import BaseModel
 
 from bot.services.core.openai_client import async_openai_response
 from logger import logger
 
 
-@dataclass
-class GeekRow:
-    id: int
+class GeekNewsItem(BaseModel):
     title: str
-    content: str
     url: str
+    content: str
+    rule_score: float
+    gpt_score: float | None = None
 
 
 SCORING_PROMPT = """
@@ -49,7 +48,7 @@ SCORING_PROMPT = """
 """.strip()
 
 
-def _make_input(row: GeekRow) -> str:
+def _make_prompt_input(row: GeekNewsItem) -> str:
     content = (row.content or "").strip()
     if len(content) > 1500:
         content = content[:1500] + "..."
@@ -65,10 +64,7 @@ def _make_input(row: GeekRow) -> str:
 """.strip()
 
 
-def _parse_score(text: str) -> float:
-    """
-    혹시라도 '73점' 같은 게 오면 숫자만 뽑아냄
-    """
+def _parse_score_from_gpt_output(text: str) -> float:
     if not text:
         return 0.0
     t = text.strip()
@@ -87,25 +83,27 @@ def _parse_score(text: str) -> float:
         return 0.0
 
 
-async def score_one_with_gpt(item: GeekRow, semaphore: asyncio.Semaphore) -> float:
+async def _gpt_score_one_item(
+    item: GeekNewsItem, semaphore: asyncio.Semaphore
+) -> float:
     async with semaphore:
         try:
             out = await async_openai_response(
                 prompt=SCORING_PROMPT,
-                input=_make_input(item),
+                input=_make_prompt_input(item),
             )
-            return _parse_score(out)
+            return _parse_score_from_gpt_output(out)
         except Exception as e:
             logger.warning(f"[GeekNews] GPT scoring failed (url={item.url}): {e}")
             return 0.0
 
 
-async def score_items(
-    items: list[GeekRow],
+async def gpt_score_from_items(
+    items: list[GeekNewsItem],
     concurrency: int = 5,
 ) -> list[float]:
     if not items:
         return []
     sem = asyncio.Semaphore(concurrency)
-    scores = await asyncio.gather(*[score_one_with_gpt(it, sem) for it in items])
+    scores = await asyncio.gather(*[_gpt_score_one_item(it, sem) for it in items])
     return [float(s) for s in scores]

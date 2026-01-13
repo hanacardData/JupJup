@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 import html
 import re
@@ -7,22 +5,13 @@ import sqlite3
 import xml.etree.ElementTree as ET
 
 import requests
-from pydantic import BaseModel
 
 from batch.database import DB_PATH
-from batch.geeknews.gpt_rank import GeekRow, score_items
+from batch.geeknews.gpt_rank import GeekNewsItem, gpt_score_from_items
 from batch.geeknews.rank import rule_score_from_text
 from logger import logger
 
 RSS_URL = "https://feeds.feedburner.com/geeknews-feed"
-
-
-class GeekNewsItem(BaseModel):
-    title: str
-    url: str
-    content: str
-    rule_score: float
-    gpt_score: float | None = None
 
 
 def remove_html(raw_html: str) -> str:
@@ -33,7 +22,9 @@ def remove_html(raw_html: str) -> str:
 
 def get_last_url() -> str:
     with sqlite3.connect(DB_PATH) as conn:
-        row = conn.execute("SELECT MAX(url) FROM geeknews").fetchone()
+        row = conn.execute("""
+            SELECT url FROM geeknews ORDER BY id DESC LIMIT 1
+            """).fetchone()
     return (row[0] or "").strip()
 
 
@@ -89,22 +80,16 @@ def collect_load_geeknews(rule_top_n: int = 30, gpt_concurrency: int = 5) -> Non
     items_sorted = sorted(items, key=lambda x: x.rule_score, reverse=True)
     top_items = items_sorted[:rule_top_n]
 
-    to_score = [
-        GeekRow(title=it.title, content=it.content, url=it.url) for it in top_items
-    ]
-    gpt_scores = asyncio.run(score_items(to_score, concurrency=gpt_concurrency))
-
+    gpt_scores = asyncio.run(
+        gpt_score_from_items(top_items, concurrency=gpt_concurrency)
+    )
     score_map = {it.url: float(s) for it, s in zip(top_items, gpt_scores)}
     for it in items:
         if it.url in score_map:
             it.gpt_score = score_map[it.url]
-
-    saved = 0
-    for it in items:
         save_news_item(it)
-        saved += 1
 
     logger.info(
-        f"[GeekNews] saved new items (looped insert): {saved} "
+        f"[GeekNews] saved new items (looped insert): {len(items)} "
         f"(gpt_scored={len(score_map)}, rule_top_n={rule_top_n})"
     )

@@ -20,11 +20,12 @@ def get_geeknews_message() -> list[str]:
             FROM geeknews
             WHERE is_posted = 0
             ORDER BY gpt_score DESC
+            LIMIT 10
             """
         )
         unposted = cursor.fetchall()
         messages: list[str] = ["geeknews"]
-        for row in unposted[:10]:
+        for row in unposted:
             try:
                 message = (
                     f"제목:{row['title']}\n내용:{row['content']}\n링크:{row['url']}"
