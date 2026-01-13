@@ -3,7 +3,6 @@ from typing import Callable
 
 from fastapi.responses import JSONResponse
 
-from batch.geeknews.payload import make_geeknews_flexible_payload
 from bot.enums.button_templates import JUPJUP_BUTTON, LAB_BUTTON, PRODUCT_BUTTON
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
@@ -225,7 +224,7 @@ async def handle_geeknews_command(channel_id: str) -> JSONResponse:
     """긱뉴스를 요청했을 때 호출되는 핸들러입니다."""
     messages = get_batch_message("geeknews")
     if len(messages) > 1:
-        payload = make_geeknews_flexible_payload(messages)
+        payload = make_flexible_payload(messages)
         await async_post_payload(payload, channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}

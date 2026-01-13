@@ -51,6 +51,7 @@ def make_flexible_payload(
 ) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
     carousel_payload = {"type": "carousel", "contents": []}
 
+    idx = 0
     for msg in messages[1:]:  # 첫 줄은 무시 (인사말)
         title_match = re.search(r"제목:\s*(.+)", msg)
         text_match = re.search(r"내용:\s*(.+)", msg)
@@ -58,36 +59,69 @@ def make_flexible_payload(
 
         if not (title_match and text_match and link_match):
             continue
+
+        idx += 1
         title = title_match.group(1).strip('"{}').strip()
         text = text_match.group(1).strip('"{}').strip()
         link = link_match.group(1).strip('"{}').strip()
-        content = {
+        bubble = {
             "type": "bubble",
             "size": "kilo",
             "header": {
                 "type": "box",
-                "layout": "horizontal",
-                "contents": [{"type": "text", "text": title, "wrap": True}],
+                "layout": "vertical",
+                "backgroundColor": "#0B8F6A",
+                "paddingAll": "12px",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": f"오늘의 기술 이슈 {idx}!",
+                        "color": "#FFFFFF",
+                        "weight": "bold",
+                        "size": "md",
+                        "align": "center",
+                        "wrap": True,
+                    }
+                ],
             },
             "body": {
                 "type": "box",
-                "layout": "horizontal",
-                "contents": [{"type": "text", "text": text, "wrap": True}],
+                "layout": "vertical",
+                "paddingAll": "14px",
+                "spacing": "10px",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": title,
+                        "weight": "bold",
+                        "size": "lg",
+                        "wrap": True,
+                    },
+                    {
+                        "type": "text",
+                        "text": text,
+                        "size": "sm",
+                        "wrap": True,
+                        "color": "#333333",
+                    },
+                ],
             },
             "footer": {
                 "type": "box",
-                "layout": "horizontal",
+                "layout": "vertical",
+                "paddingAll": "12px",
                 "contents": [
                     {
                         "type": "button",
                         "style": "primary",
-                        "action": {"type": "uri", "label": "link", "uri": link},
                         "height": "sm",
+                        "action": {"type": "uri", "label": "원문 보기", "uri": link},
                     }
                 ],
             },
         }
-        carousel_payload["contents"].append(content)
+
+        carousel_payload["contents"].append(bubble)
 
     return {
         "content": {
