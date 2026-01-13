@@ -9,10 +9,6 @@ from holidayskr import is_holiday
 from batch.app_review.android import get_app_reviews
 from batch.compare_travel.make_message import get_compare_travel_message
 from batch.database import init_database
-from batch.geeknews.gpt_rank import (
-    fetch_candidates_for_gpt,
-    gpt_score_for_send,
-)
 from batch.geeknews.load import collect_load_geeknews
 from batch.geeknews.make_message import get_geeknews_message
 from batch.issue.keywords import QUERIES
@@ -64,10 +60,6 @@ def data_collect():
 
     collect_load_geeknews()
     logger.info("Geeknews Collection Completed")
-
-    candidates = fetch_candidates_for_gpt(limit=30)
-    asyncio.run(gpt_score_for_send(candidates, top_k=10, concurrency=5))
-    logger.info("Geeknews gpt_score updated (only for send)")
 
 
 async def make_message(today_str: str, is_test: bool = False):
