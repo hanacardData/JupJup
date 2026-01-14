@@ -103,8 +103,7 @@ def make_geeknews_payload(
 ) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
     carousel_payload = {"type": "carousel", "contents": []}
 
-    idx = 0
-    for msg in messages[1:]:  # 첫 줄은 무시 (인사말)
+    for idx, msg in enumerate(messages):
         title_match = re.search(r"제목:\s*(.+)", msg)
         text_match = re.search(r"내용:\s*(.+)", msg)
         link_match = re.search(r"링크:\s*(.+)", msg)
@@ -115,7 +114,6 @@ def make_geeknews_payload(
         if not (title_match and text_match and link_match):
             continue
 
-        idx += 1
         title = title_match.group(1).strip('"{}').strip()
         text = text_match.group(1).strip('"{}').strip()
         link = link_match.group(1).strip('"{}').strip()
@@ -130,7 +128,7 @@ def make_geeknews_payload(
                 "contents": [
                     {
                         "type": "text",
-                        "text": f"{idx}. {topic}",
+                        "text": f"{idx + 1}. {topic}",
                         "color": "#FFFFFF",
                         "weight": "bold",
                         "size": "md",
@@ -182,7 +180,7 @@ def make_geeknews_payload(
     return {
         "content": {
             "type": "flex",
-            "altText": "Flexible",
+            "altText": "Geeknews",
             "contents": carousel_payload,
         }
     }

@@ -24,7 +24,7 @@ def get_geeknews_message() -> list[str]:
             """
         )
         unposted = cursor.fetchall()
-        messages: list[str] = ["geeknews"]
+        messages: list[str] = []
         for row in unposted:
             try:
                 message = (
