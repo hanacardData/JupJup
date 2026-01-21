@@ -7,7 +7,7 @@ from secret import OPENAI_API_KEY
 async_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
-@retry(tries=3, delay=1, backoff=2, exceptions=APIConnectionError)
+@retry(tries=5, delay=1, backoff=2, exceptions=APIConnectionError)
 async def async_openai_response(
     prompt: str,
     input: str,
@@ -17,6 +17,7 @@ async def async_openai_response(
             model="gpt-4o",
             instructions=prompt,
             input=input,
+            timeout=60,
         )
         return response.output_text.strip()
     except APIConnectionError as e:
@@ -24,7 +25,7 @@ async def async_openai_response(
         raise
 
 
-@retry(tries=3, delay=1, backoff=2, exceptions=APIConnectionError)
+@retry(tries=5, delay=1, backoff=2, exceptions=APIConnectionError)
 async def async_generate_image(prompt: str) -> str | None:
     try:
         response = await async_client.images.generate(
