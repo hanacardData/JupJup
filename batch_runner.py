@@ -33,6 +33,7 @@ from batch.variables import (
     TRAVELLOG_DATA_PATH,
 )
 from bot.enums.button_templates import JUPJUP_BUTTON, PRODUCT_BUTTON
+from bot.services.batch_message.get_message import make_flexible_payload
 from bot.services.core.post_payload import (
     async_post_message,
     async_post_payload,
@@ -82,7 +83,9 @@ async def make_message(today_str: str, is_test: bool = False):
 
         # 트래블로그 부 메세지 송신
         if not is_test:
-            for message in travellog_messages:
+            for message in [
+                f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 트래블로그 이슈를 공유드릴게요!\n"
+            ] + travellog_messages:
                 await async_post_message(message, TRAVELLOG_CHANNEL_ID)
             logger.info(f"Sent Travellog Message to channel {TRAVELLOG_CHANNEL_ID}")
     except Exception as e:
@@ -104,12 +107,15 @@ async def make_message(today_str: str, is_test: bool = False):
         )
         security_messages = await get_security_messages(security_df, tag=not is_test)
         logger.info("Created security issue messages")
-        for message in security_messages:
-            await async_post_message(message, TEST_CHANNEL_ID)
         # 보안 모니터링 메세지 송신
+        await async_post_payload(
+            make_flexible_payload(security_messages), TEST_CHANNEL_ID
+        )
+
         if not is_test:
-            for message in security_messages:
-                await async_post_message(message, SECURITY_CHANNEL_ID)
+            await async_post_payload(
+                make_flexible_payload(security_messages), SECURITY_CHANNEL_ID
+            )
             logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
     except Exception as e:
         logger.error(f"Failed to generate and send security alerts: {e}")

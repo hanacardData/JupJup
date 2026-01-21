@@ -51,7 +51,7 @@ def make_flexible_payload(
 ) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
     carousel_payload = {"type": "carousel", "contents": []}
 
-    for msg in messages[1:]:  # 첫 줄은 무시 (인사말)
+    for msg in messages:
         title_match = re.search(r"제목:\s*(.+)", msg)
         text_match = re.search(r"내용:\s*(.+)", msg)
         link_match = re.search(r"링크:\s*(.+)", msg)

@@ -45,20 +45,18 @@ async def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[st
             content=content,
         ),
     )
-    message = [
-        f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 트래블로그 이슈를 공유드릴게요!\n"
-    ]
+
     entries = re.split(r"\n\s*\n|[-]{6,}", result.strip())
     entries = [e.strip() for e in entries if e.strip()]
     entries = [f"번호: {i + 1}\n{e}" for i, e in enumerate(entries)]
 
     urls = extract_urls(result)
     if len(urls) == 0:
-        logger.warning(f"No URLs found in the message in {message}.")
+        logger.warning(f"No URLs found in the message in {result}.")
         return ["오늘은 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"]
     else:
         logger.info(f"{len(urls)} found in the message.")
         if tag:
             mark_posted("travellog", urls)
 
-    return message + entries
+    return entries
