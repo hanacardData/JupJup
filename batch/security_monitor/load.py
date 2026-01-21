@@ -1,26 +1,17 @@
-import os
 from datetime import datetime
 from time import sleep
 
-import pandas as pd
 from tqdm import tqdm
 
+from batch.dml import insert_rows
 from batch.fetch import fetch_data
-from batch.security_monitor.select_column import SOURCES_SELECT_MAP
-from batch.utils import read_csv
-from batch.variables import SAVE_PATH, SECURITY_DATA_PATH, SOURCES
+from batch.variables import SOURCES
 from logger import logger
 
 
 def collect_load_security_issues(queries: list[str]) -> None:
-    os.makedirs(SAVE_PATH, exist_ok=True)
-
-    _df_list: list[pd.DataFrame] = [read_csv(SECURITY_DATA_PATH)]
-
     for source in tqdm(["news"] + SOURCES, desc="source"):
-        file_path = os.path.join(SAVE_PATH, f"_{source}_security.csv")
-        existing = read_csv(file_path)
-        items: list[dict[str, str]] = []
+        rows: list[dict] = []
 
         for keyword in tqdm(queries, desc=source, leave=False):
             result = fetch_data(source, keyword, display=100, sort="date")
@@ -28,24 +19,37 @@ def collect_load_security_issues(queries: list[str]) -> None:
             if result is None:
                 logger.error(f"Failed to fetch data for {keyword} from {source}")
                 continue
-            items.extend(
-                result.to_items(
-                    query=keyword, scrap_date=datetime.today().strftime("%Y%m%d")
-                )
+
+            items = result.to_items(
+                query=keyword,
+                scrap_date=datetime.today().strftime("%Y%m%d"),
             )
 
-        df = pd.concat(
-            [existing, pd.DataFrame(items).assign(source=source, is_posted=0)],
-            ignore_index=True,
-        ).drop_duplicates(subset=["link"])
+            for it in items:
+                url = (it.get("link") or it.get("url") or "").strip()
+                if not url:
+                    continue
 
-        df.to_csv(file_path, index=False, encoding="utf-8")
-        _df_list.append(SOURCES_SELECT_MAP[source](df))
-        logger.info(f"{file_path} scrap completed")
+                rows.append(
+                    {
+                        "query": keyword,
+                        "title": it.get("title", ""),
+                        "url": url,
+                        "description": it.get("description", ""),
+                        "post_date": it.get("post_date", "")
+                        or it.get("postdate", "")
+                        or "",
+                        "scrap_date": it.get(
+                            "scrap_date", datetime.today().strftime("%Y%m%d")
+                        ),
+                        "source": source,
+                        "name": it.get("name", "")
+                        or it.get("bloggername", "")
+                        or it.get("cafename", "")
+                        or "",
+                        "is_posted": 0,
+                    }
+                )
 
-    final = (
-        pd.concat(_df_list, ignore_index=True)
-        .sort_values(by=["is_posted", "scrap_date"], ascending=[False, True])
-        .drop_duplicates(subset="link", keep="first")
-    )
-    final.to_csv(SECURITY_DATA_PATH, index=False, encoding="utf-8")
+        insert_rows("security_monitor", rows)
+        logger.info(f"security_monitor: inserted {len(rows)} rows (source={source})")

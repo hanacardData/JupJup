@@ -2,40 +2,41 @@ import json
 import re
 from datetime import datetime, timedelta
 
-import pandas as pd
-
+from batch.dml import fetch_df, mark_posted
 from batch.scorer import extract_high_score_data
 from batch.security_monitor.keywords import ISSUE_KEYWORDS
 from batch.security_monitor.prompt import SECURITY_PROMPT, SECURITY_TEXT_INPUT
 from batch.utils import extract_urls
-from batch.variables import EXTRACTED_DATA_COUNT, SECURITY_DATA_PATH
+from batch.variables import EXTRACTED_DATA_COUNT
 from bot.services.core.openai_client import async_openai_response
 from logger import logger
 
 
-async def get_security_messages(data: pd.DataFrame, tag: bool = True) -> list[str]:
+async def get_security_messages(tag: bool = True) -> list[str]:
+    data = fetch_df("security_monitor")
+
     refined_data = extract_high_score_data(
         data=data,
         issue_keywords=ISSUE_KEYWORDS,
-        product_keywords=[
-            "카드사",
-            "카드업",
-            "하나카드",
-        ],
+        product_keywords=["카드사", "카드업", "하나카드"],
         extracted_data_count=EXTRACTED_DATA_COUNT,
     )
 
     yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-    refined_data["post_date"] = (
-        refined_data["post_date"].fillna(refined_data["scrap_date"]).astype(str)
-    )
-    refined_data = refined_data.loc[refined_data["post_date"] >= yesterday]
+    refined_data["post_date"] = refined_data["post_date"].fillna("").astype(str)
+
+    refined_data["date_key"] = refined_data["post_date"]
+    refined_data.loc[refined_data["date_key"] == "", "date_key"] = refined_data[
+        "scrap_date"
+    ].astype(str)
+
+    refined_data = refined_data.loc[refined_data["date_key"] >= yesterday]
 
     if len(refined_data) == 0:
         logger.warning("No data found after filtering.")
         return []
 
-    columns = ["title", "link", "description"]
+    columns = ["title", "url", "description"]
     if "name" in refined_data.columns:
         columns.append("name")
 
@@ -54,13 +55,13 @@ async def get_security_messages(data: pd.DataFrame, tag: bool = True) -> list[st
 
     entries = re.split(r"\n\s*\n|[-]{6,}", result.strip())
     entries = [e.strip() for e in entries if e.strip()]
+
     urls = extract_urls(result)
     if len(urls) == 0:
         return []
-    else:
-        logger.info(f"{len(urls)} found in the message.")
-        if tag:
-            data.loc[data["link"].isin(urls), "is_posted"] = 1
 
-    data.to_csv(SECURITY_DATA_PATH, index=False, encoding="utf-8")
+    logger.info(f"{len(urls)} found in the message.")
+    if tag:
+        mark_posted("security_monitor", urls)
+
     return entries
