@@ -52,7 +52,7 @@ def mark_posted(table: str, urls: Iterable[str]) -> None:
     if not urls:
         return
     placeholders = ",".join(["?"] * len(urls))
-    sql = f"UPDATE {table} SET is_posted = 1 WHERE link IN ({placeholders})"
+    sql = f"UPDATE {table} SET is_posted = 1 WHERE url IN ({placeholders})"
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(sql, urls)
         conn.commit()

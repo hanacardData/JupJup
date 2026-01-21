@@ -4,8 +4,8 @@ from time import sleep
 import pandas as pd
 from tqdm import tqdm
 
+from batch.dml import insert_rows
 from batch.fetch import fetch_data
-from batch.repo import insert_rows
 from batch.travellog.select_column import SCHEMA, SOURCES_SELECT_MAP
 from batch.variables import SOURCES
 from logger import logger
