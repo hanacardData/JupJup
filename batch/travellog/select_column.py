@@ -5,7 +5,7 @@ import pandas as pd
 SCHEMA: list[str] = [
     "query",
     "title",
-    "link",
+    "url",
     "description",
     "post_date",
     "scrap_date",

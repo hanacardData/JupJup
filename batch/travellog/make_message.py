@@ -1,16 +1,29 @@
 import json
 import re
+import sqlite3
 from datetime import datetime, timedelta
 
 import pandas as pd
 
+from batch.database import DB_PATH
 from batch.scorer import extract_high_score_data
 from batch.travellog.keywords import TRAVELLOG_ISSUE_KEYWORDS, TRAVELLOG_KEYWORDS
 from batch.travellog.prompt import PROMPT, TEXT_INPUT
 from batch.utils import extract_urls
-from batch.variables import EXTRACTED_DATA_COUNT, TRAVELLOG_DATA_PATH
+from batch.variables import EXTRACTED_DATA_COUNT
 from bot.services.core.openai_client import async_openai_response
 from logger import logger
+
+
+def _mark_travellog_posted(urls: list[str]) -> None:
+    urls = [u.strip() for u in urls if u and u.strip()]
+    if not urls:
+        return
+    placeholders = ",".join(["?"] * len(urls))
+    sql = f"UPDATE travellog SET is_posted = 1 WHERE url IN ({placeholders})"
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(sql, urls)
+        conn.commit()
 
 
 async def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
@@ -58,7 +71,6 @@ async def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[st
     else:
         logger.info(f"{len(urls)} found in the message.")
         if tag:
-            data.loc[data["link"].isin(urls), "is_posted"] = 1
+            _mark_travellog_posted(urls)
 
-    data.to_csv(TRAVELLOG_DATA_PATH, index=False, encoding="utf-8")
     return message + entries
