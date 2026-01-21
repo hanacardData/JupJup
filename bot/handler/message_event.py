@@ -220,7 +220,7 @@ async def handle_security_command(channel_id: str) -> JSONResponse:
             channel_id,
         )
     else:
-        await async_post_payload(messages, channel_id)
+        await async_post_payload(make_flexible_payload(messages), channel_id)
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )
