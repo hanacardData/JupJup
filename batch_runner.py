@@ -108,15 +108,21 @@ async def make_message(today_str: str, is_test: bool = False):
         security_messages = await get_security_messages(security_df, tag=not is_test)
         logger.info("Created security issue messages")
         # 보안 모니터링 메세지 송신
-        await async_post_payload(
-            make_flexible_payload(security_messages), TEST_CHANNEL_ID
-        )
+        if security_messages:
+            await async_post_payload(
+                make_flexible_payload(security_messages), TEST_CHANNEL_ID
+            )
 
-        if not is_test:
+        if not is_test and security_messages:
             await async_post_payload(
                 make_flexible_payload(security_messages), SECURITY_CHANNEL_ID
             )
             logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
+
+        security_messages = [
+            "오늘은 보안과 관련한 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+        ]
+
     except Exception as e:
         logger.error(f"Failed to generate and send security alerts: {e}")
         await async_post_message(f"Security error: {str(e)}", TEST_CHANNEL_ID)
