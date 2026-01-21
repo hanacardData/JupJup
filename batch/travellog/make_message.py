@@ -4,11 +4,12 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
+from batch.dml import mark_posted
 from batch.scorer import extract_high_score_data
 from batch.travellog.keywords import TRAVELLOG_ISSUE_KEYWORDS, TRAVELLOG_KEYWORDS
 from batch.travellog.prompt import PROMPT, TEXT_INPUT
 from batch.utils import extract_urls
-from batch.variables import EXTRACTED_DATA_COUNT, TRAVELLOG_DATA_PATH
+from batch.variables import EXTRACTED_DATA_COUNT
 from bot.services.core.openai_client import async_openai_response
 from logger import logger
 
@@ -58,7 +59,6 @@ async def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[st
     else:
         logger.info(f"{len(urls)} found in the message.")
         if tag:
-            data.loc[data["link"].isin(urls), "is_posted"] = 1
+            mark_posted("travellog", urls)
 
-    data.to_csv(TRAVELLOG_DATA_PATH, index=False, encoding="utf-8")
     return message + entries

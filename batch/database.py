@@ -6,6 +6,25 @@ DB_PATH = "jupjup.db"
 def init_database():
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
+
+        # 트래블로그
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS travellog (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                query TEXT,
+                title TEXT,
+                url TEXT UNIQUE NOT NULL,
+                description TEXT,
+                post_date TEXT,
+                scrap_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                source TEXT,
+                name TEXT,
+                is_posted INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # 긱뉴스
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS geeknews (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
