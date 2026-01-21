@@ -1,28 +1,23 @@
-import os
 from datetime import datetime
 from time import sleep
 
 import pandas as pd
 from tqdm import tqdm
 
+from batch.dml import insert_rows
 from batch.fetch import fetch_data
-from batch.travellog.keywords import TRAVELLOG_QUERIES
-from batch.travellog.select_column import SOURCES_SELECT_MAP
-from batch.utils import read_csv
-from batch.variables import SAVE_PATH, SOURCES, TRAVELLOG_DATA_PATH
+from batch.travellog.select_column import SCHEMA, SOURCES_SELECT_MAP
+from batch.variables import SOURCES
 from logger import logger
 
 
 def collect_load_travellog_data(queries: list[str]) -> None:
     """데이터를 수집하고 저장."""
-    os.makedirs(SAVE_PATH, exist_ok=True)
+    all_rows: list[dict[str, str]] = []
 
-    _df_list: list[pd.DataFrame] = [read_csv(TRAVELLOG_DATA_PATH)]
     for source in tqdm(SOURCES, disable=True):
-        _file_path = os.path.join(SAVE_PATH, f"_{source}_travellog.csv")
-        _data_source = read_csv(_file_path)
-
         items: list[dict[str, str]] = []
+
         for keyword in tqdm(queries, disable=True):
             _data = fetch_data(
                 type=source,
@@ -38,28 +33,22 @@ def collect_load_travellog_data(queries: list[str]) -> None:
                 query=keyword,
                 scrap_date=datetime.today().strftime("%Y%m%d"),
             )
+            for it in _items:
+                it["source"] = source
+                it["is_posted"] = 0
             items.extend(_items)
 
-        _data_source = pd.concat(
-            [_data_source, pd.DataFrame(items).assign(source=source, is_posted=0)],
-            ignore_index=True,
-        )
-        _data_source = _data_source.drop_duplicates(subset=["link"])
-        _data_source.to_csv(_file_path, index=False, encoding="utf-8")
-        _df_list.append(SOURCES_SELECT_MAP[source](_data_source))
-        logger.info(f"{_file_path} scrap completed")
+        if items:
+            for it in items:
+                it["url"] = it.get("link", "")
+                it["scrap_date"] = str(
+                    it.get("scrap_date", datetime.today().strftime("%Y%m%d"))
+                )
+            df = SOURCES_SELECT_MAP[source](pd.DataFrame(items))
+        else:
+            df = pd.DataFrame(columns=SCHEMA)
 
-    data = (
-        pd.concat(_df_list, ignore_index=True)
-        .sort_values(
-            by=["is_posted", "scrap_date"], ascending=[False, True]
-        )  # is_posted가 1인 경우, scrap_date 가 오래된 것을 남김
-        .drop_duplicates(subset="link", keep="first")  # link 기준으로 중복 제거
-    )
-    data["scrap_date"] = data["scrap_date"].astype(str)
-    data["post_date"] = data["post_date"].astype(str)
-    data.to_csv(TRAVELLOG_DATA_PATH, index=False, encoding="utf-8")
+        all_rows.extend(df.to_dict(orient="records"))
+        logger.info(f"issue scrap completed: source={source}, rows={len(df)}")
 
-
-if __name__ == "__main__":
-    collect_load_travellog_data(TRAVELLOG_QUERIES)
+    insert_rows("travellog", all_rows)
