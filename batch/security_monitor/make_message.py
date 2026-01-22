@@ -2,6 +2,8 @@ import json
 import re
 from datetime import datetime, timedelta
 
+import pandas as pd
+
 from batch.dml import fetch_df, mark_posted
 from batch.scorer import extract_high_score_data
 from batch.security_monitor.keywords import ISSUE_KEYWORDS
@@ -25,10 +27,12 @@ async def get_security_messages(tag: bool = True) -> list[str]:
     yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
     refined_data["post_date"] = refined_data["post_date"].fillna("").astype(str)
 
-    refined_data["date_key"] = refined_data["post_date"]
-    refined_data.loc[refined_data["date_key"] == "", "date_key"] = refined_data[
-        "scrap_date"
-    ].astype(str)
+    refined_data["date_key"] = (
+        refined_data["post_date"]
+        .replace("", pd.NA)
+        .fillna(refined_data["scrap_date"])
+        .astype(str)
+    )
 
     refined_data = refined_data.loc[refined_data["date_key"] >= yesterday]
 
