@@ -24,6 +24,23 @@ def init_database():
             )
         """)
 
+        # 보안
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS security_monitor (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                query TEXT,
+                title TEXT,
+                url TEXT UNIQUE NOT NULL,
+                description TEXT,
+                post_date TEXT,
+                scrap_date TEXT,
+                source TEXT,
+                name TEXT,
+                is_posted INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
         # 긱뉴스
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS geeknews (
