@@ -26,7 +26,6 @@ from batch.variables import (
     DATA_PATH,
     PRODUCT_CHANNEL_ID,
     SECURITY_CHANNEL_ID,
-    SECURITY_DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
     TEST_CHANNEL_ID,
     TRAVELLOG_CHANNEL_ID,
@@ -102,10 +101,7 @@ async def make_message(today_str: str, is_test: bool = False):
 
     try:  # 보안 모니터링 메시지 생성
         logger.info("Generating security issue message")
-        security_df = pd.read_csv(
-            SECURITY_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
-        )
-        security_messages = await get_security_messages(security_df, tag=not is_test)
+        security_messages = await get_security_messages(tag=not is_test)
         logger.info("Created security issue messages")
         # 보안 모니터링 메세지 송신
         if security_messages:
@@ -118,10 +114,6 @@ async def make_message(today_str: str, is_test: bool = False):
                 make_flexible_payload(security_messages), SECURITY_CHANNEL_ID
             )
             logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
-
-        security_messages = [
-            "오늘은 보안과 관련한 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
-        ]
 
     except Exception as e:
         logger.error(f"Failed to generate and send security alerts: {e}")
