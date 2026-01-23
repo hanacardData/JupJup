@@ -214,9 +214,9 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
 
 def _is_carousel_convertible(msg: str) -> bool:
     return (
-        re.search(r"제목:\s*(.+)", msg) is not None
-        and re.search(r"내용:\s*(.+)", msg) is not None
-        and re.search(r"링크:\s*(.+)", msg) is not None
+        re.search(r"제목:\s*(.+)", msg)
+        and re.search(r"내용:\s*(.+)", msg)
+        and re.search(r"링크:\s*(.+)", msg)
     )
 
 
