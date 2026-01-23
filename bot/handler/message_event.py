@@ -1,4 +1,5 @@
 import asyncio
+import re
 from typing import Callable
 
 from fastapi.responses import JSONResponse
@@ -211,12 +212,28 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
     )
 
 
+def _is_carousel_convertible(msg: str) -> bool:
+    return (
+        re.search(r"제목:\s*(.+)", msg) is not None
+        and re.search(r"내용:\s*(.+)", msg) is not None
+        and re.search(r"링크:\s*(.+)", msg) is not None
+    )
+
+
 async def handle_security_command(channel_id: str) -> JSONResponse:
     """보안이슈를 요청했을 때 호출되는 핸들러입니다."""
     NO_SECURITY_MSG = "오늘은 보안과 관련한 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
     messages = get_batch_message("security")
     if not messages:
         await async_post_message(NO_SECURITY_MSG, channel_id)
+    convertible = [m for m in messages if _is_carousel_convertible(m)]
+    if not convertible:
+        await async_post_message(
+            messages[0].strip() if messages[0].strip() else NO_SECURITY_MSG, channel_id
+        )
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+        )
     else:
         await async_post_payload(make_flexible_payload(messages), channel_id)
     return JSONResponse(
