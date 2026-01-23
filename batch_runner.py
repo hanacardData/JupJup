@@ -115,9 +115,7 @@ async def make_message(today_str: str, is_test: bool = False):
             )
             logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
 
-        security_messages = [
-            "오늘은 보안과 관련한 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
-        ]
+        security_messages = []
 
     except Exception as e:
         logger.error(f"Failed to generate and send security alerts: {e}")
