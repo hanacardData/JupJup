@@ -26,7 +26,6 @@ from batch.variables import (
     DATA_PATH,
     PRODUCT_CHANNEL_ID,
     SECURITY_CHANNEL_ID,
-    SECURITY_DATA_PATH,
     SUBSCRIBE_CHANNEL_IDS,
     TEST_CHANNEL_ID,
     TRAVELLOG_CHANNEL_ID,
@@ -102,10 +101,7 @@ async def make_message(today_str: str, is_test: bool = False):
 
     try:  # 보안 모니터링 메시지 생성
         logger.info("Generating security issue message")
-        security_df = pd.read_csv(
-            SECURITY_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
-        )
-        security_messages = await get_security_messages(security_df, tag=not is_test)
+        security_messages = await get_security_messages(tag=not is_test)
         logger.info("Created security issue messages")
         # 보안 모니터링 메세지 송신
         if security_messages:
