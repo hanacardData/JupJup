@@ -115,8 +115,6 @@ async def make_message(today_str: str, is_test: bool = False):
             )
             logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
 
-        security_messages = []
-
     except Exception as e:
         logger.error(f"Failed to generate and send security alerts: {e}")
         await async_post_message(f"Security error: {str(e)}", TEST_CHANNEL_ID)
