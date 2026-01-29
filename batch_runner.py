@@ -7,7 +7,6 @@ import pandas as pd
 from holidayskr import is_holiday
 
 from batch.app_review.android import get_app_reviews
-from batch.compare_army.make_message import get_army_trend_message
 from batch.compare_travel.make_message import get_compare_travel_message
 from batch.database import init_database
 from batch.geeknews.load import collect_load_geeknews
@@ -15,6 +14,10 @@ from batch.geeknews.make_message import get_geeknews_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
+from batch.narasarang.make_message import (
+    get_hana_narasarang_messages,
+    get_shinhan_narasarang_messages,
+)
 from batch.product.load import collect_load_product_issues
 from batch.product.make_message import process_generate_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
@@ -135,20 +138,21 @@ async def make_message(today_str: str, is_test: bool = False):
         logger.error(f"Failed to send messag scrap geeknews: {e}")
         raise
 
-    try:  # 나라사랑카드 trend 메시지 생성
-        army_trend_messages = await get_army_trend_message()
-        logger.info("Message ready: army_trend_messages")
-        if army_trend_messages:
-            for message in army_trend_messages:
-                await async_post_message(army_trend_messages, TEST_CHANNEL_ID)
-                if not is_test:
-                    ## FIXME: 나라카드카드 메시지 옮기기
-                    pass
-    except Exception as e:
-        logger.error(f"Failed to generate army_trend message: {e}")
-        raise
+    # 나라사랑카드 trend 메시지 생성
 
-    ## FIXME: 나라사랑카드 각각 메시지 생성
+    try:
+        hana_narasarang = await get_hana_narasarang_messages(top_k=10)
+        shinhan_narasarang = await get_shinhan_narasarang_messages(top_k=10)
+        narasarang_messages = {
+            "hana": hana_narasarang,
+            "shinhan": shinhan_narasarang,
+        }
+        logger.info(
+            f"Narasarang messages ready: hana={len(hana_narasarang)}, shinhan={len(shinhan_narasarang)}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate narasarang messages: {e}")
+        raise
 
     try:
         product_messages = {
@@ -177,7 +181,7 @@ async def make_message(today_str: str, is_test: bool = False):
             "hanamoney": hanamoney_reviews,
             "hanapay": hanapay_reviews,
             "geeknews": geeknews_messages,
-            "army_trend": army_trend_messages,
+            "narasarang": narasarang_messages,
         }
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)

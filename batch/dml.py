@@ -17,6 +17,12 @@ COMMON_COLS = [
     "is_posted",
 ]
 
+TABLE_COLS: dict[str, list[str]] = {
+    "travellog": COMMON_COLS,
+    "security_monitor": COMMON_COLS,
+    "narasarang_monitor": ["brand"] + COMMON_COLS,
+}
+
 
 def fetch_df(table: str, cols: list[str] | None = None) -> pd.DataFrame:
     cols = cols or COMMON_COLS

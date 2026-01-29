@@ -4,6 +4,10 @@ from typing import Callable
 
 from fastapi.responses import JSONResponse
 
+from batch.narasarang.make_message import (
+    get_hana_narasarang_messages,
+    get_shinhan_narasarang_messages,
+)
 from bot.enums.button_templates import JUPJUP_BUTTON, LAB_BUTTON, PRODUCT_BUTTON
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
@@ -90,6 +94,28 @@ async def handle_product_wonder_command(channel_id: str) -> JSONResponse:
 
 async def handle_product_jade_command(channel_id: str) -> JSONResponse:
     return await _handle_product_command(channel_id, "/JADE")
+
+
+async def handle_narasarang_command(channel_id: str) -> JSONResponse:
+    hana_msgs = await get_hana_narasarang_messages(top_k=10)
+    if hana_msgs:
+        await async_post_payload(make_flexible_payload(hana_msgs), channel_id)
+    else:
+        await async_post_message(
+            "하나 나라사랑카드 관련 주요 이슈가 없습니다.", channel_id
+        )
+
+    shinhan_msgs = await get_shinhan_narasarang_messages(top_k=10)
+    if shinhan_msgs:
+        await async_post_payload(make_flexible_payload(shinhan_msgs), channel_id)
+    else:
+        await async_post_message(
+            "신한 나라사랑카드 관련 주요 이슈가 없습니다.", channel_id
+        )
+
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
 
 
 async def handle_cafeteria_command(channel_id: str) -> JSONResponse:
@@ -335,7 +361,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/하나페이": handle_hanapay_command,
     "/보안": handle_security_command,
     "/긱뉴스": handle_geeknews_command,
-    "/나라사랑카드": handle_army_command,
+    "/나라사랑카드": handle_narasarang_command,
     # Argument 필요한 커맨드
     "/아우야": handle_brother_command,
     "/운세": handle_fortune_command,

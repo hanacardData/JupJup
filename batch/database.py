@@ -55,3 +55,21 @@ def init_database():
             )
         """)
         conn.commit()
+
+        # 나라사랑카드
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS narasarang (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                brand TEXT,               -- 'hana' | 'shinhan'
+                query TEXT,
+                title TEXT,
+                url TEXT UNIQUE NOT NULL,
+                description TEXT,
+                post_date TEXT,
+                scrap_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                source TEXT,
+                name TEXT,
+                is_posted INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
