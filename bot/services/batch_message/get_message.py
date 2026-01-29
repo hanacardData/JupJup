@@ -14,6 +14,7 @@ def get_batch_message(
         "hanapay",
         "security",
         "geeknews",
+        "army_trend",
     ],
 ) -> list[str]:
     today_str = datetime.now().strftime("%Y-%m-%d")

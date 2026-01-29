@@ -250,6 +250,17 @@ async def handle_geeknews_command(channel_id: str) -> JSONResponse:
     )
 
 
+async def handle_army_command(channel_id: str) -> JSONResponse:
+    """나라사랑카드를 요청했을 때 호출되는 핸들러입니다."""
+    trend_messages = get_batch_message("army_trend")
+    for message in trend_messages:
+        await async_post_message(message, channel_id)
+    ## FIXME 캐러셀 추가
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
+
+
 async def handle_jupjup_command(channel_id: str) -> JSONResponse:
     """줍줍 핸들러"""
     await async_post_payload(JUPJUP_BUTTON, channel_id)
@@ -324,6 +335,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/하나페이": handle_hanapay_command,
     "/보안": handle_security_command,
     "/긱뉴스": handle_geeknews_command,
+    "/나라사랑카드": handle_army_command,
     # Argument 필요한 커맨드
     "/아우야": handle_brother_command,
     "/운세": handle_fortune_command,

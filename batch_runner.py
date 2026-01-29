@@ -7,6 +7,7 @@ import pandas as pd
 from holidayskr import is_holiday
 
 from batch.app_review.android import get_app_reviews
+from batch.compare_army.make_message import get_army_trend_message
 from batch.compare_travel.make_message import get_compare_travel_message
 from batch.database import init_database
 from batch.geeknews.load import collect_load_geeknews
@@ -134,6 +135,21 @@ async def make_message(today_str: str, is_test: bool = False):
         logger.error(f"Failed to send messag scrap geeknews: {e}")
         raise
 
+    try:  # 나라사랑카드 trend 메시지 생성
+        army_trend_messages = await get_army_trend_message()
+        logger.info("Message ready: army_trend_messages")
+        if army_trend_messages:
+            for message in army_trend_messages:
+                await async_post_message(army_trend_messages, TEST_CHANNEL_ID)
+                if not is_test:
+                    ## FIXME: 나라카드카드 메시지 옮기기
+                    pass
+    except Exception as e:
+        logger.error(f"Failed to generate army_trend message: {e}")
+        raise
+
+    ## FIXME: 나라사랑카드 각각 메시지 생성
+
     try:
         product_messages = {
             "/경쟁사신용": await process_generate_message("신용카드 신상품"),
@@ -161,6 +177,7 @@ async def make_message(today_str: str, is_test: bool = False):
             "hanamoney": hanamoney_reviews,
             "hanapay": hanapay_reviews,
             "geeknews": geeknews_messages,
+            "army_trend": army_trend_messages,
         }
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
