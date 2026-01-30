@@ -31,6 +31,7 @@ from batch.travellog.load import collect_load_travellog_data
 from batch.travellog.make_message import get_travellog_message
 from batch.variables import (
     DATA_PATH,
+    NARASARANG_CHANNEL_ID,
     PRODUCT_CHANNEL_ID,
     SECURITY_CHANNEL_ID,
     SUBSCRIBE_CHANNEL_IDS,
@@ -45,8 +46,6 @@ from bot.services.core.post_payload import (
     async_post_payload,
 )
 from logger import logger
-
-NARASARANG_CHANNEL_ID = "7c58e7d2-6767-d4cf-14e2-ab5ab0f19a60"
 
 
 def is_skip_batch(date: datetime) -> bool:
