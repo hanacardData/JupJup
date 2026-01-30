@@ -1,54 +1,17 @@
-import json
-import re
+from typing import Any
 
 from batch.dml import fetch_df
-from batch.narasarang.prompt import PROMPT, TEXT_INPUT
-from bot.services.core.openai_client import async_openai_response
+from batch.narasarang.gpt_rank import (
+    dedup_title_url,
+    filter_recent_days,
+    gpt_rank_topk,
+)
 from logger import logger
 
 TABLE = "narasarang"
 
 
-def _strip_html(s: str) -> str:
-    return re.sub(r"<[^>]+>", "", s or "").strip()
-
-
-def _load_candidates(brand: str, limit: int = 50) -> list[dict]:
-    df = fetch_df(
-        TABLE, cols=["brand", "title", "url", "description", "post_date", "source"]
-    )
-    if df.empty:
-        return []
-
-    sub = df[df["brand"] == brand].copy()
-    if sub.empty:
-        return []
-
-    sub["title"] = sub["title"].fillna("").apply(_strip_html)
-    sub["description"] = sub["description"].fillna("").apply(_strip_html)
-    sub["url"] = sub["url"].fillna("").astype(str).str.strip()
-
-    sub = sub.drop_duplicates(subset=["title", "url"]).head(limit)
-
-    out: list[dict] = []
-    for _, r in sub.iterrows():
-        title = (r.get("title") or "").strip()
-        url = (r.get("url") or "").strip()
-        if not title or not url:
-            continue
-        out.append(
-            {
-                "title": title[:140],
-                "description": (r.get("description") or "")[:400],
-                "url": url,
-                "source": (r.get("source") or ""),
-                "post_date": (r.get("post_date") or ""),
-            }
-        )
-    return out
-
-
-def _to_carousel_messages(picked: list[dict]) -> list[str]:
+def _to_carousel_messages(picked: list[dict[str, Any]]) -> list[str]:
     msgs: list[str] = []
     for it in picked:
         title = (it.get("title") or "").strip()
@@ -60,34 +23,53 @@ def _to_carousel_messages(picked: list[dict]) -> list[str]:
     return msgs
 
 
-async def _pick_topk_with_gpt(brand: str, top_k: int = 10) -> list[str]:
-    candidates = _load_candidates(brand=brand, limit=max(50, top_k * 5))
-    if not candidates:
-        return []
-
-    content = json.dumps(candidates, ensure_ascii=False, indent=2)
-
-    raw = await async_openai_response(
-        prompt=PROMPT,
-        input=TEXT_INPUT.format(brand=brand, top_k=top_k, content=content),
+def _load_brand_rows(brand: str) -> list[dict[str, Any]]:
+    df = fetch_df(
+        TABLE,
+        cols=["brand", "title", "url", "description", "post_date", "source"],
     )
-
-    try:
-        data = json.loads(raw)
-        picked = data.get("picked", [])
-        if not isinstance(picked, list):
-            return []
-        return _to_carousel_messages(picked)[:top_k]
-    except Exception as e:
-        logger.error(
-            f"[narasarang] failed to parse gpt json: {e} / raw={str(raw)[:300]}"
-        )
+    if df.empty:
         return []
+
+    sub = df[df["brand"] == brand].copy()
+    if sub.empty:
+        return []
+
+    return sub.to_dict(orient="records")
+
+
+async def _make_brand_messages(
+    brand: str,
+    top_k: int = 10,
+    recent_days: int = 3,
+    concurrency: int = 5,
+) -> list[str]:
+    rows = _load_brand_rows(brand)
+    if not rows:
+        logger.info(f"[narasarang] no rows in db for brand={brand}")
+        return []
+
+    rows = filter_recent_days(rows, days=recent_days)
+    rows = dedup_title_url(rows)
+
+    logger.info(
+        f"[narasarang] recent candidates: brand={brand}, days={recent_days}, n={len(rows)}"
+    )
+    if not rows:
+        return []
+
+    picked = await gpt_rank_topk(rows, top_k=top_k, concurrency=concurrency)
+    logger.info(f"[narasarang] picked: brand={brand}, n={len(picked)}")
+    return _to_carousel_messages(picked)
 
 
 async def get_hana_narasarang_messages(top_k: int = 10) -> list[str]:
-    return await _pick_topk_with_gpt(brand="hana", top_k=top_k)
+    return await _make_brand_messages(
+        brand="hana", top_k=top_k, recent_days=3, concurrency=5
+    )
 
 
 async def get_shinhan_narasarang_messages(top_k: int = 10) -> list[str]:
-    return await _pick_topk_with_gpt(brand="shinhan", top_k=top_k)
+    return await _make_brand_messages(
+        brand="shinhan", top_k=top_k, recent_days=3, concurrency=5
+    )

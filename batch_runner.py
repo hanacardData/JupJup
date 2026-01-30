@@ -14,6 +14,7 @@ from batch.geeknews.make_message import get_geeknews_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
+from batch.narasarang.keywords import NARASARANG_QUERIES
 from batch.narasarang.load import collect_load_narasarang_data
 from batch.narasarang.make_message import (
     get_hana_narasarang_messages,
@@ -66,7 +67,7 @@ def data_collect():
     collect_load_geeknews()
     logger.info("Geeknews Collection Completed")
 
-    collect_load_narasarang_data()
+    collect_load_narasarang_data(NARASARANG_QUERIES)
     logger.info("Narasarang Collection Completed")
 
 

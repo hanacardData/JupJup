@@ -20,7 +20,7 @@ COMMON_COLS = [
 TABLE_COLS: dict[str, list[str]] = {
     "travellog": COMMON_COLS,
     "security_monitor": COMMON_COLS,
-    "narasarang_monitor": ["brand"] + COMMON_COLS,
+    "narasarang": ["brand"] + COMMON_COLS,
 }
 
 
@@ -34,7 +34,7 @@ def fetch_df(table: str, cols: list[str] | None = None) -> pd.DataFrame:
 def insert_rows(table: str, rows: list[dict]) -> None:
     if not rows:
         return
-    cols = COMMON_COLS
+    cols = TABLE_COLS.get(table, COMMON_COLS)
     placeholders = ", ".join(["?"] * len(cols))
     sql = f"""
         INSERT OR IGNORE INTO {table} ({", ".join(cols)})
