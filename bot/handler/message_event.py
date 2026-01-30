@@ -95,8 +95,20 @@ async def handle_product_jade_command(channel_id: str) -> JSONResponse:
 
 async def handle_narasarang_command(channel_id: str) -> JSONResponse:
     data = get_narasarang_batch_message()
+    trend_chunks = data["trend"]
     hana_chunks = data["hana"]
     shinhan_chunks = data["shinhan"]
+
+    if trend_chunks:
+        await async_post_message(
+            "💌 나라사랑카드 트렌드 이슈를 보내드릴게요!", channel_id
+        )
+        for msg in trend_chunks:
+            await async_post_message(msg, channel_id)
+    else:
+        await async_post_message(
+            "나라사랑카드 트렌드 관련 유효한 정보가 없습니다.", channel_id
+        )
 
     if hana_chunks:
         await async_post_message(
