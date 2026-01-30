@@ -100,9 +100,6 @@ async def handle_narasarang_command(channel_id: str) -> JSONResponse:
     shinhan_chunks = data["shinhan"]
 
     if trend_chunks:
-        await async_post_message(
-            "💌 나라사랑카드 트렌드 이슈를 보내드릴게요!", channel_id
-        )
         for msg in trend_chunks:
             await async_post_message(msg, channel_id)
     else:
