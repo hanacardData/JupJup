@@ -377,7 +377,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/하나페이": handle_hanapay_command,
     "/보안": handle_security_command,
     "/긱뉴스": handle_geeknews_command,
-    "/나라사랑카드": handle_narasarang_command,
+    "/나라사랑": handle_narasarang_command,
     # Argument 필요한 커맨드
     "/아우야": handle_brother_command,
     "/운세": handle_fortune_command,
