@@ -19,6 +19,7 @@ from batch.narasarang.load import collect_load_narasarang_data
 from batch.narasarang.make_message import (
     get_hana_narasarang_messages,
     get_shinhan_narasarang_messages,
+    get_trend_narasarng_messages,
 )
 from batch.product.load import collect_load_product_issues
 from batch.product.make_message import process_generate_message
@@ -143,12 +144,12 @@ async def make_message(today_str: str, is_test: bool = False):
         logger.error(f"Failed to send messag scrap geeknews: {e}")
         raise
 
-    # 나라사랑카드 trend 메시지 생성
-
-    try:
+    try:  # 나라사랑카드 trend 메시지 생성
+        trend_narasarang = await get_trend_narasarng_messages()
         hana_narasarang = await get_hana_narasarang_messages()
         shinhan_narasarang = await get_shinhan_narasarang_messages()
         narasarang_messages = {
+            "trend": trend_narasarang,
             "hana": hana_narasarang,
             "shinhan": shinhan_narasarang,
         }

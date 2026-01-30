@@ -130,7 +130,7 @@ async def _get_trend_message():
     )
 
 
-async def get_narasarng_trend_message() -> list[str]:
+async def get_trend_narasarng_messages() -> list[str]:
     trend_message = await _get_trend_message()
     message = [
         "나라사랑카드의 최근 7일 간 네이버 검색어 트렌드 분석 결과를 확인해보세요! 📊\n",

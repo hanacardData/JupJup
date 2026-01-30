@@ -14,8 +14,6 @@ def get_batch_message(
         "hanapay",
         "security",
         "geeknews",
-        "army_trend",
-        "narasarang",
     ],
 ) -> list[str]:
     today_str = datetime.now().strftime("%Y-%m-%d")
@@ -55,13 +53,17 @@ def get_narasarang_batch_message() -> list[str]:
     today_str = datetime.now().strftime("%Y-%m-%d")
     output_file = os.path.join("data", "messages", f"message_{today_str}.json")
     if not os.path.exists(output_file):
-        return {"hana": [], "shinhan": []}
+        return {"trend": [], "hana": [], "shinhan": []}
 
     with open(output_file, "r", encoding="utf-8") as f:
         payload = json.load(f)
 
     narasarang = payload["narasarang"]
-    return {"hana": narasarang["hana"], "shinhan": narasarang["shinhan"]}
+    return {
+        "trend": narasarang["trend"],
+        "hana": narasarang["hana"],
+        "shinhan": narasarang["shinhan"],
+    }
 
 
 def make_flexible_payload(
