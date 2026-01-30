@@ -44,10 +44,7 @@ def collect_load_narasarang_data(
                     continue
 
                 try:
-                    items = [
-                        x.model_dump() if hasattr(x, "model_dump") else dict(x)
-                        for x in resp.items
-                    ]
+                    items = [x.model_dump() for x in resp.items]
                 except Exception:
                     try:
                         items = list(resp.items)
