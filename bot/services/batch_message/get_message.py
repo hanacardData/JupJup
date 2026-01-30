@@ -48,6 +48,24 @@ def get_product_batch_message(
         return [f"배치 메세지를 불러오는 중 오류가 발생했어요: {str(e)}"]
 
 
+def get_narasarang_batch_message(subkey: Literal["hana", "shinhan"]) -> list[str]:
+    """
+    나라사랑 메시지만 처리하는 전용 함수
+    """
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    output_file = os.path.join("data", "messages", f"message_{today_str}.json")
+
+    if not os.path.exists(output_file):
+        return ["배치 메세지를 위한 데이터를 수집하기 전이에요!"]
+
+    try:
+        with open(output_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data.get("narasarang", {}).get(subkey, ["해당 메시지가 없습니다."])
+    except Exception as e:
+        return [f"배치 메세지를 불러오는 중 오류가 발생했어요: {str(e)}"]
+
+
 def make_flexible_payload(
     messages: list[str],
 ) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
