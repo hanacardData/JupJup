@@ -4,15 +4,12 @@ from typing import Callable
 
 from fastapi.responses import JSONResponse
 
-from batch.narasarang.make_message import (
-    get_hana_narasarang_messages,
-    get_shinhan_narasarang_messages,
-)
 from bot.enums.button_templates import JUPJUP_BUTTON, LAB_BUTTON, PRODUCT_BUTTON
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
 from bot.services.batch_message.get_message import (
     get_batch_message,
+    get_narasarang_batch_message,
     get_product_batch_message,
     make_app_review_flexible_payload,
     make_flexible_payload,
@@ -101,18 +98,20 @@ def _chunk_list(xs: list[str], size: int = 10) -> list[list[str]]:
 
 
 async def handle_narasarang_command(channel_id: str) -> JSONResponse:
-    hana_msgs = await get_hana_narasarang_messages()
-    if hana_msgs:
-        for chunk in _chunk_list(hana_msgs, size=10):
+    data = get_narasarang_batch_message()
+    hana_chunks = data["hana"]
+    shinhan_chunks = data["shinhan"]
+
+    if hana_chunks:
+        for chunk in hana_chunks:
             await async_post_payload(make_flexible_payload(chunk), channel_id)
     else:
         await async_post_message(
             "하나 나라사랑카드 관련 주요 이슈가 없습니다.", channel_id
         )
 
-    shinhan_msgs = await get_shinhan_narasarang_messages()
-    if shinhan_msgs:
-        for chunk in _chunk_list(shinhan_msgs, size=10):
+    if shinhan_chunks:
+        for chunk in shinhan_chunks:
             await async_post_payload(make_flexible_payload(chunk), channel_id)
     else:
         await async_post_message(
