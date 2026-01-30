@@ -1,11 +1,18 @@
+from datetime import datetime, timedelta
 from typing import Any
 
 from batch.dml import fetch_df, mark_posted
+from batch.fetch import fetch_trend_data
 from batch.narasarang.gpt_rank import (
     dedup_title_url,
     filter_recent_days,
     gpt_rank_sorted,
 )
+from batch.narasarang.keywords import (
+    COMPARE_ARMY_KEYWORDS,
+)
+from batch.narasarang.prompt import PROMPT, TEXT_INPUT
+from bot.services.core.openai_client import async_openai_response
 from logger import logger
 
 TABLE = "narasarang"
@@ -106,3 +113,27 @@ async def get_hana_narasarang_messages() -> list[list[str]]:
 
 async def get_shinhan_narasarang_messages() -> list[list[str]]:
     return await _make_brand_messages(brand="shinhan", recent_days=3, concurrency=5)
+
+
+async def _get_trend_message():
+    today = datetime.today().strftime("%Y-%m-%d")
+    one_week_ago = (datetime.today() - timedelta(days=7)).strftime("%Y-%m-%d")
+    trend_response = fetch_trend_data(
+        startDate=one_week_ago,
+        endDate=today,
+        timeUnit="date",
+        keywordGroups=COMPARE_ARMY_KEYWORDS,
+    )
+    return await async_openai_response(
+        prompt=PROMPT,
+        input=TEXT_INPUT.format(content=trend_response.to_results()),
+    )
+
+
+async def get_narasarng_trend_message() -> list[str]:
+    trend_message = await _get_trend_message()
+    message = [
+        "나라사랑카드의 최근 7일 간 네이버 검색어 트렌드 분석 결과를 확인해보세요! 📊\n",
+        trend_message,
+    ]
+    return message
