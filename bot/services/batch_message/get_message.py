@@ -66,6 +66,10 @@ def get_narasarang_batch_message() -> list[str]:
 
 def make_flexible_payload(
     messages: list[str],
+    alt_text: str = "TravelLog",
+    header_bg: str | None = None,
+    title_color: str = "#000000",
+    button_color: str | None = None,
 ) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
     carousel_payload = {"type": "carousel", "contents": []}
 
@@ -79,18 +83,35 @@ def make_flexible_payload(
         title = title_match.group(1).strip('"{}').strip()
         text = text_match.group(1).strip('"{}').strip()
         link = link_match.group(1).strip('"{}').strip()
+
         content = {
             "type": "bubble",
             "size": "kilo",
             "header": {
                 "type": "box",
                 "layout": "horizontal",
-                "contents": [{"type": "text", "text": title, "wrap": True}],
+                "backgroundColor": header_bg,
+                "paddingAll": "12px",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": title,
+                        "wrap": True,
+                        "weight": "bold",
+                        "color": title_color,
+                    }
+                ],
             },
             "body": {
                 "type": "box",
                 "layout": "horizontal",
-                "contents": [{"type": "text", "text": text, "wrap": True}],
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": text,
+                        "wrap": True,
+                    }
+                ],
             },
             "footer": {
                 "type": "box",
@@ -99,18 +120,24 @@ def make_flexible_payload(
                     {
                         "type": "button",
                         "style": "primary",
-                        "action": {"type": "uri", "label": "link", "uri": link},
+                        "color": button_color,
                         "height": "sm",
+                        "action": {
+                            "type": "uri",
+                            "label": "link",
+                            "uri": link,
+                        },
                     }
                 ],
             },
         }
+
         carousel_payload["contents"].append(content)
 
     return {
         "content": {
             "type": "flex",
-            "altText": "TravelLog",
+            "altText": alt_text,
             "contents": carousel_payload,
         }
     }

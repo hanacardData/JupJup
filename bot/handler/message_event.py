@@ -103,16 +103,33 @@ async def handle_narasarang_command(channel_id: str) -> JSONResponse:
     shinhan_chunks = data["shinhan"]
 
     if hana_chunks:
+        await async_post_message(
+            "💌 하나 나라사랑카드 관련 이슈를 보내드릴게요!", channel_id
+        )
         for chunk in hana_chunks:
-            await async_post_payload(make_flexible_payload(chunk), channel_id)
+            await async_post_payload(
+                make_flexible_payload(chunk, alt_text="Hana Narasarang"), channel_id
+            )
     else:
         await async_post_message(
             "하나 나라사랑카드 관련 주요 이슈가 없습니다.", channel_id
         )
 
     if shinhan_chunks:
+        await async_post_message(
+            "💌 신한 나라사랑카드 관련 이슈를 보내드릴게요!", channel_id
+        )
         for chunk in shinhan_chunks:
-            await async_post_payload(make_flexible_payload(chunk), channel_id)
+            await async_post_payload(
+                make_flexible_payload(
+                    chunk,
+                    alt_text="Shinhan Narasarang",
+                    header_bg="#0046FF",
+                    title_color="#FFFFFF",
+                    button_color="#0046FF",
+                ),
+                channel_id,
+            )
     else:
         await async_post_message(
             "신한 나라사랑카드 관련 주요 이슈가 없습니다.", channel_id

@@ -146,8 +146,8 @@ async def make_message(today_str: str, is_test: bool = False):
     # 나라사랑카드 trend 메시지 생성
 
     try:
-        hana_narasarang = await get_hana_narasarang_messages(top_k=10)
-        shinhan_narasarang = await get_shinhan_narasarang_messages(top_k=10)
+        hana_narasarang = await get_hana_narasarang_messages()
+        shinhan_narasarang = await get_shinhan_narasarang_messages()
         narasarang_messages = {
             "hana": hana_narasarang,
             "shinhan": shinhan_narasarang,
