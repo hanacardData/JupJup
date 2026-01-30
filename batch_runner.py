@@ -46,6 +46,8 @@ from bot.services.core.post_payload import (
 )
 from logger import logger
 
+NARASARANG_CHANNEL_ID = "7c58e7d2-6767-d4cf-14e2-ab5ab0f19a60"
+
 
 def is_skip_batch(date: datetime) -> bool:
     return is_holiday(date.strftime("%Y-%m-%d")) or date.weekday() >= 5
@@ -159,6 +161,61 @@ async def make_message(today_str: str, is_test: bool = False):
     except Exception as e:
         logger.error(f"Failed to generate narasarang messages: {e}")
         raise
+
+    if not is_test:
+        await async_post_message(
+            f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} "
+            "줍줍한 나라사랑카드 이슈를 공유드릴게요!\n",
+            NARASARANG_CHANNEL_ID,
+        )
+
+        if trend_narasarang:
+            await async_post_message(
+                "💌 나라사랑카드 트렌드 분석입니다.", NARASARANG_CHANNEL_ID
+            )
+            for msg in trend_narasarang:
+                await async_post_message(msg, NARASARANG_CHANNEL_ID)
+        else:
+            await async_post_message(
+                "나라사랑카드 트렌드 관련 유효한 정보가 없습니다.",
+                NARASARANG_CHANNEL_ID,
+            )
+
+        if hana_narasarang:
+            await async_post_message(
+                "💌 하나 나라사랑카드 관련 이슈를 보내드릴게요!", NARASARANG_CHANNEL_ID
+            )
+            for chunk in hana_narasarang:
+                await async_post_payload(
+                    make_flexible_payload(chunk, alt_text="Hana Narasarang"),
+                    NARASARANG_CHANNEL_ID,
+                )
+        else:
+            await async_post_message(
+                "하나 나라사랑카드 관련 주요 이슈가 없습니다.", NARASARANG_CHANNEL_ID
+            )
+
+        if shinhan_narasarang:
+            await async_post_message(
+                "💌 신한 나라사랑카드 관련 이슈를 보내드릴게요!", NARASARANG_CHANNEL_ID
+            )
+            for chunk in shinhan_narasarang:
+                await async_post_payload(
+                    make_flexible_payload(
+                        chunk,
+                        alt_text="Shinhan Narasarang",
+                        header_background_color="#0046FF",
+                        title_color="#FFFFFF",
+                        button_color="#0046FF",
+                    ),
+                    NARASARANG_CHANNEL_ID,
+                )
+        else:
+            await async_post_message(
+                "신한 나라사랑카드 관련 주요 이슈가 없습니다.", NARASARANG_CHANNEL_ID
+            )
+
+        logger.info(f"Sent Narasarang Message to channel {NARASARANG_CHANNEL_ID}")
 
     try:
         product_messages = {
