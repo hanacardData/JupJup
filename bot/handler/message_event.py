@@ -9,6 +9,7 @@ from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
 from bot.services.batch_message.get_message import (
     get_batch_message,
+    get_narasarang_batch_message,
     get_product_batch_message,
     make_app_review_flexible_payload,
     make_flexible_payload,
@@ -90,6 +91,58 @@ async def handle_product_wonder_command(channel_id: str) -> JSONResponse:
 
 async def handle_product_jade_command(channel_id: str) -> JSONResponse:
     return await _handle_product_command(channel_id, "/JADE")
+
+
+async def handle_narasarang_command(channel_id: str) -> JSONResponse:
+    data = get_narasarang_batch_message()
+    trend_chunks = data["trend"]
+    hana_chunks = data["hana"]
+    shinhan_chunks = data["shinhan"]
+
+    if trend_chunks:
+        for msg in trend_chunks:
+            await async_post_message(msg, channel_id)
+    else:
+        await async_post_message(
+            "나라사랑카드 트렌드 관련 유효한 정보가 없습니다.", channel_id
+        )
+
+    if hana_chunks:
+        await async_post_message(
+            "💌 하나 나라사랑카드 관련 이슈를 보내드릴게요!", channel_id
+        )
+        for chunk in hana_chunks:
+            await async_post_payload(
+                make_flexible_payload(chunk, alt_text="Hana Narasarang"), channel_id
+            )
+    else:
+        await async_post_message(
+            "하나 나라사랑카드 관련 주요 이슈가 없습니다.", channel_id
+        )
+
+    if shinhan_chunks:
+        await async_post_message(
+            "💌 신한 나라사랑카드 관련 이슈를 보내드릴게요!", channel_id
+        )
+        for chunk in shinhan_chunks:
+            await async_post_payload(
+                make_flexible_payload(
+                    chunk,
+                    alt_text="Shinhan Narasarang",
+                    header_background_color="#0046FF",
+                    title_color="#FFFFFF",
+                    button_color="#0046FF",
+                ),
+                channel_id,
+            )
+    else:
+        await async_post_message(
+            "신한 나라사랑카드 관련 주요 이슈가 없습니다.", channel_id
+        )
+
+    return JSONResponse(
+        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+    )
 
 
 async def handle_cafeteria_command(channel_id: str) -> JSONResponse:
@@ -324,6 +377,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
     "/하나페이": handle_hanapay_command,
     "/보안": handle_security_command,
     "/긱뉴스": handle_geeknews_command,
+    "/나라사랑카드": handle_narasarang_command,
     # Argument 필요한 커맨드
     "/아우야": handle_brother_command,
     "/운세": handle_fortune_command,

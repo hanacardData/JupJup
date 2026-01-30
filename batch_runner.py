@@ -14,6 +14,13 @@ from batch.geeknews.make_message import get_geeknews_message
 from batch.issue.keywords import QUERIES
 from batch.issue.load import collect_load_data
 from batch.issue.make_message import get_issue_message
+from batch.narasarang.keywords import NARASARANG_QUERIES
+from batch.narasarang.load import collect_load_narasarang_data
+from batch.narasarang.make_message import (
+    get_hana_narasarang_messages,
+    get_shinhan_narasarang_messages,
+    get_trend_narasarng_messages,
+)
 from batch.product.load import collect_load_product_issues
 from batch.product.make_message import process_generate_message
 from batch.security_monitor.keywords import SECURITY_QUERIES
@@ -60,6 +67,9 @@ def data_collect():
 
     collect_load_geeknews()
     logger.info("Geeknews Collection Completed")
+
+    collect_load_narasarang_data(NARASARANG_QUERIES)
+    logger.info("Narasarang Collection Completed")
 
 
 async def make_message(today_str: str, is_test: bool = False):
@@ -134,6 +144,22 @@ async def make_message(today_str: str, is_test: bool = False):
         logger.error(f"Failed to send messag scrap geeknews: {e}")
         raise
 
+    try:  # 나라사랑카드 trend 메시지 생성
+        trend_narasarang = await get_trend_narasarng_messages()
+        hana_narasarang = await get_hana_narasarang_messages()
+        shinhan_narasarang = await get_shinhan_narasarang_messages()
+        narasarang_messages = {
+            "trend": trend_narasarang,
+            "hana": hana_narasarang,
+            "shinhan": shinhan_narasarang,
+        }
+        logger.info(
+            f"Narasarang messages ready: hana={len(hana_narasarang)}, shinhan={len(shinhan_narasarang)}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate narasarang messages: {e}")
+        raise
+
     try:
         product_messages = {
             "/경쟁사신용": await process_generate_message("신용카드 신상품"),
@@ -161,6 +187,7 @@ async def make_message(today_str: str, is_test: bool = False):
             "hanamoney": hanamoney_reviews,
             "hanapay": hanapay_reviews,
             "geeknews": geeknews_messages,
+            "narasarang": narasarang_messages,
         }
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)

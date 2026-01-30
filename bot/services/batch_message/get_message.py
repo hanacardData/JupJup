@@ -46,8 +46,32 @@ def get_product_batch_message(
         return [f"배치 메세지를 불러오는 중 오류가 발생했어요: {str(e)}"]
 
 
+def get_narasarang_batch_message() -> list[str]:
+    """
+    나라사랑 메시지만 처리하는 전용 함수
+    """
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    output_file = os.path.join("data", "messages", f"message_{today_str}.json")
+    if not os.path.exists(output_file):
+        return {"trend": [], "hana": [], "shinhan": []}
+
+    with open(output_file, "r", encoding="utf-8") as f:
+        payload = json.load(f)
+
+    narasarang = payload["narasarang"]
+    return {
+        "trend": narasarang["trend"],
+        "hana": narasarang["hana"],
+        "shinhan": narasarang["shinhan"],
+    }
+
+
 def make_flexible_payload(
     messages: list[str],
+    alt_text: str = "TravelLog",
+    header_background_color: str | None = None,
+    title_color: str = "#000000",
+    button_color: str | None = None,
 ) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
     carousel_payload = {"type": "carousel", "contents": []}
 
@@ -61,18 +85,35 @@ def make_flexible_payload(
         title = title_match.group(1).strip('"{}').strip()
         text = text_match.group(1).strip('"{}').strip()
         link = link_match.group(1).strip('"{}').strip()
+
         content = {
             "type": "bubble",
             "size": "kilo",
             "header": {
                 "type": "box",
                 "layout": "horizontal",
-                "contents": [{"type": "text", "text": title, "wrap": True}],
+                "backgroundColor": header_background_color,
+                "paddingAll": "12px",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": title,
+                        "wrap": True,
+                        "weight": "bold",
+                        "color": title_color,
+                    }
+                ],
             },
             "body": {
                 "type": "box",
                 "layout": "horizontal",
-                "contents": [{"type": "text", "text": text, "wrap": True}],
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": text,
+                        "wrap": True,
+                    }
+                ],
             },
             "footer": {
                 "type": "box",
@@ -81,18 +122,24 @@ def make_flexible_payload(
                     {
                         "type": "button",
                         "style": "primary",
-                        "action": {"type": "uri", "label": "link", "uri": link},
+                        "color": button_color,
                         "height": "sm",
+                        "action": {
+                            "type": "uri",
+                            "label": "link",
+                            "uri": link,
+                        },
                     }
                 ],
             },
         }
+
         carousel_payload["contents"].append(content)
 
     return {
         "content": {
             "type": "flex",
-            "altText": "TravelLog",
+            "altText": alt_text,
             "contents": carousel_payload,
         }
     }
