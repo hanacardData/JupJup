@@ -21,6 +21,11 @@ SCORING_PROMPT = """
 - {brand} 나라사랑카드와 직접 관련될수록 점수를 적극적으로 높게 부여하라.
 - {brand}가 중심이 아닌 타 카드사 중심 글, 단순 언급 수준의 비교글은 점수를 낮게 유지하라.
 
+[하드 룰: 타 브랜드 중점이면 무조건 0점]
+- 글의 중심이 {brand}가 아닌 타 카드사/타 금융사(예: KB/현대/삼성/우리/롯데/IBK 등)이고,
+  {brand}는 "단순 언급/참조" 수준이면 score는 반드시 0으로 출력하라.
+- 이 경우 summary는 1문장으로 짧게 쓰되, "{brand} 직접 관련 없음" 취지로 작성하라.
+
 브랜드 관련도 판단 기준(가중치 높은 순):
 1) 제목에 {brand} / {brand}카드 / {brand} 나라사랑카드 등이 직접 등장하면 매우 높은 가산점
 2) 본문에서 {brand} 나라사랑카드 혜택/발급/후기/불만/조건변경을 구체적으로 다루면 높은 가산점
@@ -191,9 +196,8 @@ async def _score_one(it: dict[str, Any], sem: asyncio.Semaphore) -> tuple[float,
             return 0.0, ""
 
 
-async def gpt_rank_topk(
+async def gpt_rank_sorted(
     items: list[dict[str, Any]],
-    top_k: int = 10,
     concurrency: int = 5,
 ) -> list[dict[str, Any]]:
     if not items:
@@ -209,6 +213,6 @@ async def gpt_rank_topk(
         it2["summary"] = summary
         merged.append(it2)
 
-    merged.sort(key=lambda x: x.get("gpt_score", 0.0), reverse=True)
     merged = [x for x in merged if (x.get("summary") or "").strip()]
-    return merged[:top_k]
+    merged.sort(key=lambda x: x.get("gpt_score", 0.0), reverse=True)
+    return merged

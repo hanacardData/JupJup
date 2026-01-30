@@ -96,18 +96,24 @@ async def handle_product_jade_command(channel_id: str) -> JSONResponse:
     return await _handle_product_command(channel_id, "/JADE")
 
 
+def _chunk_list(xs: list[str], size: int = 10) -> list[list[str]]:
+    return [xs[i : i + size] for i in range(0, len(xs), size)]
+
+
 async def handle_narasarang_command(channel_id: str) -> JSONResponse:
-    hana_msgs = await get_hana_narasarang_messages(top_k=10)
+    hana_msgs = await get_hana_narasarang_messages()
     if hana_msgs:
-        await async_post_payload(make_flexible_payload(hana_msgs), channel_id)
+        for chunk in _chunk_list(hana_msgs, size=10):
+            await async_post_payload(make_flexible_payload(chunk), channel_id)
     else:
         await async_post_message(
             "하나 나라사랑카드 관련 주요 이슈가 없습니다.", channel_id
         )
 
-    shinhan_msgs = await get_shinhan_narasarang_messages(top_k=10)
+    shinhan_msgs = await get_shinhan_narasarang_messages()
     if shinhan_msgs:
-        await async_post_payload(make_flexible_payload(shinhan_msgs), channel_id)
+        for chunk in _chunk_list(shinhan_msgs, size=10):
+            await async_post_payload(make_flexible_payload(chunk), channel_id)
     else:
         await async_post_message(
             "신한 나라사랑카드 관련 주요 이슈가 없습니다.", channel_id
