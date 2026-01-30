@@ -93,10 +93,6 @@ async def handle_product_jade_command(channel_id: str) -> JSONResponse:
     return await _handle_product_command(channel_id, "/JADE")
 
 
-def _chunk_list(xs: list[str], size: int = 10) -> list[list[str]]:
-    return [xs[i : i + size] for i in range(0, len(xs), size)]
-
-
 async def handle_narasarang_command(channel_id: str) -> JSONResponse:
     data = get_narasarang_batch_message()
     hana_chunks = data["hana"]
@@ -124,7 +120,7 @@ async def handle_narasarang_command(channel_id: str) -> JSONResponse:
                 make_flexible_payload(
                     chunk,
                     alt_text="Shinhan Narasarang",
-                    header_bg="#0046FF",
+                    header_background_color="#0046FF",
                     title_color="#FFFFFF",
                     button_color="#0046FF",
                 ),
@@ -293,17 +289,6 @@ async def handle_geeknews_command(channel_id: str) -> JSONResponse:
     if len(messages) > 1:
         payload = make_geeknews_payload(messages)
         await async_post_payload(payload, channel_id)
-    return JSONResponse(
-        status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
-    )
-
-
-async def handle_army_command(channel_id: str) -> JSONResponse:
-    """나라사랑카드를 요청했을 때 호출되는 핸들러입니다."""
-    trend_messages = get_batch_message("army_trend")
-    for message in trend_messages:
-        await async_post_message(message, channel_id)
-    ## FIXME 캐러셀 추가
     return JSONResponse(
         status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
     )

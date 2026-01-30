@@ -69,7 +69,7 @@ def get_narasarang_batch_message() -> list[str]:
 def make_flexible_payload(
     messages: list[str],
     alt_text: str = "TravelLog",
-    header_bg: str | None = None,
+    header_background_color: str | None = None,
     title_color: str = "#000000",
     button_color: str | None = None,
 ) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
@@ -92,7 +92,7 @@ def make_flexible_payload(
             "header": {
                 "type": "box",
                 "layout": "horizontal",
-                "backgroundColor": header_bg,
+                "backgroundColor": header_background_color,
                 "paddingAll": "12px",
                 "contents": [
                     {

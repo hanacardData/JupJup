@@ -11,10 +11,6 @@ from logger import logger
 KST = timezone(timedelta(hours=9))
 
 
-def _strip_html(s: str) -> str:
-    return re.sub(r"<.*?>", "", s or "").strip()
-
-
 def _parse_post_date_to_dt(post_date: str) -> datetime | None:
     if not post_date:
         return None
@@ -22,8 +18,7 @@ def _parse_post_date_to_dt(post_date: str) -> datetime | None:
 
     if re.fullmatch(r"\d{8}", s):
         try:
-            dt = datetime.strptime(s, "%Y%m%d")
-            return dt.replace(tzinfo=KST)
+            return datetime.strptime(s, "%Y%m%d").replace(tzinfo=KST)
         except Exception:
             return
 
@@ -54,7 +49,7 @@ def filter_recent_days(
 
     out: list[dict[str, str | None]] = []
     for it in items:
-        pd = (it.get("post_date") or "").strip()
+        pd = it.get("post_date", "").strip()
         dt = _parse_post_date_to_dt(pd)
         if dt is None:
             continue
@@ -84,13 +79,13 @@ def dedup_title_url(items: list[dict[str, str | None]]) -> list[dict[str, str | 
 
 
 def _make_input(it: dict[str, str | None]) -> str:
-    desc = _strip_html(it.get("description", "").strip())
+    desc = it.get("description", "").strip()
     if len(desc) > 1500:
         desc = f"{desc[:1500]}..."
 
     return SCORE_INPUT.format(
         brand=it.get("brand", "").strip(),
-        title=_strip_html(it.get("title", "").strip()),
+        title=it.get("title", "").strip(),
         desc=desc,
         url=it.get("url", "").strip(),
         post_date=it.get("post_date", "").strip(),
@@ -108,11 +103,7 @@ def _safe_json_obj(raw: str) -> dict:
         s = re.sub(r"^```[a-zA-Z]*\s*", "", s)
         s = re.sub(r"\s*```$", "", s).strip()
 
-    left = s.find("{")
-    right = s.rfind("}")
-    if left == -1 or right == -1 or right <= left:
-        raise ValueError(f"no json object: {s[:200]}")
-    return json.loads(s[left : right + 1])
+    return json.loads(s)
 
 
 def _parse_score_summary(raw: str) -> tuple[float, str]:
@@ -163,6 +154,6 @@ async def gpt_rank_sorted(
         it2["summary"] = summary
         merged.append(it2)
 
-    merged = [x for x in merged if (x.get("summary") or "").strip()]
+    merged = [x for x in merged if x.get("summary", "").strip()]
     merged.sort(key=lambda x: x.get("gpt_score", 0.0), reverse=True)
     return merged

@@ -21,9 +21,9 @@ TABLE = "narasarang"
 def _to_carousel_messages(picked: list[dict[str, Any]]) -> list[list[str]]:
     msgs: list[str] = []
     for it in picked:
-        title = (it.get("title") or "").strip()
-        summary = (it.get("summary") or "").strip()
-        url = (it.get("url") or "").strip()
+        title = it.get("title", "").strip()
+        summary = it.get("summary", "").strip()
+        url = it.get("url", "").strip()
         if not (title and summary and url):
             continue
         msgs.append(f"제목: {title}\n내용: {summary}\n링크: {url}")
@@ -38,7 +38,7 @@ def _extract_urls(picked: list[dict[str, Any]]) -> list[str]:
     urls = []
     seen = set()
     for it in picked:
-        u = (it.get("url") or "").strip()
+        u = it.get("url", "").strip()
         if u and u not in seen:
             seen.add(u)
             urls.append(u)
@@ -61,7 +61,7 @@ def _load_brand_rows(brand: str) -> list[dict[str, Any]]:
     if df.empty:
         return []
 
-    sub = df[(df["brand"] == brand) & (df["is_posted"] == 0)].copy()
+    sub = df.loc[(df["brand"] == brand) & (df["is_posted"] == 0)].copy()
     if sub.empty:
         return []
 
