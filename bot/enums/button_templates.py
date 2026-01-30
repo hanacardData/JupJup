@@ -44,6 +44,11 @@ JUPJUP_BUTTON = {
             },
             {
                 "type": "message",
+                "label": "나라사랑카드 이슈",
+                "text": "/나라사랑카드",
+            },
+            {
+                "type": "message",
                 "label": "트래블로그 이슈",
                 "text": "/트래블로그",
             },
