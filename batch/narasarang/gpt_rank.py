@@ -41,7 +41,7 @@ def _parse_post_date_to_dt(post_date: str) -> datetime | None:
 
 def filter_recent_days(
     items: list[dict[str, str | None]],
-    days: int = 3,
+    days: int = 7,
     now: datetime | None = None,
 ) -> list[dict[str, str | None]]:
     now = now or datetime.now(tz=KST)
