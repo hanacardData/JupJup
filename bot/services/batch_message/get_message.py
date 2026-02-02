@@ -46,10 +46,8 @@ def get_product_batch_message(
         return [f"배치 메세지를 불러오는 중 오류가 발생했어요: {str(e)}"]
 
 
-def get_narasarang_batch_message() -> list[str]:
-    """
-    나라사랑 메시지만 처리하는 전용 함수
-    """
+def get_narasarang_batch_message() -> dict[str, list[str]]:
+    """나라사랑 메시지만 처리하는 전용 함수"""
     today_str = datetime.now().strftime("%Y-%m-%d")
     output_file = os.path.join("data", "messages", f"message_{today_str}.json")
     if not os.path.exists(output_file):
