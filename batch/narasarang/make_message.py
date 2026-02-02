@@ -61,7 +61,7 @@ def _load_brand_rows(brand: str) -> list[dict[str, Any]]:
     if df.empty:
         return []
 
-    sub = df.loc[(df["brand"] == brand) & (df["is_posted"] == 0)].copy()
+    sub = df.loc[df["brand"] == brand].copy()
     if sub.empty:
         return []
 
@@ -70,7 +70,7 @@ def _load_brand_rows(brand: str) -> list[dict[str, Any]]:
 
 async def _make_brand_messages(
     brand: str,
-    recent_days: int = 3,
+    recent_days: int = 7,
     concurrency: int = 5,
 ) -> list[list[str]]:
     rows = _load_brand_rows(brand)
