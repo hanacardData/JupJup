@@ -115,7 +115,7 @@ async def get_shinhan_narasarang_messages() -> list[list[str]]:
     return await _make_brand_messages(brand="shinhan", recent_days=3, concurrency=5)
 
 
-async def _get_trend_message():
+async def _get_trend_message() -> str:
     today = datetime.today().strftime("%Y-%m-%d")
     one_week_ago = (datetime.today() - timedelta(days=7)).strftime("%Y-%m-%d")
     trend_response = fetch_trend_data(
