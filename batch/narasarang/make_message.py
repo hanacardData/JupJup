@@ -24,8 +24,8 @@ def _get_title_keywords_for_brand(brand: str) -> list[str]:
 
     for g in COMPARE_ARMY_KEYWORDS:
         if g.get("groupName") == group:
-            kws = g.get("keywords", [])
-            return [str(x).strip() for x in kws if str(x).strip()]
+            keywords = g.get("keywords", [])
+            return [str(x).strip() for x in keywords if str(x).strip()]
 
     return []
 
@@ -40,15 +40,15 @@ def _title_has_any_keyword(title: str, keywords: list[str]) -> bool:
     for k in keywords:
         if not k:
             continue
-        k2 = k.strip()
-        if not k2:
+        k_stripped = k.strip()
+        if not k_stripped:
             continue
 
-        if k2 in t:
+        if k_stripped in t:
             return True
 
-        k2_nospace = re.sub(r"\s+", "", k2)
-        if k2_nospace and k2_nospace in t_nospace:
+        k_nospace = re.sub(r"\s+", "", k_stripped)
+        if k_nospace and k_nospace in t_nospace:
             return True
 
     return False
