@@ -20,10 +20,6 @@ TABLE = "narasarang"
 
 
 def _get_title_keywords_for_brand(brand: str) -> list[str]:
-    """
-    keywords.py의 COMPARE_ARMY_KEYWORDS에서 brand에 해당하는 phrase 키워드 리스트를 가져온다.
-    brand: "hana" | "shinhan"
-    """
     group = "하나카드" if brand == "hana" else "신한카드" if brand == "shinhan" else ""
 
     for g in COMPARE_ARMY_KEYWORDS:
@@ -35,10 +31,6 @@ def _get_title_keywords_for_brand(brand: str) -> list[str]:
 
 
 def _title_has_any_keyword(title: str, keywords: list[str]) -> bool:
-    """
-    title에 keywords 중 하나라도 포함되면 True
-    - 공백 유무 흔들림 대비해서, 공백 제거 버전도 같이 비교
-    """
     t = (title or "").strip()
     if not t:
         return False
