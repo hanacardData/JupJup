@@ -40,11 +40,7 @@ def _title_has_any_keyword(title: str, keywords: list[str]) -> bool:
     for k in keywords:
         if not k:
             continue
-        k_stripped = k.strip()
-        if not k_stripped:
-            continue
-
-        if k_stripped in t:
+        if k in t:
             return True
 
         k_nospace = re.sub(r"\s+", "", k_stripped)
