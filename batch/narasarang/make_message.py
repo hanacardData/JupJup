@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -16,6 +17,49 @@ from bot.services.core.openai_client import async_openai_response
 from logger import logger
 
 TABLE = "narasarang"
+
+
+def _get_title_keywords_for_brand(brand: str) -> list[str]:
+    """
+    keywords.py의 COMPARE_ARMY_KEYWORDS에서 brand에 해당하는 phrase 키워드 리스트를 가져온다.
+    brand: "hana" | "shinhan"
+    """
+    group = "하나카드" if brand == "hana" else "신한카드" if brand == "shinhan" else ""
+
+    for g in COMPARE_ARMY_KEYWORDS:
+        if g.get("groupName") == group:
+            kws = g.get("keywords", [])
+            return [str(x).strip() for x in kws if str(x).strip()]
+
+    return []
+
+
+def _title_has_any_keyword(title: str, keywords: list[str]) -> bool:
+    """
+    title에 keywords 중 하나라도 포함되면 True
+    - 공백 유무 흔들림 대비해서, 공백 제거 버전도 같이 비교
+    """
+    t = (title or "").strip()
+    if not t:
+        return False
+
+    t_nospace = re.sub(r"\s+", "", t)
+
+    for k in keywords:
+        if not k:
+            continue
+        k2 = k.strip()
+        if not k2:
+            continue
+
+        if k2 in t:
+            return True
+
+        k2_nospace = re.sub(r"\s+", "", k2)
+        if k2_nospace and k2_nospace in t_nospace:
+            return True
+
+    return False
 
 
 def _to_carousel_messages(picked: list[dict[str, Any]]) -> list[list[str]]:
@@ -80,6 +124,21 @@ async def _make_brand_messages(
 
     rows = filter_recent_days(rows, days=recent_days)
     rows = dedup_title_url(rows)
+
+    before = len(rows)
+    keywords = _get_title_keywords_for_brand(brand)
+    rows = [r for r in rows if _title_has_any_keyword(r.get("title", ""), keywords)]
+    logger.info(
+        f"[narasarang] title keyword filter: brand={brand}, before={before}, after={len(rows)}"
+    )
+
+    logger.info(
+        f"[narasarang] recent candidates: brand={brand}, days={recent_days}, n={len(rows)}"
+    )
+    if not rows:
+        return []
+
+    ranked = await gpt_rank_sorted(rows, concurrency=concurrency)
 
     logger.info(
         f"[narasarang] recent candidates: brand={brand}, days={recent_days}, n={len(rows)}"
