@@ -115,11 +115,6 @@ async def make_message(today_str: str, is_test: bool = False):
         security_messages = await get_security_messages(tag=not is_test)
         logger.info("Created security issue messages")
         # 보안 모니터링 메세지 송신
-        if security_messages:
-            await async_post_payload(
-                make_flexible_payload(security_messages), TEST_CHANNEL_ID
-            )
-
         if not is_test and security_messages:
             await async_post_payload(
                 make_flexible_payload(security_messages), SECURITY_CHANNEL_ID
