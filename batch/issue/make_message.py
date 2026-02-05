@@ -27,16 +27,24 @@ async def get_issue_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
         refined_data[["title", "link", "description"]].to_dict(orient="records"),
         ensure_ascii=False,
     )
-    result = await async_openai_response(
-        prompt=PROMPT,
-        input=TEXT_INPUT.format(
-            card_products=", ".join(CARD_PRODUCTS),
-            content=content,
-        ),
-    )
+    try:
+        result = await async_openai_response(
+            prompt=PROMPT,
+            input=TEXT_INPUT.format(
+                card_products=", ".join(CARD_PRODUCTS),
+                content=content,
+            ),
+            timeout=90,
+            initial_delay=2,
+        )
+    except Exception as e:
+        logger.exception(f"[issue] Failed to generate issue message: {e}")
+        return ["오늘은 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"]
+
     message = (
-        f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서 중 {EXTRACTED_DATA_COUNT}개를 집중 분석한 결과입니다!\n"
-        + result
+        f"안녕하세요! 줍줍이입니다\n{datetime.today().strftime('%Y년 %m월 %d일')} "
+        f"줍줍한 이슈를 공유드릴게요!\n수집한 총 {len(data)}개의 문서 중 "
+        f"{EXTRACTED_DATA_COUNT}개를 집중 분석한 결과입니다!\n" + result
     )
     urls = extract_urls(result)
 
