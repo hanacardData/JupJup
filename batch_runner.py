@@ -100,7 +100,6 @@ async def make_message(today_str: str, is_test: bool = False):
             logger.info(f"Sent Travellog Message to channel {TRAVELLOG_CHANNEL_ID}")
     except Exception as e:
         logger.error(f"Failed to generate and send travellog message: {e}")
-        await async_post_message(f"travellog error: {str(e)}", TEST_CHANNEL_ID)
         raise
 
     try:  # Compare 트래블카드 메시지 생성
