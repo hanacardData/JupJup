@@ -123,7 +123,6 @@ async def make_message(today_str: str, is_test: bool = False):
 
     except Exception as e:
         logger.error(f"Failed to generate and send security alerts: {e}")
-        await async_post_message(f"Security error: {str(e)}", TEST_CHANNEL_ID)
         raise
 
     try:  # 앱 리뷰 메시지 생성
