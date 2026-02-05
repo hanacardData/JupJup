@@ -40,7 +40,8 @@ from batch.variables import (
     TRAVELLOG_DATA_PATH,
 )
 from bot.enums.button_templates import JUPJUP_BUTTON, PRODUCT_BUTTON
-from bot.services.batch_message.get_message import make_flexible_payload
+from bot.handler.message_event import handle_narasarang_command, handle_security_command
+from bot.services.batch_message.get_message import get_batch_message
 from bot.services.core.post_payload import (
     async_post_message,
     async_post_payload,
@@ -90,14 +91,6 @@ async def make_message(today_str: str, is_test: bool = False):
         )
         travellog_messages = await get_travellog_message(travellog_df, tag=not is_test)
         logger.info("Created travellog message")
-
-        # 트래블로그 부 메세지 송신
-        if not is_test:
-            for message in [
-                f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 트래블로그 이슈를 공유드릴게요!\n"
-            ] + travellog_messages:
-                await async_post_message(message, TRAVELLOG_CHANNEL_ID)
-            logger.info(f"Sent Travellog Message to channel {TRAVELLOG_CHANNEL_ID}")
     except Exception as e:
         logger.error(f"Failed to generate and send travellog message: {e}")
         raise
@@ -113,13 +106,6 @@ async def make_message(today_str: str, is_test: bool = False):
         logger.info("Generating security issue message")
         security_messages = await get_security_messages(tag=not is_test)
         logger.info("Created security issue messages")
-        # 보안 모니터링 메세지 송신
-        if not is_test and security_messages:
-            await async_post_payload(
-                make_flexible_payload(security_messages), SECURITY_CHANNEL_ID
-            )
-            logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
-
     except Exception as e:
         logger.error(f"Failed to generate and send security alerts: {e}")
         raise
@@ -153,61 +139,6 @@ async def make_message(today_str: str, is_test: bool = False):
     except Exception as e:
         logger.error(f"Failed to generate narasarang messages: {e}")
         raise
-
-    if not is_test:
-        await async_post_message(
-            f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} "
-            "줍줍한 나라사랑카드 이슈를 공유드릴게요!\n",
-            NARASARANG_CHANNEL_ID,
-        )
-
-        if trend_narasarang:
-            await async_post_message(
-                "💌 나라사랑카드 트렌드 분석입니다.", NARASARANG_CHANNEL_ID
-            )
-            for msg in trend_narasarang:
-                await async_post_message(msg, NARASARANG_CHANNEL_ID)
-        else:
-            await async_post_message(
-                "나라사랑카드 트렌드 관련 유효한 정보가 없습니다.",
-                NARASARANG_CHANNEL_ID,
-            )
-
-        if hana_narasarang:
-            await async_post_message(
-                "💌 하나 나라사랑카드 관련 이슈를 보내드릴게요!", NARASARANG_CHANNEL_ID
-            )
-            for chunk in hana_narasarang:
-                await async_post_payload(
-                    make_flexible_payload(chunk, alt_text="Hana Narasarang"),
-                    NARASARANG_CHANNEL_ID,
-                )
-        else:
-            await async_post_message(
-                "하나 나라사랑카드 관련 주요 이슈가 없습니다.", NARASARANG_CHANNEL_ID
-            )
-
-        if shinhan_narasarang:
-            await async_post_message(
-                "💌 신한 나라사랑카드 관련 이슈를 보내드릴게요!", NARASARANG_CHANNEL_ID
-            )
-            for chunk in shinhan_narasarang:
-                await async_post_payload(
-                    make_flexible_payload(
-                        chunk,
-                        alt_text="Shinhan Narasarang",
-                        header_background_color="#0046FF",
-                        title_color="#FFFFFF",
-                        button_color="#0046FF",
-                    ),
-                    NARASARANG_CHANNEL_ID,
-                )
-        else:
-            await async_post_message(
-                "신한 나라사랑카드 관련 주요 이슈가 없습니다.", NARASARANG_CHANNEL_ID
-            )
-
-        logger.info(f"Sent Narasarang Message to channel {NARASARANG_CHANNEL_ID}")
 
     try:
         product_messages = {
@@ -252,6 +183,22 @@ async def send_message(is_test: bool = False):
         await async_post_payload(PRODUCT_BUTTON, TEST_CHANNEL_ID)
         if is_test:
             return
+
+        # 트래블로그UX
+        travellog_messages = get_batch_message("travellog")
+        for message in [
+            f"안녕하세요! 줍줍이입니다 🤗\n{datetime.today().strftime('%Y년 %m월 %d일')} 줍줍한 트래블로그 이슈를 공유드릴게요!\n"
+        ] + travellog_messages:
+            await async_post_message(message, TRAVELLOG_CHANNEL_ID)
+            logger.info(f"Sent Travellog Message to channel {TRAVELLOG_CHANNEL_ID}")
+
+        # 정보보안팀
+        await handle_security_command(SECURITY_CHANNEL_ID)
+        logger.info(f"Sent Message to channel {SECURITY_CHANNEL_ID}")
+
+        # 나라사랑카드
+        await handle_narasarang_command(NARASARANG_CHANNEL_ID)
+        logger.info(f"Sent Narasarang Message to channel {NARASARANG_CHANNEL_ID}")
 
         await async_post_payload(PRODUCT_BUTTON, PRODUCT_CHANNEL_ID)
         for channel_id in SUBSCRIBE_CHANNEL_IDS:
