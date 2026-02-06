@@ -43,11 +43,11 @@ jobs:
         run: |
           EVENT_ACTION="${{ github.event.action }}"
           TEST_CHANNEL_ID="${{ secrets.TEST_CHANNEL_ID }}"
-          if [[ "$ACTION" == "opened" || "$ACTION" == "reopened" ]]; then
+          if [[ "$EVENT_ACTION" == "opened" || "$EVENT_ACTION" == "reopened" ]]; then
             MESSAGE_PREFIX="✨ [NEW PULL REQUEST]"
-          elif [[ "$ACTION" == "ready_for_review" ]]; then
+          elif [[ "$EVENT_ACTION" == "ready_for_review" ]]; then
             MESSAGE_PREFIX="🔍 [READY FOR REVIEW]"
-          elif [[ "$ACTION" == "closed" ]]; then
+          elif [[ "$EVENT_ACTION" == "closed" ]]; then
             MESSAGE_PREFIX="📁 [PR CLOSED]"
           fi
           export MESSAGE_PREFIX
