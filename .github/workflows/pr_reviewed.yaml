@@ -1,34 +1,25 @@
-name: Pull Request Created Event
+name: PR Review Notification
 
 on:
-  pull_request:
-    types: [opened, reopened, review_requested, ready_for_review]
+  pull_request_review:
+    types: [submitted]
 
 jobs:
-  uv-example:
-    name: python
+  notify-review:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v5
-
-      - name: "Set up Python"
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v6
         with:
           python-version-file: "pyproject.toml"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Install the project
-        run: uv sync --locked
-
-      - name: run pr link post message
+      - uses: astral-sh/setup-uv@v7
+      - name: run notification
         shell: bash
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          REVIEWER_NAME: ${{ github.event.review.user.login }}
+          REVIEW_STATE: ${{ github.event.review.state }}
           TEST_CHANNEL_ID: ${{ secrets.TEST_CHANNEL_ID }}
           client_id: ${{ secrets.CLIENT_ID }}
           client_secret: ${{ secrets.CLIENT_SECRET }}
@@ -41,21 +32,14 @@ jobs:
             import asyncio, os
             from bot.services.core.post_payload import async_post_message
 
+            state = os.getenv("REVIEW_STATE").upper()
             message = (
-              f"{os.getenv('MESSAGE_PREFIX')}\n"
+              f"📝 [PR REVIEW SUBMITTED]\n"
               f"제목: {os.getenv('PR_TITLE')}\n"
-              f"작성자: {os.getenv('PR_AUTHOR')}\n"
+              f"리뷰어: {os.getenv('REVIEWER_NAME')} ({state})\n"
               f"링크: {os.getenv('PR_URL')}"
             )
             asyncio.run(async_post_message(message, os.getenv("TEST_CHANNEL_ID")))
         run: |
-          EVENT_ACTION="${{ github.event.action }}"
-          TEST_CHANNEL_ID="${{ secrets.TEST_CHANNEL_ID }}"
-          if [[ "$EVENT_ACTION" == "review_requested" || "$EVENT_ACTION" == "ready_for_review" ]]; then
-            MESSAGE_PREFIX="🔔 [검토 요청]"
-          elif [[ "$EVENT_ACTION" == "opened" || "$EVENT_ACTION" == "reopened" ]]; then
-            MESSAGE_PREFIX="🚀 [NEW PULL REQUEST]"
-          fi
-          export MESSAGE_PREFIX
-
+          uv sync --locked
           uv run python -c "$PYTHON_SCRIPT"
