@@ -2,7 +2,7 @@ name: Pull Request Created Event
 
 on:
   pull_request:
-    types: [opened, reopened, review_requested, closed]
+    types: [opened, reopened, review_requested, ready_for_review, closed]
 
 jobs:
   pull_request_event:
@@ -45,7 +45,7 @@ jobs:
           TEST_CHANNEL_ID="${{ secrets.TEST_CHANNEL_ID }}"
           if [[ "$EVENT_ACTION" == "opened" || "$EVENT_ACTION" == "reopened" ]]; then
             MESSAGE_PREFIX="✨ [NEW PULL REQUEST]"
-          elif [[ "$EVENT_ACTION" == "ready_for_review" ]]; then
+          elif [[ "$EVENT_ACTION" == "review_requested" || "$EVENT_ACTION" == "ready_for_review" ]]; then
             MESSAGE_PREFIX="🔍 [READY FOR REVIEW]"
           elif [[ "$EVENT_ACTION" == "closed" ]]; then
             MESSAGE_PREFIX="📁 [PR CLOSED]"
