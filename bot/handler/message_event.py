@@ -279,6 +279,9 @@ async def handle_security_command(channel_id: str) -> JSONResponse:
     messages = get_batch_message("security")
     if not messages:
         await async_post_message(NO_SECURITY_MSG, channel_id)
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.COMMAND_PROCESSED}
+        )
     convertible = [m for m in messages if _is_carousel_convertible(m)]
     if not convertible:
         await async_post_message(NO_SECURITY_MSG, channel_id)
