@@ -25,7 +25,6 @@ NARASARANG_CHANNEL_ID = "7c58e7d2-6767-d4cf-14e2-ab5ab0f19a60"
 
 # 구독 채널 ID 목록
 SUBSCRIBE_CHANNEL_IDS: list[str] = [
-    "51d15802-cfb6-2e1b-6eb2-c545d2331783",  # CRM 마케팅팀 송치성
     "6a7aa514-55a4-0afd-fd3e-4ed14ec6d81e",  # 트래블로그부 허준회
     "749a747c-d3e2-8c28-fc0a-df870e4bfaf5",  # BIZ 운영팀 오지열
     "6a81b6d1-66e2-4da1-d1e0-ccae13d6e26a",  # 직원행복팀 하두선
