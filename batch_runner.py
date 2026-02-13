@@ -9,6 +9,7 @@ from holidayskr import is_holiday
 from batch.app_review.android import get_app_reviews
 from batch.compare_travel.make_message import get_compare_travel_message
 from batch.database import init_database
+from batch.dml import fetch_df
 from batch.geeknews.load import collect_load_geeknews
 from batch.geeknews.make_message import get_geeknews_message
 from batch.issue.keywords import QUERIES
@@ -37,7 +38,6 @@ from batch.variables import (
     SUBSCRIBE_CHANNEL_IDS,
     TEST_CHANNEL_ID,
     TRAVELLOG_CHANNEL_ID,
-    TRAVELLOG_DATA_PATH,
 )
 from bot.enums.button_templates import JUPJUP_BUTTON, PRODUCT_BUTTON
 from bot.handler.message_event import handle_narasarang_command, handle_security_command
@@ -86,9 +86,7 @@ async def make_message(today_str: str, is_test: bool = False):
 
     try:  # 트래블로그 메시지 생성
         logger.info("Generating travellog message")
-        travellog_df = pd.read_csv(
-            TRAVELLOG_DATA_PATH, dtype={"post_date": object}, encoding="utf-8"
-        )
+        travellog_df = fetch_df("travellog")
         travellog_messages = await get_travellog_message(travellog_df, tag=not is_test)
         logger.info("Created travellog message")
     except Exception as e:
