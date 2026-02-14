@@ -40,7 +40,10 @@ from batch.variables import (
     TRAVELLOG_CHANNEL_ID,
 )
 from bot.enums.button_templates import JUPJUP_BUTTON, PRODUCT_BUTTON
-from bot.handler.message_event import handle_narasarang_command, handle_security_command
+from bot.handler.channel_message_event import (
+    handle_narasarang_command,
+    handle_security_command,
+)
 from bot.services.batch_message.get_message import get_batch_message
 from bot.services.core.post_payload import (
     async_post_message,
