@@ -40,7 +40,7 @@ from batch.variables import (
     TRAVELLOG_CHANNEL_ID,
 )
 from bot.enums.button_templates import JUPJUP_BUTTON, PRODUCT_BUTTON
-from bot.handler.channel_message_event import (
+from bot.handler.message.channel import (
     handle_narasarang_command,
     handle_security_command,
 )

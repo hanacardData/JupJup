@@ -2,7 +2,8 @@ from fastapi.responses import JSONResponse
 
 from bot.enums.default_messages import Message
 from bot.enums.status import BotStatus
-from bot.handler.message.channel import handle_message_event
+from bot.handler.message.channel import handle_channel_message_event
+from bot.handler.message.private import handle_private_message_event
 from bot.services.core.post_payload import async_post_message
 from logger import logger
 
@@ -28,12 +29,10 @@ async def process_event(data: dict) -> JSONResponse:
         # 채널에 봇이 추가되었을 때, user 대화에서는 join event가 발생하지 않음
         return await handle_join_event(channel_id=channel_id)
 
-    if channel_id is None and user_id:  # 개인 대화에서 메세지를 받았을 때
-        await async_post_message(Message.PRIVATE_REPLY.value, user_id, True)
-        return JSONResponse(
-            status_code=200, content={"status": BotStatus.PRIVATE_REPLY_SENT}
-        )
-
     content = data.get("content", {})
     text = content.get("text", "")
-    return await handle_message_event(text=text, channel_id=channel_id)
+    if channel_id:  # 채널 대화에서 메시지를 받았을 때
+        return await handle_channel_message_event(text=text, channel_id=channel_id)
+
+    if user_id:  # 개인 대화에서 메시지를 받았을 때
+        return await handle_private_message_event(text=text, user_id=user_id)

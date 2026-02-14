@@ -390,7 +390,7 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
 }
 
 
-async def handle_message_event(text: str, channel_id: str) -> JSONResponse:
+async def handle_channel_message_event(text: str, channel_id: str) -> JSONResponse:
     """메시지를 처리하는 핸들러입니다."""
     if not text.startswith("/"):
         return JSONResponse(status_code=200, content={"status": BotStatus.IGNORED})
