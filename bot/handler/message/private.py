@@ -31,7 +31,7 @@ def fetch_data_tool(
 
 @function_tool
 def get_weekly_menu_tool() -> str:
-    """구내식당 혹은 사내식당 메뉴를 가져온다"""
+    """구내식당 혹은 사내식당 메뉴를 가져옵니다. 구내식당의 메뉴가 필요할 때 이 도구를 사용하세요."""
     return json.dumps(CAFETERIA_MENU)
 
 
@@ -41,7 +41,13 @@ agent = Agent(
     tools=[
         get_weekly_menu_tool,
         fetch_data_tool,
-        WebSearchTool(),
+        WebSearchTool(
+            user_location={
+                "type": "approximate",
+                "country": "KR",
+                "timezone": "Asia/Seoul",
+            }
+        ),
     ],
 )
 
