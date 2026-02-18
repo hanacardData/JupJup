@@ -1,17 +1,10 @@
 import json
 from typing import Literal
 
-from agents import Agent, Runner, WebSearchTool, function_tool
-from fastapi.responses import JSONResponse
+from agents import Agent, WebSearchTool, function_tool
 
 from batch.fetch import fetch_data
-from bot.enums.default_messages import Message
-from bot.enums.status import BotStatus
 from bot.services.cafeteria.menu import CAFETERIA_MENU
-from bot.services.core.post_payload import (
-    async_post_message,
-)
-from logger import logger
 
 
 @function_tool
