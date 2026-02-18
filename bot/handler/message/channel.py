@@ -2,11 +2,13 @@ import asyncio
 import re
 from typing import Callable
 
+from agents import Runner
 from fastapi.responses import JSONResponse
 
 from bot.enums.button_templates import JUPJUP_BUTTON, LAB_BUTTON, PRODUCT_BUTTON
 from bot.enums.default_messages import Message, NoneArgumentMessage
 from bot.enums.status import BotStatus
+from bot.handler.message.agent import agent
 from bot.services.batch_message.get_message import (
     get_batch_message,
     get_narasarang_batch_message,
@@ -392,9 +394,20 @@ COMMAND_HANDLERS: dict[str, Callable] = {  ## 커맨드 핸들러
 
 async def handle_channel_message_event(text: str, channel_id: str) -> JSONResponse:
     """메시지를 처리하는 핸들러입니다."""
-    if not text.startswith("/"):
+    if not text.startswith(("/", "!")):
         return JSONResponse(status_code=200, content={"status": BotStatus.IGNORED})
 
+    if text.startswith("!"):
+        try:
+            result = await Runner.run(agent, text)
+            response = result.final_output
+        except Exception:
+            response = Message.ERROR_REPLY.value
+
+        await async_post_message(response, channel_id)
+        return JSONResponse(
+            status_code=200, content={"status": BotStatus.PRIVATE_REPLY_SENT}
+        )
     command_parts = text.split(maxsplit=1)
     command = command_parts[0]
     argument = command_parts[1] if len(command_parts) > 1 else ""
