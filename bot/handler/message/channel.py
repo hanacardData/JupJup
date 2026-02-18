@@ -399,7 +399,7 @@ async def handle_channel_message_event(text: str, channel_id: str) -> JSONRespon
 
     if text.startswith("!"):
         try:
-            result = await Runner.run(agent, text)
+            result = await Runner.run(agent, text[1:].strip())
             response = result.final_output
         except Exception:
             response = Message.ERROR_REPLY.value
