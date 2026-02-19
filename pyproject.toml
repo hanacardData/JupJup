@@ -13,6 +13,7 @@ dependencies = [
     "holidayskr>=0.2.0",
     "korean-lunar-calendar>=0.3.1",
     "openai>=2.8.1",
+    "openai-agents>=0.8.3",
     "pandas>=2.3.3",
     "pydantic>=2.12.4",
     "pyjwt>=2.10.1",
