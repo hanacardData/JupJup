@@ -2,6 +2,7 @@ import json
 import re
 from datetime import datetime, timedelta
 
+import numpy as np
 import pandas as pd
 
 from batch.dml import mark_posted
@@ -24,8 +25,10 @@ async def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[st
     )
 
     yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-    refined_data["post_date"] = (
-        refined_data["post_date"].fillna(refined_data["scrap_date"]).astype(str)
+    refined_data["post_date"] = np.where(
+        (refined_data["post_date"] == "") | (refined_data["post_date"].isna()),
+        refined_data["scrap_date"].astype(str),
+        refined_data["post_date"],
     )
     refined_data = refined_data.loc[refined_data["post_date"] >= yesterday]
 
