@@ -39,7 +39,7 @@ def _set_messge_payload(message: str) -> dict[str, dict[str, str]]:
 
 @retry(tries=3, delay=1, backoff=2, exceptions=(httpx.RequestError, httpx.HTTPError))
 async def async_post_message(message: str, id: str, is_user: bool = False) -> None:
-    message_payload = _set_messge_payload(message)
+    message_payload = _set_messge_payload(message[:1500])
     await async_post_payload(
         message_payload, id, base=USER_POST_URL if is_user else CHANNEL_POST_URL
     )
