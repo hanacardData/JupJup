@@ -19,7 +19,7 @@ def fetch_data_tool(
         query: 검색어
     """
     result = fetch_data(type=type, query=query)
-    return json.dumps(result.model_dump(), ensure_ascii=False)
+    return json.dumps(result.model_dump(), ensure_ascii=False) if result else ""
 
 
 @function_tool
@@ -30,7 +30,7 @@ def get_weekly_menu_tool() -> str:
 
 agent = Agent(
     name="줍줍이",
-    instructions="당신은 하나카드의 친절한 AI Assistant '줍줍이'입니다.",
+    instructions="당신은 하나카드의 친절한 AI Assistant '줍줍이'입니다. 최대한 간결히 응답합니다.",
     tools=[
         get_weekly_menu_tool,
         fetch_data_tool,
