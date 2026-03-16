@@ -51,15 +51,22 @@ def fetch_data(
             url=url,
             params=request_data.model_dump(),
             headers=headers,
+            timeout=(5, 15),
         )
         response.raise_for_status()
         return response_wrapper(**response.json())
+    except requests.exceptions.Timeout as e:
+        logger.error(f"[fetch_data] timeout: type={type}, query={query}, error={e}")
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"[fetch_data] http error: type={type}, query={query}, error={e}")
     except requests.exceptions.RequestException as e:
-        logger.error(f"API 요청 실패: {e}")
+        logger.error(
+            f"[fetch_data] request error: type={type}, query={query}, error={e}"
+        )
     except ValueError as e:
-        logger.error(f"응답 데이터 오류: {e}")
-    except requests.HTTPError as e:
-        logger.error(f"Http 오류: {e}")
+        logger.error(
+            f"[fetch_data] response parse error: type={type}, query={query}, error={e}"
+        )
     return None
 
 
