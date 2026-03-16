@@ -401,10 +401,10 @@ async def handle_channel_message_event(text: str, channel_id: str) -> JSONRespon
         try:
             result = await Runner.run(agent, text[1:].strip())
             response = result.final_output
+            await async_post_message(response, channel_id)
         except Exception:
             response = Message.ERROR_REPLY.value
-
-        await async_post_message(response, channel_id)
+            await async_post_message(response, channel_id)
         return JSONResponse(
             status_code=200, content={"status": BotStatus.PRIVATE_REPLY_SENT}
         )
