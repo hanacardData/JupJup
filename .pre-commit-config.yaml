@@ -27,4 +27,3 @@ repos:
     rev: v0.0.4
     hooks:
       - id: whattheprecommit
-        name: random
