@@ -1,5 +1,7 @@
 from typing import Any
 
+from acachetools import cached
+from cachetools import TTLCache
 from openai import APIConnectionError, AsyncOpenAI
 from retry import retry
 
@@ -9,6 +11,7 @@ from secret import OPENAI_API_KEY
 async_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
+@cached(TTLCache(maxsize=100, ttl=3600))
 async def async_openai_response(
     prompt: str,
     input: str,
