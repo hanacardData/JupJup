@@ -21,8 +21,8 @@ def get_weekly_menu_message() -> str:
         "Sun": "일",
     }
 
-    today_kr = day_map.get(today)
-    tomorrow_kr = day_map.get(tomorrow)
+    today_kr = day_map[today]
+    tomorrow_kr = day_map[tomorrow]
 
     msg = f"📅 오늘({today_kr})과 내일({tomorrow_kr})의 구내식당 메뉴\n\n"
 

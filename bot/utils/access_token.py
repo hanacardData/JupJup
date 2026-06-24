@@ -1,8 +1,10 @@
 import time
+from typing import cast
 
 import jwt
 import requests
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 from logger import logger
 from secret import (
@@ -30,10 +32,10 @@ class TokenManager:
             "iat": now,
             "exp": exp,
         }
-        private_key = serialization.load_pem_private_key(
+        private_key_raw = serialization.load_pem_private_key(
             PRIVATE_KEY_PATH.encode(), password=None
         )
-
+        private_key = cast(rsa.RSAPrivateKey, private_key_raw)
         encoded_jwt = jwt.encode(payload, private_key, algorithm="RS256")
 
         token_url = "https://auth.worksmobile.com/oauth2/v2.0/token"

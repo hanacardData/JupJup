@@ -1,3 +1,5 @@
+from typing import Any
+
 from openai import APIConnectionError, AsyncOpenAI
 from retry import retry
 
@@ -14,10 +16,7 @@ async def async_openai_response(
     max_retries: int = 5,
     initial_delay: int = 1,
     backoff_factor: int = 2,
-    retry_exceptions: type[Exception] | tuple[type[Exception]] = (
-        APIConnectionError,
-        TimeoutError,
-    ),
+    retry_exceptions: Any = (APIConnectionError, TimeoutError),
 ) -> str:
     @retry(
         tries=max_retries,
@@ -53,7 +52,8 @@ async def async_generate_image(prompt: str) -> str | None:
             n=1,
             size="1024x1024",
         )
-        return response.data[0].url
+        if response and response.data and len(response.data) > 0:
+            return response.data[0].url
     except (APIConnectionError, Exception) as e:
         logger.error(e)
         return

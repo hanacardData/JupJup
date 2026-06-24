@@ -43,7 +43,6 @@ async def async_post_message(message: str, id: str, is_user: bool = False) -> No
     await async_post_payload(
         message_payload, id, base=USER_POST_URL if is_user else CHANNEL_POST_URL
     )
-    return
 
 
 def _set_image_payload(image_path: str) -> dict[str, dict[str, str]]:
@@ -62,4 +61,3 @@ async def async_post_image(image_path: str, id: str, is_user: bool = False) -> N
     await async_post_payload(
         image_payload, id, base=USER_POST_URL if is_user else CHANNEL_POST_URL
     )
-    return

@@ -1,6 +1,6 @@
 import asyncio
 import re
-from typing import Callable
+from typing import Callable, Literal
 
 from agents import Runner
 from fastapi.responses import JSONResponse
@@ -30,7 +30,7 @@ from bot.services.harmony.get_harmony import get_harmony_comment
 from bot.services.tarot.get_answer import get_tarot_answer
 
 
-async def handle_help_command(channel_id: str) -> JSONResponse:
+async def handle_help_command(channel_id: str) -> None:
     """도움에 호출되는 핸들러입니다."""
     await async_post_message(Message.GREETINGS_REPLY.value, channel_id)
 
@@ -70,7 +70,10 @@ async def handle_travelcard_command(channel_id: str) -> JSONResponse:
     )
 
 
-async def _handle_product_command(channel_id: str, subkey: str) -> JSONResponse:
+async def _handle_product_command(
+    channel_id: str,
+    subkey: Literal["/경쟁사신용", "/경쟁사체크", "/원더카드", "/JADE"],
+) -> JSONResponse:
     messages = get_product_batch_message(subkey=subkey)
     for message in messages:
         await async_post_message(message, channel_id)
@@ -269,9 +272,9 @@ async def handle_hanapay_command(channel_id: str) -> JSONResponse:
 
 def _is_carousel_convertible(msg: str) -> bool:
     return (
-        re.search(r"제목:\s*(.+)", msg)
-        and re.search(r"내용:\s*(.+)", msg)
-        and re.search(r"링크:\s*(.+)", msg)
+        bool(re.search(r"제목:\s*(.+)", msg))
+        and bool(re.search(r"내용:\s*(.+)", msg))
+        and bool(re.search(r"링크:\s*(.+)", msg))
     )
 
 

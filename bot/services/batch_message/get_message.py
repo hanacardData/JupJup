@@ -2,7 +2,7 @@ import json
 import os
 import re
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 
 def get_batch_message(
@@ -65,13 +65,15 @@ def get_narasarang_batch_message() -> dict[str, list[str]]:
 
 
 def make_flexible_payload(
-    messages: list[str],
+    messages: str | list[str],
     alt_text: str = "TravelLog",
     header_background_color: str | None = None,
     title_color: str = "#000000",
     button_color: str | None = None,
-) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
+) -> dict[str, Any]:
     carousel_payload = {"type": "carousel", "contents": []}
+    if isinstance(messages, str):
+        messages = [messages]
 
     for msg in messages:
         title_match = re.search(r"제목:\s*(.+)", msg)
@@ -145,7 +147,7 @@ def make_flexible_payload(
 
 def make_geeknews_payload(
     messages: list[str],
-) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
+) -> dict[str, Any]:
     carousel_payload = {"type": "carousel", "contents": []}
 
     for idx, msg in enumerate(messages):
@@ -233,7 +235,7 @@ def make_geeknews_payload(
 
 def make_app_review_flexible_payload(
     messages: list[str],
-) -> dict[str, str | list[dict[str, str | list[dict[str, str]]]]]:
+) -> dict[str, Any]:
     carousel_payload = {"type": "carousel", "contents": []}
 
     for message in messages:
