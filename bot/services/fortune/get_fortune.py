@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Any
 
 from fastapi_cache.decorator import cache
 from korean_lunar_calendar import KoreanLunarCalendar
@@ -26,13 +27,18 @@ async def update_five_elements(
 
 async def _calculate_hour_pillar(hour: int, day_stem: str) -> str:
     # 시간에 따라 시지를 결정
-    for start, end, branch in HOUR_BRANCHES:
+    hour_branch = None
+    hour_stem_index = None
+    for idx, (start, end, branch) in enumerate(HOUR_BRANCHES):
         if start <= hour < end:
             hour_branch = branch
+            hour_stem_index = idx
             break
 
+    if hour_branch is None or hour_stem_index is None:
+        return ""
+
     # 일간에 따라 천간 결정
-    hour_stem_index = HOUR_BRANCHES.index((start, end, hour_branch))  # 시지의 인덱스
     hour_stem = HOUR_STEM_TABLE[day_stem][hour_stem_index]
 
     # 시주 (천간 + 지지) 반환
@@ -59,24 +65,20 @@ async def calculate_four_pillars_with_elements(
     element_scores = await update_five_elements(year_pillar, element_scores)
     element_scores = await update_five_elements(month_pillar, element_scores)
     element_scores = await update_five_elements(day_pillar, element_scores)
-    result = {
+    result: dict[str, Any] = {
         "사주": gapja_string,
         "연주": year_pillar,
         "월주": month_pillar,
         "일주": day_pillar,
     }
     if hour is None:
-        result.update({"오행 점수": element_scores})
+        result["오행 점수"] = element_scores
         return result
 
     hour_pillar = await _calculate_hour_pillar(hour, day_pillar[0])
     element_scores = await update_five_elements(day_pillar, element_scores)
-    result.update(
-        {
-            "시주": hour_pillar,
-            "오행 점수": element_scores,
-        }
-    )
+    result["시주"] = hour_pillar
+    result["오행 점수"] = element_scores
     return result
 
 

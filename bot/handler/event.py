@@ -36,3 +36,5 @@ async def process_event(data: dict) -> JSONResponse:
 
     if user_id:  # 개인 대화에서 메시지를 받았을 때
         return await handle_private_message_event(text=text, user_id=user_id)
+
+    return JSONResponse(status_code=200, content={"status": BotStatus.IGNORED})

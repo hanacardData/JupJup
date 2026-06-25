@@ -3,6 +3,18 @@ revision = 3
 requires-python = ">=3.12"
 
 [[package]]
+name = "acachetools"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cachetools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/17/a8/3991586fb09149853f31cade621ab00b24f3b106f9f5ad3ff81074108142/acachetools-0.1.0.tar.gz", hash = "sha256:3dfcd71a099b18d65c047e9e31622b950a5fbaf66c1f27972db32eb4594556c7", size = 2628, upload-time = "2026-06-24T01:46:17.297Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/82/f7/e3a21062555b366209005c5e2ba130eac20845ca4e8c1eb629b13a9da99d/acachetools-0.1.0-py3-none-any.whl", hash = "sha256:5534dda4d6564baabf6931776f17ac959976a5fc4e5d82c3d68c6e258df2cf05", size = 3373, upload-time = "2026-06-24T01:46:16.379Z" },
+]
+
+[[package]]
 name = "annotated-doc"
 version = "0.0.4"
 source = { registry = "https://pypi.org/simple" }
@@ -40,6 +52,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/6b/5c/685e6633917e101e5dcb62b9dd76946cbb57c26e133bae9e0cd36033c0a9/attrs-25.4.0.tar.gz", hash = "sha256:16d5969b87f0859ef33a48b35d55ac1be6e42ae49d5e853b597db70c35c57e11", size = 934251, upload-time = "2025-10-06T13:54:44.725Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3a/2a/7cc015f5b9f5db42b7d48157e23356022889fc354a2813c15934b7cb5c0e/attrs-25.4.0-py3-none-any.whl", hash = "sha256:adcf7e2a1fb3b36ac48d97835bb6d8ade15b8dcce26aba8bf1d14847b57a3373", size = 67615, upload-time = "2025-10-06T13:54:43.17Z" },
+]
+
+[[package]]
+name = "cachetools"
+version = "7.1.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f4/8b/0d3945a13955303b81272f759a0331e54c5c793da455e6f5706b89d2639c/cachetools-7.1.4.tar.gz", hash = "sha256:437f55a4e0c1b01a4f3077cc470e6991d47430970e36fbcb77e2be0df4fc1cd6", size = 40085, upload-time = "2026-05-21T22:40:43.376Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8c/7b/1fc1c09cc0756cf25861a3be10565915953876da48bb228fb9a672b20a42/cachetools-7.1.4-py3-none-any.whl", hash = "sha256:323dc4127934744db5b54eb4924482d7edafbf9554e820d1531c2e08c0e4ef54", size = 16761, upload-time = "2026-05-21T22:40:41.845Z" },
 ]
 
 [[package]]
@@ -519,6 +540,7 @@ name = "jupjup"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "acachetools" },
     { name = "cryptography" },
     { name = "dotenv" },
     { name = "fastapi" },
@@ -545,6 +567,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "acachetools", specifier = ">=0.1.0" },
     { name = "cryptography", specifier = ">=46.0.3" },
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "fastapi", specifier = ">=0.121.3" },
