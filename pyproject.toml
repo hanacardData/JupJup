@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "acachetools>=0.1.0",
+    "acachetools>=0.1.1",
     "cryptography>=46.0.3",
     "dotenv>=0.9.9",
     "fastapi>=0.121.3",
