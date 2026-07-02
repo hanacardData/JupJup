@@ -1,24 +1,21 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import datetime
 
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.inmemory import InMemoryBackend
 from uvicorn.config import LOGGING_CONFIG
 
 from batch.variables import TEST_CHANNEL_ID
-from bot.handler.event import process_event
+from bot.handler.event import get_processed_event
 from bot.services.core.post_payload import async_post_message
 from bot.utils.signature import verify_signature
 from logger import logger
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
+async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     try:
         yield
     finally:
@@ -45,7 +42,7 @@ async def callback(
         raise HTTPException(status_code=403, detail="Invalid or missing signature")
 
     data = await request.json()
-    return await process_event(data)
+    return await get_processed_event(data)
 
 
 if __name__ == "__main__":
