@@ -15,12 +15,13 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v6
 
-      - name: Install Ruff
-        uses: astral-sh/ruff-action@v4.0.0
-        with:
-          args: "--version"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Run Ruff Check & Format
         run: |
-          ruff check .
-          ruff format --check --diff .
+          uvx ruff check .
+          uvx ruff format --check --diff .
+
+      - name: Run ty check
+        run: uvx ty check .
