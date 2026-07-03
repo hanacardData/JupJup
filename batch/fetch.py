@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 import requests
 
@@ -18,7 +18,7 @@ TYPE_URL_MAPPER: dict[str, str] = {
     "news": "https://openapi.naver.com/v1/search/news.json",
     "cafe": "https://openapi.naver.com/v1/search/cafearticle.json",
 }
-TYPE_RESPONSE_MAPPER: dict[str, AbstractResponse] = {
+TYPE_RESPONSE_MAPPER: dict[str, Any] = {
     "blog": BlogResponse,
     "news": NewsResponse,
     "cafe": CafeResponse,
@@ -74,7 +74,7 @@ def fetch_trend_data(
     startDate: str,
     endDate: str,
     timeUnit: str,
-    keywordGroups: str,
+    keywordGroups: list,
     device: str | None = None,
     gender: str | None = None,
     ages: list[str] | None = None,
@@ -106,40 +106,4 @@ def fetch_trend_data(
         logger.error(f"API 요청 실패: {e}")
     except ValueError as e:
         logger.error(f"응답 데이터 오류: {e}")
-    except requests.HTTPError as e:
-        logger.error(f"Http 오류: {e}")
     return None
-
-
-if __name__ == "__main__":
-    logger.info(
-        fetch_data(
-            type="news",
-            query="하나카드",
-        )
-    )
-
-    logger.info(
-        fetch_trend_data(
-            type="datalab",
-            startDate="2025-02-01",
-            endDate="2025-02-28",
-            timeUnit="date",
-            keywordGroups=[
-                {
-                    "groupName": "하나카드",
-                    "keywords": [
-                        "하나카드",
-                        "원더카드",
-                        "제이드카드",
-                        "트래블로그",
-                        "트레블로그",
-                    ],
-                },
-                {
-                    "groupName": "신한카드",
-                    "keywords": ["신한카드", "쏠트래블"],
-                },
-            ],
-        )
-    )
