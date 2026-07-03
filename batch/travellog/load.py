@@ -1,5 +1,6 @@
 from datetime import datetime
 from time import sleep
+from typing import Any
 
 import pandas as pd
 from tqdm import tqdm
@@ -16,7 +17,7 @@ def collect_load_travellog_data(queries: list[str]) -> None:
     all_rows: list[dict[str, str]] = []
 
     for source in tqdm(SOURCES, disable=True):
-        items: list[dict[str, str]] = []
+        items: list[dict[str, Any]] = []
 
         for keyword in tqdm(queries, disable=True):
             _data = fetch_data(

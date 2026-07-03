@@ -1,4 +1,4 @@
-COMPARE_ARMY_KEYWORDS: list[dict[str : str | list[str]]] = [
+COMPARE_ARMY_KEYWORDS: list[dict[str, str | list[str]]] = [
     {
         "groupName": "하나카드",
         "keywords": [

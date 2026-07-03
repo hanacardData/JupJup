@@ -8,7 +8,7 @@ from batch.fetch import fetch_trend_data
 from bot.services.core.openai_client import async_openai_response
 
 
-async def _get_trend_message():
+async def _get_trend_message() -> str:
     today = datetime.today().strftime("%Y-%m-%d")
     one_week_ago = (datetime.today() - timedelta(days=7)).strftime("%Y-%m-%d")
     trend_response = fetch_trend_data(
@@ -17,6 +17,9 @@ async def _get_trend_message():
         timeUnit="date",
         keywordGroups=COMPARE_TRAVEL_TREND_KEYWORDS,
     )
+    if not trend_response:
+        return ""
+
     return await async_openai_response(
         prompt=PROMPT,
         input=TEXT_INPUT.format(content=trend_response.to_results()),

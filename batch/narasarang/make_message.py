@@ -171,6 +171,9 @@ async def _get_trend_message() -> str:
         timeUnit="date",
         keywordGroups=COMPARE_ARMY_KEYWORDS,
     )
+    if not trend_response:
+        return ""
+
     return await async_openai_response(
         prompt=PROMPT,
         input=TEXT_INPUT.format(content=trend_response.to_results()),

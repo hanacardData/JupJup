@@ -42,7 +42,7 @@ class FeedbackScorer:
         def score(val: float) -> int:
             return (val >= q80) + (val >= q90)
 
-        return series.apply(score)
+        return pd.Series(series.apply(score), index=series.index)
 
     def apply_scores(self, df: pd.DataFrame) -> pd.DataFrame:
         today = datetime.today()
@@ -61,11 +61,15 @@ class FeedbackScorer:
         repetition_title_score = _title.apply(self.score_by_repetition)
 
         _description = df["description"].fillna("")
-        _product_keyword_score_raw = _description.apply(self.calculate_product_score)
+        _product_keyword_score_raw = pd.Series(
+            _description.apply(self.calculate_product_score), index=_description.index
+        )
         product_keyword_score = self.assign_percentile_score(_product_keyword_score_raw)
         repetition_description_score = _description.apply(self.score_by_repetition)
 
-        _issue_keyword_score_raw = _description.apply(self.calculate_issue_score)
+        _issue_keyword_score_raw = pd.Series(
+            _description.apply(self.calculate_issue_score), index=_description.index
+        )
         issue_keyword_score = self.assign_percentile_score(_issue_keyword_score_raw)
 
         df = df.assign(

@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 from time import sleep
-from typing import Literal
 
 import pandas as pd
 from tqdm import tqdm
@@ -33,9 +32,7 @@ FILE_TAG_SOURCES_MAP: dict[str, list[str]] = {
 }
 
 
-def collect_load_product_issues(
-    file_tag: Literal["credit", "debit", "wonder", "jade"],
-) -> None:
+def collect_load_product_issues(file_tag: str) -> None:
     """
     경쟁사(credit/debit) 또는 자사(wonder/jade) 상품 이슈 데이터를 로드하고 처리합니다.
     - credit/debit: news 소스만 사용
