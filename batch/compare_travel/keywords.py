@@ -1,4 +1,4 @@
-COMPARE_TRAVEL_TREND_KEYWORDS: list[dict[str : str | list[str]]] = [
+COMPARE_TRAVEL_TREND_KEYWORDS: list[dict[str, str | list[str]]] = [
     {
         "groupName": "트래블로그",
         "keywords": [
