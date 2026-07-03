@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field, field_serializer, field_validator
 
@@ -12,7 +13,7 @@ class AbstractResponse(BaseModel):
     items: list
     results: list
 
-    def to_items(self, query: str, scrap_date: str) -> list[dict[str, str]]:
+    def to_items(self, query: str, scrap_date: str) -> list[dict[str, Any]]:
         if not hasattr(self, "items"):
             raise AttributeError("items not exists.")
         return [
