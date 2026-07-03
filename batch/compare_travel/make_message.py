@@ -17,7 +17,7 @@ async def _get_trend_message() -> str:
         timeUnit="date",
         keywordGroups=COMPARE_TRAVEL_TREND_KEYWORDS,
     )
-    if trend_response is None:
+    if not trend_response:
         return ""
 
     return await async_openai_response(

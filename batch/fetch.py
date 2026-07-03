@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Any
 
 import requests
 
@@ -27,7 +27,7 @@ DATALAB_URL = "https://openapi.naver.com/v1/datalab/search"
 
 
 def fetch_data(
-    type: Literal["blog", "news", "cafe"],
+    type: str,  # Literal["blog", "news", "cafe"],
     query: str,
     display: int = 10,
     start: int = 1,

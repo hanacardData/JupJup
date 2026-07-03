@@ -16,7 +16,7 @@ from logger import logger
 
 
 async def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[str]:
-    data = data[data["is_posted"] == 0].copy()
+    data = data.loc[data["is_posted"] == 0].copy()
     refined_data = extract_high_score_data(
         data=data,
         issue_keywords=TRAVELLOG_ISSUE_KEYWORDS,
@@ -34,7 +34,7 @@ async def get_travellog_message(data: pd.DataFrame, tag: bool = True) -> list[st
 
     if len(refined_data) == 0:
         logger.warning("No data found after filtering.")
-        return "오늘은 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"
+        return ["오늘은 주목할만한 이슈가 없어요! 다음에 더 좋은 이슈로 찾아올게요 😊"]
 
     content = json.dumps(
         refined_data[["title", "url", "description", "name"]].to_dict(orient="records"),

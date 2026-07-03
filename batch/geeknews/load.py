@@ -70,19 +70,20 @@ def collect_load_geeknews(rule_top_n: int = 30, gpt_concurrency: int = 5) -> Non
     items: list[GeekNewsItem] = []
     for entry in reversed(entries):
         url = entry.find("atom:id", ns)
-        assert url is not None and url.text is not None
+        if url is None or url.text is None:
+            continue
         url_text = url.text
         if url_text > last_url:
             title = entry.find("atom:title", ns)
-            assert title is not None and title.text is not None
+            if title is None or title.text is None:
+                continue
             title_text = remove_html(title.text)
 
             content = entry.find("atom:content", ns)
-            assert content is not None and content.text is not None
-            content_text = remove_html(content.text)
-            if not url_text or not title_text:
+            if content is None or content.text is None:
                 continue
 
+            content_text = remove_html(content.text)
             rule_score = rule_score_from_text(title_text, content_text)
 
             items.append(

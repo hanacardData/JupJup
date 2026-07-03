@@ -9,6 +9,9 @@ def remove_html_tags(text: str) -> str:
 
 
 class AbstractResponse(BaseModel):
+    items: list
+    results: list
+
     def to_items(self, query: str, scrap_date: str) -> list[dict[str, str]]:
         if not hasattr(self, "items"):
             raise AttributeError("items not exists.")

@@ -1,7 +1,6 @@
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Literal
 
 import pandas as pd
 
@@ -23,9 +22,7 @@ from logger import logger
 
 
 async def process_generate_message(
-    button_label: Literal[
-        "원더카드 고객반응", "JADE 고객반응", "경쟁사신용", "경쟁사체크"
-    ],
+    button_label: str,
 ) -> list[str]:
     try:
         keywords = KEYWORDS_BY_BUTTON[button_label]
@@ -57,10 +54,11 @@ async def process_generate_message(
             ),
             axis=1,
         )
+        data_records = refined_data[
+            ["companies", "title", "link", "description"]
+        ].to_dict(orient="records")  # type: ignore[assignment]
         content = json.dumps(
-            refined_data[["companies", "title", "link", "description"]].to_dict(
-                orient="records"
-            ),
+            data_records,
             ensure_ascii=False,
         )
         if is_our_product:
@@ -120,6 +118,8 @@ def _filter_last_n_days_postdate(df: pd.DataFrame, days: int = 7) -> pd.DataFram
 
 def _make_header(button_label: str, expected: int, actual: int) -> str:
     date = datetime.today().strftime("%Y년 %m월 %d일")
+    product_type: str | None = None
+    title: str | None = None
 
     if button_label in ["신용카드 신상품", "체크카드 신상품"]:
         product_type = "경쟁사 신상품"
@@ -127,6 +127,9 @@ def _make_header(button_label: str, expected: int, actual: int) -> str:
     elif button_label in ["원더카드 고객반응", "JADE 고객반응"]:
         product_type = "자사 중점상품"
         title = button_label.replace(" 고객반응", "")
+
+    if product_type is None or title is None:
+        return ""
 
     return (
         f"안녕하세요, 줍줍이입니다. {date} "

@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 from datetime import datetime
+from typing import Any
 
 import pandas as pd
 from holidayskr import is_holiday
@@ -159,7 +160,7 @@ async def make_message(today_str: str, is_test: bool = False):
         os.makedirs(output_dir, exist_ok=True)
         output_file = os.path.join(output_dir, f"message_{today_str}.json")
 
-        data: dict[str, list[str] | dict[str, list[str]]] = {
+        data: dict[str, Any] = {
             "issue": issue_message,
             "travellog": travellog_messages,
             "travelcard": travelcard_messages,
