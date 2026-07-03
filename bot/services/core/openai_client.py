@@ -1,5 +1,3 @@
-from typing import Any
-
 from acachetools import cached
 from cachetools import TTLCache
 from openai import APIConnectionError, AsyncOpenAI
@@ -11,7 +9,6 @@ from secret import OPENAI_API_KEY
 async_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
-@cached(TTLCache(maxsize=100, ttl=3600))
 async def async_openai_response(
     prompt: str,
     input: str,
@@ -19,13 +16,12 @@ async def async_openai_response(
     max_retries: int = 5,
     initial_delay: int = 1,
     backoff_factor: int = 2,
-    retry_exceptions: Any = (APIConnectionError, TimeoutError),
 ) -> str:
     @retry(
         tries=max_retries,
         delay=initial_delay,
         backoff=backoff_factor,
-        exceptions=retry_exceptions,
+        exceptions=(APIConnectionError, TimeoutError),
     )
     async def _execute():
         try:
@@ -36,7 +32,7 @@ async def async_openai_response(
                 timeout=timeout,
             )
             return response.output_text.strip()
-        except retry_exceptions as e:
+        except (APIConnectionError, TimeoutError) as e:
             logger.warning(f"Retry exceptions: {type(e).__name__} - {e}")
             raise
         except Exception as e:
@@ -47,16 +43,14 @@ async def async_openai_response(
 
 
 @retry(tries=5, delay=1, backoff=2, exceptions=APIConnectionError)
+@cached(TTLCache(maxsize=100, ttl=3600))
 async def async_generate_image(prompt: str) -> str | None:
-    try:
-        response = await async_client.images.generate(
-            model="dall-e-3",
-            prompt=prompt,
-            n=1,
-            size="1024x1024",
-        )
-        if response and response.data and len(response.data) > 0:
-            return response.data[0].url
-    except (APIConnectionError, Exception) as e:
-        logger.error(e)
-        return
+    response = await async_client.images.generate(
+        model="dall-e-3",
+        prompt=prompt,
+        n=1,
+        size="1024x1024",
+    )
+    if response and response.data and len(response.data) > 0:
+        return response.data[0].url
+    return None

@@ -1,3 +1,5 @@
+from acachetools import cached
+from cachetools import TTLCache
 from fastapi.responses import JSONResponse
 
 from bot.enums.default_messages import Message
@@ -6,6 +8,8 @@ from bot.handler.message.channel import handle_channel_message_event
 from bot.handler.message.private import handle_private_message_event
 from bot.services.core.post_payload import async_post_message
 from logger import logger
+
+event_cache = TTLCache(maxsize=1024, ttl=600)
 
 
 async def handle_join_event(channel_id: str) -> JSONResponse:
@@ -38,3 +42,16 @@ async def process_event(data: dict) -> JSONResponse:
         return await handle_private_message_event(text=text, user_id=user_id)
 
     return JSONResponse(status_code=200, content={"status": BotStatus.IGNORED})
+
+
+@cached(
+    cache=event_cache,
+    key=lambda data: (
+        data.get("type"),
+        data.get("source", {}).get("channelId"),
+        data.get("source", {}).get("userId"),
+        data.get("content", {}).get("text"),
+    ),
+)
+async def get_processed_event(data: dict):
+    return await process_event(data)
